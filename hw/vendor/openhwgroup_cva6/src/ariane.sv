@@ -25,6 +25,7 @@ import "DPI-C" function void init_dromajo(string cfg_f_name);
 
 module ariane import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter int unsigned NumInterruptSrc           = 256,
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -48,11 +49,11 @@ module ariane import ariane_pkg::*; #(
   input sram_cfg_t                     sram_cfg_dtag_i,
   input sram_cfg_t                     sram_cfg_dvalid_dirty_i,
   // Interrupt inputs
-  input  logic [1:0]                   irq_i,        // level sensitive IR lines, mip & sip (async)
-  input  logic                         ipi_i,        // inter-processor interrupts (async)
-  // Timer facilities
-  input  logic                         time_irq_i,   // timer interrupt in (async)
-  input  logic                         debug_req_i,  // debug request (async)
+  input  logic [NumInterruptSrc-1:0]   irq_i,       // interrupt source, onehot encoded (req + id information)
+  input  logic [7:0]                   irq_level_i, // interrupt level is 8-bit from CLIC spec
+  input  logic                         irq_shv_i,   // selective hardware vectoring bit
+  input  logic                         irq_ack_o,   // core side itnerrupt handshake (ready)
+  input  logic                         debug_req_i, // debug request (async)
 `ifdef FIRESIM_TRACE
   // firesim trace port
   output traced_instr_pkg::trace_port_t trace_o,
@@ -299,7 +300,9 @@ module ariane import ariane_pkg::*; #(
   // ---------
   // ID
   // ---------
-  id_stage id_stage_i (
+  id_stage id_stage_i #(
+    .NumInterruptSrc(NumInterruptSrc)
+  )(
     .clk_i,
     .rst_ni                     ( rst_uarch_n                ),
     .flush_i                    ( flush_ctrl_if              ),
@@ -318,6 +321,7 @@ module ariane import ariane_pkg::*; #(
     .fs_i                       ( fs                         ),
     .frm_i                      ( frm_csr_id_issue_ex        ),
     .irq_i                      ( irq_i                      ),
+    .irq_level_i                ( irq_level_i                ),
     .irq_ctrl_i                 ( irq_ctrl_csr_id            ),
     .debug_mode_i               ( debug_mode                 ),
     .tvm_i                      ( tvm_csr_id                 ),
@@ -581,9 +585,7 @@ module ariane import ariane_pkg::*; #(
     .pmpcfg_o               ( pmpcfg                        ),
     .pmpaddr_o              ( pmpaddr                       ),
     .debug_req_i,
-    .ipi_i,
     .irq_i,
-    .time_irq_i,
     .*
   );
   // ------------------------
