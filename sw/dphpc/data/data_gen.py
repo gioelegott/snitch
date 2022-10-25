@@ -59,9 +59,10 @@ def main():
     B = gen_rand_csr_matrix(m=10, n=10, density=0.1)
     C = A * B
 
-    kwargs = {'name': 'test', 'A': A, 'B': B, 'C': C}
+    kwargs = {'name': 'matmul_csr', 'A': A, 'B': B, 'C': C}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
+
 
 if __name__ == "__main__":
     main()

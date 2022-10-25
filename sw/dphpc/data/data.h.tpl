@@ -10,28 +10,18 @@
     return out
 %> \
 
-typedef struct csr_matrix{
-  double *data;
-  double *indices;
-  double *ptr;
-  int len;
-  int rows;
-} csr_matrix;
+#pragma once
 
-csr_matrix A, B, C;
+#include "matrix_types.h"
 
 % for m, m_str in zip([A, B, C], ['A', 'B', 'C']):
 
 // Data arrays for matrix ${m_str}
 double ${m_str}_data[${m.nnz}] = ${array_to_cstr(m.data)};
-double ${m_str}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
-double ${m_str}_indptr[${m.shape[1]}] = ${array_to_cstr(m.indptr)};
+int ${m_str}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
+int ${m_str}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
 
 // Array struct for matrix ${m_str}
-${m_str}.data = ${m_str}_data;
-${m_str}.indices = ${m_str}_indices;
-${m_str}.indptr = ${m_str}_indptr;
-${m_str}.len = ${m.nnz};
-${m_str}.rows = ${m.shape[1]};
+csr_matrix ${m_str} = {${m_str}_data, ${m_str}_indices, ${m_str}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]+1}};
 
 % endfor \
