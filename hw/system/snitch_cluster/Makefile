@@ -11,7 +11,7 @@ ROOT        := ${MKFILE_DIR}../../..
 
 include $(ROOT)/util/Makefrag
 
-CFG 		?= cfg/cluster.default.hjson
+CFG 		?= cfg/single-core.hjson
 CLUSTER_GEN ?= $(ROOT)/util/clustergen.py
 CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
 
