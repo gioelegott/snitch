@@ -9,7 +9,13 @@ MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../../../..
 DEBUG       ?= 0
 
-VIVADO := vivado
+# Switch between internal JTAG chain or external one
+BSCANE      ?= 0
+ifeq ($(BSCANE),1)
+	BSCANE_ARG := -t bscane	
+endif
+
+VIVADO ?= vitis-2020.2 vivado
 
 include $(ROOT)/util/Makefrag
 
@@ -17,7 +23,7 @@ occamy_xilinx: define-sources.tcl
 	${VIVADO} -mode batch -source occamy_xilinx.tcl -tclargs $(DEBUG)
 
 define-sources.tcl:
-	${BENDER} script vivado -t bscane > $@
+	${BENDER} script vivado $(BSCANE_ARG) > $@
 
 clean:
 	rm -rf .Xil occamy_xilinx vivado* define-sources.tcl component.xml

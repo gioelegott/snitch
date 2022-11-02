@@ -215,6 +215,19 @@ proc create_root_design { parentCell DEBUG } {
   set uart_rx_i_0 [ create_bd_port -dir I uart_rx_i_0 ]
   set uart_tx_o_0 [ create_bd_port -dir O uart_tx_o_0 ]
 
+  if { [get_files -quiet -regexp ".*/dmi_jtag_tap\.sv"] ne "" } {
+    # JTAG interface on FMC XM105 Debug Card instead of BSCANE2 cell
+    set jtag_vdd_o_0   [ create_bd_port -dir O jtag_vdd_o_0 ]
+    set jtag_gnd_o_0   [ create_bd_port -dir O jtag_gnd_o_0 ]
+    set jtag_vdd_o_1   [ create_bd_port -dir O jtag_vdd_o_1 ]
+    set jtag_gnd_o_1   [ create_bd_port -dir O jtag_gnd_o_1 ]
+    set jtag_tck_i_0   [ create_bd_port -dir I jtag_tck_i_0 ]
+    set jtag_tdo_o_0   [ create_bd_port -dir O jtag_tdo_o_0 ]
+    set jtag_tdi_i_0   [ create_bd_port -dir I jtag_tdi_i_0 ]
+    set jtag_trst_ni_0 [ create_bd_port -dir I jtag_trst_ni_0 ]
+    set jtag_tms_i_0   [ create_bd_port -dir I jtag_tms_i_0 ]
+  }
+
   # Create instance: axi_apb_bridge_0, and set properties
   set axi_apb_bridge_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_apb_bridge:3.0 axi_apb_bridge_0 ]
   set_property -dict [ list \
@@ -506,6 +519,16 @@ proc create_root_design { parentCell DEBUG } {
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins clk_wiz/reset] [get_bd_pins inv/Op1]
   connect_bd_net -net uart_rx_i_0_1 [get_bd_ports uart_rx_i_0] [get_bd_pins occamy_xilinx_0/uart_rx_i]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins occamy_xilinx_0/ext_irq_i] [get_bd_pins xlconcat_0/dout]
+  if { [get_files -quiet -regexp ".*/dmi_jtag_tap\.sv"] ne "" } {
+    connect_bd_net -net jtag_tck_i_0_1 [get_bd_ports jtag_tck_i_0] [get_bd_pins occamy_xilinx_0/jtag_tck_i]
+    connect_bd_net -net jtag_tms_i_0_1 [get_bd_ports jtag_tms_i_0] [get_bd_pins occamy_xilinx_0/jtag_tms_i]
+    connect_bd_net -net jtag_tdi_i_0_1 [get_bd_ports jtag_tdi_i_0] [get_bd_pins occamy_xilinx_0/jtag_tdi_i]
+    connect_bd_net -net jtag_trst_ni_0_1 [get_bd_ports jtag_trst_ni_0] [get_bd_pins occamy_xilinx_0/jtag_trst_ni]
+    connect_bd_net -net jtag_tdo_o_0_1 [get_bd_ports jtag_tdo_o_0] [get_bd_pins occamy_xilinx_0/jtag_tdo_o]
+    connect_bd_net -net jtag_vdd_o_0_1 [get_bd_ports jtag_vdd_o_*] [get_bd_pins const_high/dout]
+    connect_bd_net -net jtag_gnd_o_0_1 [get_bd_ports jtag_gnd_o_*] [get_bd_pins const_low/dout]
+  }
+
 
   # Create address segments
   assign_bd_address -offset 0x4C000000 -range 0x00400000 -target_address_space [get_bd_addr_spaces occamy_xilinx_0/m_axi_pcie] [get_bd_addr_segs axi_quad_spi_0/aximm/MEM0] -force

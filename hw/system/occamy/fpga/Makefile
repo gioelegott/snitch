@@ -17,7 +17,13 @@ ifeq ($(VCU),02)
 	FPGA_ID := 091847100638A
 endif
 
-VIVADO := vivado
+VIVADO ?= vivado
+
+# Switch between internal JTAG chain or external one
+BSCANE      ?= 0
+ifeq ($(BSCANE),1)
+	BSCANE_ARG := -t bscane	
+endif
 
 include $(ROOT)/util/Makefrag
 

@@ -50,10 +50,10 @@ set_param logicopt.enableBUFGinsertHFN no
 
 # Synthesize
 foreach run [list synth_1 occamy_vcu128_occamy_xilinx_0_0_synth_1] {
- set_property strategy Flow_AlternateRoutability [get_runs $run]
+ set_property strategy Flow_RuntimeOptimized [get_runs $run]
  set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs $run]
 }
-launch_runs synth_1 -jobs 12
+launch_runs synth_1 -jobs 8
 wait_on_run synth_1
 
 # Create ILA. Attach all signals that were previously marked debug.
@@ -112,10 +112,10 @@ if ($DEBUG) {
 }
 
 # Implement
-set_property strategy Congestion_SpreadLogic_low [get_runs impl_1]
-launch_runs impl_1 -jobs 12
+set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+launch_runs impl_1 -jobs 8
 wait_on_run impl_1
 
 # Generate Bitstream
-launch_runs impl_1 -to_step write_bitstream -jobs 12
+launch_runs impl_1 -to_step write_bitstream -jobs 8
 wait_on_run impl_1

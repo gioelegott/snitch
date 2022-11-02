@@ -172,13 +172,7 @@ module ${name}_quadrant_s1_ctrl
     .clk_o (clk_quadrant_o)
   );
 
-  // Reset directly from register (i.e. (de)assertion inherently synchronized)
-  // Multiplex with glitchless multiplexor, top reset for testing purposes
-  tc_clk_mux2 i_tc_reset_mux (
-    .clk0_i (reg2hw.reset_n.q),
-    .clk1_i (rst_ni),
-    .clk_sel_i (test_mode_i),
-    .clk_o (rst_quadrant_no)
-  );
+  // Don't use clk_mux or Vivado considers the whole reset tree as a clock tree
+  assign rst_quadrant_no = rst_ni;
 
 endmodule
