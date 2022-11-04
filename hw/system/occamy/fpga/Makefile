@@ -8,7 +8,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../../..
 ARIANE_SDK  ?= ${ROOT}/../ariane-sdk
-DEBUG       ?= 0
+DEBUG       ?= 1
 VCU         ?= 01
 FPGA_ID     := 091847100576A
 

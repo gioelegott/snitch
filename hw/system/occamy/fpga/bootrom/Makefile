@@ -25,7 +25,10 @@ all: bootrom-spl.coe
 bootrom.elf bootrom.dump bootrom.bin: bootrom.S $(OBJS_C) bootrom.ld occamy.dtb
 	riscv64-unknown-elf-gcc -mabi=lp64d -march=rv64imafd -static -nostartfiles $(INCLUDES) -Tbootrom.ld $< $(OBJS_C) -o bootrom.elf
 	riscv64-unknown-elf-objdump -d bootrom.elf > bootrom.dump
-	riscv64-unknown-elf-objcopy --pad-to 0x1001000 -O binary bootrom.elf bootrom.bin
+	riscv64-unknown-elf-objcopy -O binary bootrom.elf bootrom.bin
+	riscv64-unknown-elf-objcopy --change-addresses=0x6f000000 bootrom.elf bootrom_scratch.elf
+	riscv64-unknown-elf-objdump -d bootrom_scratch.elf > bootrom_scratch.dump
+
 
 bootrom-spl.bin: bootrom.bin  $(ARIANE_SDK)/u-boot/spl/u-boot-spl.bin
 	cat $^ > $@

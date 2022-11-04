@@ -7,7 +7,7 @@
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../../../..
-DEBUG       ?= 0
+DEBUG       ?= 1
 
 # Switch between internal JTAG chain or external one
 BSCANE      ?= 0

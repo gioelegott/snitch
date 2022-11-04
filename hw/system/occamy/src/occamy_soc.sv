@@ -825,141 +825,141 @@ module occamy_soc
   //////////////////////
   // S1 Quadrant 0 //
   //////////////////////
-  /*
-    axi_a48_d64_i7_u5_req_t narrow_in_0_req;
+
+  axi_a48_d64_i7_u5_req_t  narrow_in_0_req;
   axi_a48_d64_i7_u5_resp_t narrow_in_0_rsp;
 
-axi_multicut #(
-  .NoCuts (3),
-  .aw_chan_t (axi_a48_d64_i7_u5_aw_chan_t),
-  .w_chan_t (axi_a48_d64_i7_u5_w_chan_t),
-  .b_chan_t (axi_a48_d64_i7_u5_b_chan_t),
-  .ar_chan_t (axi_a48_d64_i7_u5_ar_chan_t),
-  .r_chan_t (axi_a48_d64_i7_u5_r_chan_t),
-  .axi_req_t (axi_a48_d64_i7_u5_req_t),
-  .axi_resp_t (axi_a48_d64_i7_u5_resp_t)
-) i_narrow_in_0 (
-  .clk_i (clk_i),
-  .rst_ni (rst_ni),
-  .slv_req_i (soc_narrow_xbar_out_req[SOC_NARROW_XBAR_OUT_S1_QUADRANT_0]),
-  .slv_resp_o (soc_narrow_xbar_out_rsp[SOC_NARROW_XBAR_OUT_S1_QUADRANT_0]),
-  .mst_req_o (narrow_in_0_req),
-  .mst_resp_i (narrow_in_0_rsp)
-);
-  axi_a48_d64_i4_u5_req_t narrow_out_0_req;
+  axi_multicut #(
+      .NoCuts(3),
+      .aw_chan_t(axi_a48_d64_i7_u5_aw_chan_t),
+      .w_chan_t(axi_a48_d64_i7_u5_w_chan_t),
+      .b_chan_t(axi_a48_d64_i7_u5_b_chan_t),
+      .ar_chan_t(axi_a48_d64_i7_u5_ar_chan_t),
+      .r_chan_t(axi_a48_d64_i7_u5_r_chan_t),
+      .axi_req_t(axi_a48_d64_i7_u5_req_t),
+      .axi_resp_t(axi_a48_d64_i7_u5_resp_t)
+  ) i_narrow_in_0 (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .slv_req_i(soc_narrow_xbar_out_req[SOC_NARROW_XBAR_OUT_S1_QUADRANT_0]),
+      .slv_resp_o(soc_narrow_xbar_out_rsp[SOC_NARROW_XBAR_OUT_S1_QUADRANT_0]),
+      .mst_req_o(narrow_in_0_req),
+      .mst_resp_i(narrow_in_0_rsp)
+  );
+  axi_a48_d64_i4_u5_req_t  narrow_out_0_req;
   axi_a48_d64_i4_u5_resp_t narrow_out_0_rsp;
 
-axi_multicut #(
-  .NoCuts (3),
-  .aw_chan_t (axi_a48_d64_i4_u5_aw_chan_t),
-  .w_chan_t (axi_a48_d64_i4_u5_w_chan_t),
-  .b_chan_t (axi_a48_d64_i4_u5_b_chan_t),
-  .ar_chan_t (axi_a48_d64_i4_u5_ar_chan_t),
-  .r_chan_t (axi_a48_d64_i4_u5_r_chan_t),
-  .axi_req_t (axi_a48_d64_i4_u5_req_t),
-  .axi_resp_t (axi_a48_d64_i4_u5_resp_t)
-) i_narrow_out_cut_0 (
-  .clk_i (clk_i),
-  .rst_ni (rst_ni),
-  .slv_req_i (narrow_out_0_req),
-  .slv_resp_o (narrow_out_0_rsp),
-  .mst_req_o (soc_narrow_xbar_in_req[SOC_NARROW_XBAR_IN_S1_QUADRANT_0]),
-  .mst_resp_i (soc_narrow_xbar_in_rsp[SOC_NARROW_XBAR_IN_S1_QUADRANT_0])
-);
-  axi_a48_d512_i5_u0_req_t wide_in_0_req;
+  axi_multicut #(
+      .NoCuts(3),
+      .aw_chan_t(axi_a48_d64_i4_u5_aw_chan_t),
+      .w_chan_t(axi_a48_d64_i4_u5_w_chan_t),
+      .b_chan_t(axi_a48_d64_i4_u5_b_chan_t),
+      .ar_chan_t(axi_a48_d64_i4_u5_ar_chan_t),
+      .r_chan_t(axi_a48_d64_i4_u5_r_chan_t),
+      .axi_req_t(axi_a48_d64_i4_u5_req_t),
+      .axi_resp_t(axi_a48_d64_i4_u5_resp_t)
+  ) i_narrow_out_cut_0 (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .slv_req_i(narrow_out_0_req),
+      .slv_resp_o(narrow_out_0_rsp),
+      .mst_req_o(soc_narrow_xbar_in_req[SOC_NARROW_XBAR_IN_S1_QUADRANT_0]),
+      .mst_resp_i(soc_narrow_xbar_in_rsp[SOC_NARROW_XBAR_IN_S1_QUADRANT_0])
+  );
+  axi_a48_d512_i5_u0_req_t  wide_in_0_req;
   axi_a48_d512_i5_u0_resp_t wide_in_0_rsp;
 
-axi_multicut #(
-  .NoCuts (3),
-  .aw_chan_t (axi_a48_d512_i5_u0_aw_chan_t),
-  .w_chan_t (axi_a48_d512_i5_u0_w_chan_t),
-  .b_chan_t (axi_a48_d512_i5_u0_b_chan_t),
-  .ar_chan_t (axi_a48_d512_i5_u0_ar_chan_t),
-  .r_chan_t (axi_a48_d512_i5_u0_r_chan_t),
-  .axi_req_t (axi_a48_d512_i5_u0_req_t),
-  .axi_resp_t (axi_a48_d512_i5_u0_resp_t)
-) i_wide_in_0 (
-  .clk_i (clk_i),
-  .rst_ni (rst_ni),
-  .slv_req_i (quadrant_inter_xbar_out_req[QUADRANT_INTER_XBAR_OUT_QUADRANT_0]),
-  .slv_resp_o (quadrant_inter_xbar_out_rsp[QUADRANT_INTER_XBAR_OUT_QUADRANT_0]),
-  .mst_req_o (wide_in_0_req),
-  .mst_resp_i (wide_in_0_rsp)
-);
-  axi_a48_d512_i4_u0_req_t wide_out_0_req;
+  axi_multicut #(
+      .NoCuts(3),
+      .aw_chan_t(axi_a48_d512_i5_u0_aw_chan_t),
+      .w_chan_t(axi_a48_d512_i5_u0_w_chan_t),
+      .b_chan_t(axi_a48_d512_i5_u0_b_chan_t),
+      .ar_chan_t(axi_a48_d512_i5_u0_ar_chan_t),
+      .r_chan_t(axi_a48_d512_i5_u0_r_chan_t),
+      .axi_req_t(axi_a48_d512_i5_u0_req_t),
+      .axi_resp_t(axi_a48_d512_i5_u0_resp_t)
+  ) i_wide_in_0 (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .slv_req_i(quadrant_inter_xbar_out_req[QUADRANT_INTER_XBAR_OUT_QUADRANT_0]),
+      .slv_resp_o(quadrant_inter_xbar_out_rsp[QUADRANT_INTER_XBAR_OUT_QUADRANT_0]),
+      .mst_req_o(wide_in_0_req),
+      .mst_resp_i(wide_in_0_rsp)
+  );
+  axi_a48_d512_i4_u0_req_t  wide_out_0_req;
   axi_a48_d512_i4_u0_resp_t wide_out_0_rsp;
 
-axi_multicut #(
-  .NoCuts (1),
-  .aw_chan_t (axi_a48_d512_i4_u0_aw_chan_t),
-  .w_chan_t (axi_a48_d512_i4_u0_w_chan_t),
-  .b_chan_t (axi_a48_d512_i4_u0_b_chan_t),
-  .ar_chan_t (axi_a48_d512_i4_u0_ar_chan_t),
-  .r_chan_t (axi_a48_d512_i4_u0_r_chan_t),
-  .axi_req_t (axi_a48_d512_i4_u0_req_t),
-  .axi_resp_t (axi_a48_d512_i4_u0_resp_t)
-) i_wide_out_cut_0 (
-  .clk_i (clk_i),
-  .rst_ni (rst_ni),
-  .slv_req_i (wide_out_0_req),
-  .slv_resp_o (wide_out_0_rsp),
-  .mst_req_o (quadrant_pre_xbar_0_in_req[QUADRANT_PRE_XBAR_0_IN_QUADRANT]),
-  .mst_resp_i (quadrant_pre_xbar_0_in_rsp[QUADRANT_PRE_XBAR_0_IN_QUADRANT])
-);
-axi_multicut #(
-  .NoCuts (1),
-  .aw_chan_t (axi_a48_d512_i4_u0_aw_chan_t),
-  .w_chan_t (axi_a48_d512_i4_u0_w_chan_t),
-  .b_chan_t (axi_a48_d512_i4_u0_b_chan_t),
-  .ar_chan_t (axi_a48_d512_i4_u0_ar_chan_t),
-  .r_chan_t (axi_a48_d512_i4_u0_r_chan_t),
-  .axi_req_t (axi_a48_d512_i4_u0_req_t),
-  .axi_resp_t (axi_a48_d512_i4_u0_resp_t)
-) i_pre_to_inter_cut_0 (
-  .clk_i (clk_i),
-  .rst_ni (rst_ni),
-  .slv_req_i (quadrant_pre_xbar_0_out_req[QUADRANT_PRE_XBAR_0_OUT_QUADRANT_INTER_XBAR]),
-  .slv_resp_o (quadrant_pre_xbar_0_out_rsp[QUADRANT_PRE_XBAR_0_OUT_QUADRANT_INTER_XBAR]),
-  .mst_req_o (quadrant_inter_xbar_in_req[QUADRANT_INTER_XBAR_IN_QUADRANT_0]),
-  .mst_resp_i (quadrant_inter_xbar_in_rsp[QUADRANT_INTER_XBAR_IN_QUADRANT_0])
-);
-axi_multicut #(
-  .NoCuts (3),
-  .aw_chan_t (axi_a48_d512_i4_u0_aw_chan_t),
-  .w_chan_t (axi_a48_d512_i4_u0_w_chan_t),
-  .b_chan_t (axi_a48_d512_i4_u0_b_chan_t),
-  .ar_chan_t (axi_a48_d512_i4_u0_ar_chan_t),
-  .r_chan_t (axi_a48_d512_i4_u0_r_chan_t),
-  .axi_req_t (axi_a48_d512_i4_u0_req_t),
-  .axi_resp_t (axi_a48_d512_i4_u0_resp_t)
-) i_pre_to_hbm_cut_0 (
-  .clk_i (clk_i),
-  .rst_ni (rst_ni),
-  .slv_req_i (quadrant_pre_xbar_0_out_req[QUADRANT_PRE_XBAR_0_OUT_HBM_XBAR]),
-  .slv_resp_o (quadrant_pre_xbar_0_out_rsp[QUADRANT_PRE_XBAR_0_OUT_HBM_XBAR]),
-  .mst_req_o (hbm_xbar_in_req[HBM_XBAR_IN_QUADRANT_0]),
-  .mst_resp_i (hbm_xbar_in_rsp[HBM_XBAR_IN_QUADRANT_0])
-);
+  axi_multicut #(
+      .NoCuts(1),
+      .aw_chan_t(axi_a48_d512_i4_u0_aw_chan_t),
+      .w_chan_t(axi_a48_d512_i4_u0_w_chan_t),
+      .b_chan_t(axi_a48_d512_i4_u0_b_chan_t),
+      .ar_chan_t(axi_a48_d512_i4_u0_ar_chan_t),
+      .r_chan_t(axi_a48_d512_i4_u0_r_chan_t),
+      .axi_req_t(axi_a48_d512_i4_u0_req_t),
+      .axi_resp_t(axi_a48_d512_i4_u0_resp_t)
+  ) i_wide_out_cut_0 (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .slv_req_i(wide_out_0_req),
+      .slv_resp_o(wide_out_0_rsp),
+      .mst_req_o(quadrant_pre_xbar_0_in_req[QUADRANT_PRE_XBAR_0_IN_QUADRANT]),
+      .mst_resp_i(quadrant_pre_xbar_0_in_rsp[QUADRANT_PRE_XBAR_0_IN_QUADRANT])
+  );
+  axi_multicut #(
+      .NoCuts(1),
+      .aw_chan_t(axi_a48_d512_i4_u0_aw_chan_t),
+      .w_chan_t(axi_a48_d512_i4_u0_w_chan_t),
+      .b_chan_t(axi_a48_d512_i4_u0_b_chan_t),
+      .ar_chan_t(axi_a48_d512_i4_u0_ar_chan_t),
+      .r_chan_t(axi_a48_d512_i4_u0_r_chan_t),
+      .axi_req_t(axi_a48_d512_i4_u0_req_t),
+      .axi_resp_t(axi_a48_d512_i4_u0_resp_t)
+  ) i_pre_to_inter_cut_0 (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .slv_req_i(quadrant_pre_xbar_0_out_req[QUADRANT_PRE_XBAR_0_OUT_QUADRANT_INTER_XBAR]),
+      .slv_resp_o(quadrant_pre_xbar_0_out_rsp[QUADRANT_PRE_XBAR_0_OUT_QUADRANT_INTER_XBAR]),
+      .mst_req_o(quadrant_inter_xbar_in_req[QUADRANT_INTER_XBAR_IN_QUADRANT_0]),
+      .mst_resp_i(quadrant_inter_xbar_in_rsp[QUADRANT_INTER_XBAR_IN_QUADRANT_0])
+  );
+  axi_multicut #(
+      .NoCuts(3),
+      .aw_chan_t(axi_a48_d512_i4_u0_aw_chan_t),
+      .w_chan_t(axi_a48_d512_i4_u0_w_chan_t),
+      .b_chan_t(axi_a48_d512_i4_u0_b_chan_t),
+      .ar_chan_t(axi_a48_d512_i4_u0_ar_chan_t),
+      .r_chan_t(axi_a48_d512_i4_u0_r_chan_t),
+      .axi_req_t(axi_a48_d512_i4_u0_req_t),
+      .axi_resp_t(axi_a48_d512_i4_u0_resp_t)
+  ) i_pre_to_hbm_cut_0 (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .slv_req_i(quadrant_pre_xbar_0_out_req[QUADRANT_PRE_XBAR_0_OUT_HBM_XBAR]),
+      .slv_resp_o(quadrant_pre_xbar_0_out_rsp[QUADRANT_PRE_XBAR_0_OUT_HBM_XBAR]),
+      .mst_req_o(hbm_xbar_in_req[HBM_XBAR_IN_QUADRANT_0]),
+      .mst_resp_i(hbm_xbar_in_rsp[HBM_XBAR_IN_QUADRANT_0])
+  );
 
   occamy_quadrant_s1 i_occamy_quadrant_s1_0 (
-    .clk_i (clk_i),
-    .rst_ni (rst_ni),
-    .test_mode_i (test_mode_i),
-    .tile_id_i (6'd0),
-    .meip_i ('0),
-    .mtip_i (mtip_i[9:1]),
-    .msip_i (msip_i[9:1]),
-    .quadrant_narrow_out_req_o (narrow_out_0_req),
-    .quadrant_narrow_out_rsp_i (narrow_out_0_rsp),
-    .quadrant_narrow_in_req_i (narrow_in_0_req),
-    .quadrant_narrow_in_rsp_o (narrow_in_0_rsp),
-    .quadrant_wide_out_req_o (wide_out_0_req),
-    .quadrant_wide_out_rsp_i (wide_out_0_rsp),
-    .quadrant_wide_in_req_i (wide_in_0_req),
-    .quadrant_wide_in_rsp_o (wide_in_0_rsp),
-    .sram_cfg_i (sram_cfgs_i.quadrant)
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .test_mode_i(test_mode_i),
+      .tile_id_i(6'd0),
+      .meip_i('0),
+      .mtip_i(mtip_i[9:1]),
+      .msip_i(msip_i[9:1]),
+      .quadrant_narrow_out_req_o(narrow_out_0_req),
+      .quadrant_narrow_out_rsp_i(narrow_out_0_rsp),
+      .quadrant_narrow_in_req_i(narrow_in_0_req),
+      .quadrant_narrow_in_rsp_o(narrow_in_0_rsp),
+      .quadrant_wide_out_req_o(wide_out_0_req),
+      .quadrant_wide_out_rsp_i(wide_out_0_rsp),
+      .quadrant_wide_in_req_i(wide_in_0_req),
+      .quadrant_wide_in_rsp_o(wide_in_0_rsp),
+      .sram_cfg_i(sram_cfgs_i.quadrant)
   );
-*/
+
 
   ////////////////
   // SPM NARROW //

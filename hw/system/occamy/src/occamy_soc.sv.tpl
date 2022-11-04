@@ -204,7 +204,7 @@ module ${name}_soc
   //////////////////////
   // S1 Quadrant ${i} //
   //////////////////////
-  /*
+
   <%
     #// Derived parameters
     nr_cores_s1_quadrant = nr_s1_clusters * nr_cluster_cores
@@ -243,7 +243,7 @@ module ${name}_soc
     .quadrant_wide_in_rsp_o (${wide_in.rsp_name()}),
     .sram_cfg_i (sram_cfgs_i.quadrant)
   );
-*/
+
   % endfor
 
   ////////////////

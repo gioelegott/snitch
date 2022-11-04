@@ -215,7 +215,7 @@ proc create_root_design { parentCell DEBUG } {
   set uart_rx_i_0 [ create_bd_port -dir I uart_rx_i_0 ]
   set uart_tx_o_0 [ create_bd_port -dir O uart_tx_o_0 ]
 
-  if { [get_files -quiet -regexp ".*/dmi_jtag_tap\.sv"] ne "" } {
+  if { $DEBUG } {
     # JTAG interface on FMC XM105 Debug Card instead of BSCANE2 cell
     set jtag_vdd_o_0   [ create_bd_port -dir O jtag_vdd_o_0 ]
     set jtag_gnd_o_0   [ create_bd_port -dir O jtag_gnd_o_0 ]
@@ -519,7 +519,8 @@ proc create_root_design { parentCell DEBUG } {
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins clk_wiz/reset] [get_bd_pins inv/Op1]
   connect_bd_net -net uart_rx_i_0_1 [get_bd_ports uart_rx_i_0] [get_bd_pins occamy_xilinx_0/uart_rx_i]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins occamy_xilinx_0/ext_irq_i] [get_bd_pins xlconcat_0/dout]
-  if { [get_files -quiet -regexp ".*/dmi_jtag_tap\.sv"] ne "" } {
+  
+  if { $DEBUG } {
     connect_bd_net -net jtag_tck_i_0_1 [get_bd_ports jtag_tck_i_0] [get_bd_pins occamy_xilinx_0/jtag_tck_i]
     connect_bd_net -net jtag_tms_i_0_1 [get_bd_ports jtag_tms_i_0] [get_bd_pins occamy_xilinx_0/jtag_tms_i]
     connect_bd_net -net jtag_tdi_i_0_1 [get_bd_ports jtag_tdi_i_0] [get_bd_pins occamy_xilinx_0/jtag_tdi_i]
