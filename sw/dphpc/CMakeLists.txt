@@ -24,8 +24,8 @@ macro(add_snitch_dphpc_executable name)
     target_link_options(${name} PRIVATE "SHELL:-T ${LINKER_SCRIPT}")
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${name}.h
-        COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
-        DEPENDS data/data_gen.py
+        COMMAND ./data/data_gen_${name}.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
+        DEPENDS data/data_gen_${name}.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     )
     add_custom_command(
@@ -55,12 +55,15 @@ enable_testing()
 include_directories(include data)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
-add_library(kernels src/kernel/matmul_csr.c)
+add_library(kernels src/kernel/matmul_csr.c src/kernel/softmax_csr.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME})
 
 add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
+add_snitch_dphpc_executable(softmax_csr src/main_softmax_csr.c data/data_softmax_csr.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
 
 add_snitch_raw_test_args(matmul_csr matmul_csr --configuration ${CMAKE_CURRENT_LIST_DIR}/../banshee/config/snitch_cluster.yaml)
+
+add_snitch_raw_test_args(softmax_csr softmax_csr --configuration ${CMAKE_CURRENT_LIST_DIR}/../banshee/config/snitch_cluster.yaml)

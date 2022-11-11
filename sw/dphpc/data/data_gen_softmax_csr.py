@@ -3,16 +3,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Author: Tim Fischer <fischeti@iis.ee.ethz.ch>
+# Author: Marco Bertuletti <mbertuletti@iis.ee.ethz.ch>
 
 import numpy as np
 import scipy.sparse as sp
+import tensorflow as tf
+
 import argparse
 import pathlib
 from mako.template import Template
 
 
-def gen_data_header_file(outdir: pathlib.Path, tpl: pathlib.Path, **kwargs):
+def gen_data_header_file(outdir: pathlib.Path.cwd(), tpl: pathlib.Path.cwd(), **kwargs):
 
     file = outdir / f"data_{kwargs['name']}.h"
 
@@ -34,7 +36,7 @@ def main():
         "-o",
         "--outdir",
         type=pathlib.Path,
-        default=pathlib.Path("data"),
+        default=pathlib.Path.cwd(),
         required=False,
         help='Select out directory of generated data files'
     )
@@ -43,7 +45,7 @@ def main():
         "--tpl",
         type=pathlib.Path,
         required=False,
-        default=pathlib.Path("data/data.h.tpl"),
+        default=pathlib.Path.cwd() / "data_softmax.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -55,11 +57,21 @@ def main():
 
     args = parser.parse_args()
 
-    A = gen_rand_csr_matrix(m=10, n=10, density=0.1)
-    B = gen_rand_csr_matrix(m=10, n=10, density=0.1)
-    C = A * B
+    # Create sparse matrix
+    n = 5
+    m = 5
+    density = 0.1
+    A = sp.random(m, n, density, format='csr')
 
-    kwargs = {'name': 'matmul_csr', 'A': A, 'B': B, 'C': C}
+    #Compute result
+    A_dense = A.todense()
+    A_dense = tf.convert_to_tensor(A_dense)
+    C_dense = tf.keras.activations.softmax(A_dense, axis=0)
+    #Convert result to sparse format
+    C_dense = C_dense.numpy()
+    C = sp.csr_matrix(C_dense)
+
+    kwargs = {'name': 'softmax_csr', 'A': A, 'C': C}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 

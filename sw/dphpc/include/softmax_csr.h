@@ -8,7 +8,9 @@
 
 #include "matrix_types.h"
 
-void softmax_csr(int axis, csr_matrix *A, csr_matrix *res);
+double my_fabs(double x);
 inline double my_exp(double x);
+void softmax_csr(int axis, csr_matrix *A, csr_matrix *res);
+
 
 
