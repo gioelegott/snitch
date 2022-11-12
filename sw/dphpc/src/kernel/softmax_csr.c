@@ -5,6 +5,7 @@
 // Author: Tim Fischer <fischeti@iis.ee.ethz.ch>
 
 #include "softmax_csr.h"
+#include "snrt.h"
 #include "printf.h"
 
 double my_fabs(double x) {
@@ -36,7 +37,7 @@ inline double my_exp(double x)
     return sum; 
 }
 
-void softmax_csr(int axis, csr_matrix *A, csr_matrix *res) {
+void softmax_csr_single(int axis, csr_matrix volatile *A, csr_matrix volatile *res) {
 
     int i, j, k, m;
 
@@ -67,7 +68,6 @@ void softmax_csr(int axis, csr_matrix *A, csr_matrix *res) {
                     res->col_idx[i * m + j] = j;
                 }
             }
-            res->row_ptr[i + 1] = res->row_ptr[i] + A->cols;
         }
 
     // For other axes
@@ -90,7 +90,7 @@ void softmax_csr(int axis, csr_matrix *A, csr_matrix *res) {
                 res->values[i * m + j] = logit;
                 res->col_idx[i * m + j] = j;
                 res->row_ptr[i + 1] += 1;
-                k = 0;
+                k = A->row_ptr[i];
                 while(k < A->row_ptr[i + 1]) {
                     if (A->col_idx[k] == j) {
                         nnz_value = A->values[k];
@@ -100,6 +100,76 @@ void softmax_csr(int axis, csr_matrix *A, csr_matrix *res) {
                 }
             }
         }
+
+    }
+};
+
+void softmax_csr_parallel(int axis, csr_matrix volatile *A, csr_matrix volatile *res, int core_id, int nPE) {
+
+    int i, j, k, m;
+
+    res->rows = A->rows;
+    m = A->cols;
+    res->cols = m;
+    res->nnz = A->rows * A->cols;
+    res->row_ptr[0] = 0;
+
+    // For axis zero
+    if (axis == 0) {
+
+        k = 0;
+        for (i = core_id; i < A->rows; i += nPE) {
+            // Compute the sum
+            double sum = (A->cols) - ((A->row_ptr[i + 1]) - (A->row_ptr[i]));
+            for (j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++) {
+                sum += my_exp(A->values[j]);
+            }
+            // Compute the Logits
+            for (j = 0; j < A->cols; j++) {
+                if ((k < A->row_ptr[i + 1]) && (A->col_idx[k] == j))  {
+                    res->values[i * m + j] = my_exp(A->values[k]) / sum;
+                    res->col_idx[i * m + j] = j;
+                    k++;
+                } else {
+                    res->values[i * m + j] = 1.0 / sum;
+                    res->col_idx[i * m + j] = j;
+                }
+            }
+            res->row_ptr[i + 1] = res->row_ptr[i] + A->cols;
+        }
+        snrt_cluster_hw_barrier();
+
+    // For other axes
+    } else {
+
+        double logit, nnz_value;
+
+        for (j = core_id; j < A->cols; j += nPE) {
+            // Compute the sum
+            double sum = (double) A->cols;
+            for (k = 0; k < A->nnz; k++) {
+                if (A->col_idx[k] == j) {
+                    nnz_value = A->values[k];
+                    sum += (my_exp(nnz_value) - 1);
+                }
+            }
+            // Compute the logits
+            for (i = 0; i < A->rows; i++) {
+                logit = (double) (1.0 / sum);
+                res->values[i * m + j] = logit;
+                res->col_idx[i * m + j] = j;
+                res->row_ptr[i + 1] += 1;
+                k = A->row_ptr[i];
+                while(k < A->row_ptr[i + 1]) {
+                    if (A->col_idx[k] == j) {
+                        nnz_value = A->values[k];
+                        res->values[i * m + j] = logit * my_exp(nnz_value);
+                    }
+                    k++;
+                }
+            }
+        }
+        snrt_cluster_hw_barrier();
 
     }
 };
