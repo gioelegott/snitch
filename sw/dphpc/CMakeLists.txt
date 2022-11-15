@@ -24,7 +24,7 @@ macro(add_snitch_dphpc_executable name)
     target_link_options(${name} PRIVATE "SHELL:-T ${LINKER_SCRIPT}")
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${name}.h
-        COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
+        COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data.h.tpl
         DEPENDS data/data_gen.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     )
@@ -41,7 +41,7 @@ macro(add_snitch_dphpc_executable name)
             DEPENDS $<TARGET_FILE:${name}>)
     endif()
     # Run target for RTL simulator
-    if (SNITCH_SIMULATOR AND SNITCH_RUNTIME STREQUAL "snRuntime-cluster")
+    if (SNITCH_RUNTIME STREQUAL "snRuntime-cluster")
         add_custom_target( run-rtl-${name}
             COMMAND ${SNITCH_SIMULATOR} $<TARGET_FILE:${name}>
             COMMAND for f in logs/trace_hart_*.dasm\; do ${SPIKE_DASM} < $$f | ${PYTHON} ${SNRUNTIME_SRC_DIR}/../../util/gen_trace.py > $$\(echo $$f | sed 's/\\.dasm/\\.txt/'\)\; done

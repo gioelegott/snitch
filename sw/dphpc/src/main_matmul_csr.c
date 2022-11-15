@@ -4,6 +4,7 @@
 
 // Author: Tim Fischer <fischeti@iis.ee.ethz.ch>
 
+#include <math.h>
 #include "data_matmul_csr.h"
 #include "matmul_csr.h"
 #include "snrt.h"
@@ -21,12 +22,9 @@ int main() {
   res.nnz = 0;
 
   // Allocate space for the result matrix
-  res.values = snrt_l3alloc(A.rows * B.cols * sizeof(int));
+  res.values = snrt_l3alloc(A.rows * B.cols * sizeof(double));
   res.col_idx = snrt_l3alloc(A.rows * B.cols * sizeof(int));
   res.row_ptr = snrt_l3alloc((A.rows + 1) * sizeof(int));
-
-  printf("A.values[0] = %f\n", A.values[0]);
-  printf("A.col_idx[0] = %d\n", A.col_idx[0]);
 
 
   // Run the matrix multiplication
@@ -35,17 +33,15 @@ int main() {
   // Check the result
   int errors = 0;
   for (int i = 0; i < res.nnz; i++) {
-    printf("res.values[%d] = %f\n", i, res.values[i]);
-    if (res.values[i] != C.values[i]) {
+
+    if (fabs(res.values[i] - C.values[i]) > 0.001) {
       errors++;
     }
   }
 
-  if (errors == 0) {
-    printf("Test passed!\n");
+  if (errors != 0) {
+    printf("Errors: %d/%d!\n", errors, res.nnz);
   }
 
-  return errors
-
-  ;
+  return errors;
 }

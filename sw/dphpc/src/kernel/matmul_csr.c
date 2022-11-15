@@ -9,8 +9,6 @@
 
 void matmul_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
 
-  printf("A->col_idx[0] = %d\n", A->col_idx[0]);
-
   res->rows = A->rows;
   res->cols = B->cols;
 
@@ -18,9 +16,10 @@ void matmul_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
     for (int j = 0; j < B->cols; j++) {
       double sum = 0;
       for (int k = A->row_ptr[i]; k < A->row_ptr[i + 1]; k++) {
-        for (int l = B->row_ptr[j]; l < B->row_ptr[j + 1]; l++) {
-          if (A->col_idx[k] == B->col_idx[l]) {
+        for (int l = B->row_ptr[A->col_idx[k]]; l < B->row_ptr[A->col_idx[k] + 1]; l++) {
+          if (B->col_idx[l] == j) {
             sum += A->values[k] * B->values[l];
+            break;
           }
         }
       }

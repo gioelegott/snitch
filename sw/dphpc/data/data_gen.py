@@ -11,12 +11,12 @@ import argparse
 import pathlib
 from mako.template import Template
 
+np.set_printoptions(precision=3)
+
 
 def gen_data_header_file(outdir: pathlib.Path, tpl: pathlib.Path, **kwargs):
 
     file = outdir / f"data_{kwargs['name']}.h"
-
-    print(tpl, outdir, kwargs['name'])
 
     template = Template(filename=str(tpl))
     with file.open('w') as f:
@@ -29,12 +29,14 @@ def gen_rand_csr_matrix(m: int, n: int, density: float) -> sp.csr_matrix:
 
 def main():
 
+    script_path = pathlib.Path(__file__).parent.absolute()
+
     parser = argparse.ArgumentParser(description='Generate data for kernels')
     parser.add_argument(
         "-o",
         "--outdir",
         type=pathlib.Path,
-        default=pathlib.Path("data"),
+        default=script_path,
         required=False,
         help='Select out directory of generated data files'
     )
@@ -43,7 +45,7 @@ def main():
         "--tpl",
         type=pathlib.Path,
         required=False,
-        default=pathlib.Path("data/data.h.tpl"),
+        default=script_path / "data.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -55,9 +57,9 @@ def main():
 
     args = parser.parse_args()
 
-    A = gen_rand_csr_matrix(m=10, n=10, density=0.1)
-    B = gen_rand_csr_matrix(m=10, n=10, density=0.1)
-    C = A * B
+    A = gen_rand_csr_matrix(m=32, n=32, density=0.1)
+    B = gen_rand_csr_matrix(m=32, n=32, density=0.1)
+    C = sp.csr_matrix(A.todense() * B.todense())
 
     kwargs = {'name': 'matmul_csr', 'A': A, 'B': B, 'C': C}
 

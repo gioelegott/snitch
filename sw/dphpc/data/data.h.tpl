@@ -17,11 +17,14 @@
 % for m, m_str in zip([A, B, C], ['A', 'B', 'C']):
 
 // Data arrays for matrix ${m_str}
+/*
+${m.todense()}
+*/
 double ${m_str}_data[${m.nnz}] = ${array_to_cstr(m.data)};
 int ${m_str}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
 int ${m_str}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
 
 // Array struct for matrix ${m_str}
-csr_matrix ${m_str} = {${m_str}_data, ${m_str}_indices, ${m_str}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]+1}};
+csr_matrix ${m_str} = {${m_str}_data, ${m_str}_indices, ${m_str}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
 
 % endfor \
