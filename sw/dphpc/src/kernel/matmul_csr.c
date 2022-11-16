@@ -7,7 +7,7 @@
 #include "matmul_csr.h"
 #include "printf.h"
 
-void matmul_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
+void matmul_csr_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
 
   res->rows = A->rows;
   res->cols = B->cols;
@@ -32,3 +32,23 @@ void matmul_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
     res->row_ptr[i + 1] = res->nnz;
   }
 };
+
+void matmul_csr_dense(csr_matrix *A, dense_matrix *B, csr_matrix *res) {
+  res->rows = A->rows;
+  res->cols = B->cols;
+
+  for (int i = 0; i < A->rows; i++) {
+    for (int j = 0; j < B->cols; j++) {
+      double sum = 0;
+      for (int k = A->row_ptr[i]; k < A->row_ptr[i + 1]; k++) {
+        sum += A->values[k] * B->values[A->col_idx[k] * B->cols + j];
+      }
+      if (sum != 0.0) {
+        res->values[res->nnz] = sum;
+        res->col_idx[res->nnz] = j;
+        res->nnz++;
+      }
+    }
+    res->row_ptr[i + 1] = res->nnz;
+  }
+}

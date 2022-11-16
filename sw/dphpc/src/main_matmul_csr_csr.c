@@ -5,7 +5,7 @@
 // Author: Tim Fischer <fischeti@iis.ee.ethz.ch>
 
 #include <math.h>
-#include "data_matmul_csr.h"
+#include "data_matmul.h"
 #include "matmul_csr.h"
 #include "snrt.h"
 #include "printf.h"
@@ -28,7 +28,7 @@ int main() {
 
 
   // Run the matrix multiplication
-  matmul_csr(&A, &B, &res);
+  matmul_csr_csr(&A, &B, &res);
 
   // Check the result
   int errors = 0;

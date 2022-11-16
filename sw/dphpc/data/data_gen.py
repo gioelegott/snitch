@@ -23,8 +23,8 @@ def gen_data_header_file(outdir: pathlib.Path, tpl: pathlib.Path, **kwargs):
         f.write(template.render(**kwargs))
 
 
-def gen_rand_csr_matrix(m: int, n: int, density: float) -> sp.csr_matrix:
-    return sp.random(m, n, density, format='csr')
+def gen_rand_matrix(m: int, n: int, density: float, fmt='csr') -> sp.csr_matrix:
+    return sp.random(m, n, density=density, format=fmt)
 
 
 def main():
@@ -54,15 +54,31 @@ def main():
         action='store_true',
         help='Set verbose'
     )
+    parser.add_argument(
+        "-s",
+        "--size",
+        type=int,
+        required=False,
+        default=32,
+        help='Size of matrices'
+    )
+    parser.add_argument(
+        "-d",
+        "--density",
+        type=float,
+        required=False,
+        default=0.1,
+        help='Density of matrices'
+    )
 
     args = parser.parse_args()
 
-    A = gen_rand_csr_matrix(m=32, n=32, density=0.1)
-    B = gen_rand_csr_matrix(m=32, n=32, density=0.1)
+    A = gen_rand_matrix(m=args.size, n=args.size, density=args.density, fmt='csr')
+    B = gen_rand_matrix(m=args.size, n=args.size, density=args.density, fmt='csr')
     C = A * B
     C.sort_indices()
 
-    kwargs = {'name': 'matmul_csr', 'A': A, 'B': B, 'C': C}
+    kwargs = {'name': 'matmul', 'A': A, 'B': B, 'C': C}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 
