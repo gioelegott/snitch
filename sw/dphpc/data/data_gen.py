@@ -59,7 +59,8 @@ def main():
 
     A = gen_rand_csr_matrix(m=32, n=32, density=0.1)
     B = gen_rand_csr_matrix(m=32, n=32, density=0.1)
-    C = sp.csr_matrix(A.todense() * B.todense())
+    C = A * B
+    C.sort_indices()
 
     kwargs = {'name': 'matmul_csr', 'A': A, 'B': B, 'C': C}
 
