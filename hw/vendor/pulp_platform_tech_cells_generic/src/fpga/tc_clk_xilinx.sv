@@ -50,6 +50,7 @@ module tc_clk_inverter (
 
 endmodule
 
+// Disable glitchless muxing on FPGA as it has undesirable effects on non-clock signals (resets)
 module tc_clk_mux2 (
   input  logic clk0_i,
   input  logic clk1_i,

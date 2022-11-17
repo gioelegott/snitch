@@ -24,6 +24,7 @@ dependencies:
   axi: {path: ../../vendor/pulp_platform_axi}
   common_cells: {path: ../../vendor/pulp_platform_common_cells}
   register_interface: {path: ../../vendor/pulp_platform_register_interface}
+  tech_cells_generic: {path: ../../vendor/pulp_platform_tech_cells_generic}
 
 sources:
 # Level 0:
