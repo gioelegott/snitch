@@ -9,9 +9,9 @@ MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../../..
 ARIANE_SDK  ?= ${ROOT}/../ariane-sdk
 # Use an ILA to observe the (* mark_debug = "true" *) signals
-DEBUG       ?= 1
+DEBUG       ?= 0
 # Use external JTAG chain instead of Xilinx internal chain
-EXT_JTAG    ?= 1
+EXT_JTAG    ?= 0
 VCU         ?= 01
 FPGA_ID     := 091847100576A
 
@@ -31,7 +31,7 @@ bootrom/bootrom-spl.coe:
 	${MAKE} -C bootrom
 
 occamy_vcu128: vivado_ips/occamy_xilinx define_defines_includes_no_simset.tcl bootrom/bootrom-spl.coe
-	${VIVADO} -source occamy_vcu128.tcl -tclargs $(DEBUG)
+	${VIVADO} -source occamy_vcu128.tcl -tclargs $(DEBUG) $(EXT_JTAG)
 
 define_defines_includes_no_simset.tcl: $(BENDER_FILES)
 	${BENDER} script vivado --only-defines --only-includes --no-simset > $@
