@@ -4,14 +4,12 @@
 #
 # Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 
-# Parse arguments
+# Parse arguments (Vivado's boolean properties are not compatible with all tcl boolean variables)
 set DEBUG false
-if {$argc > 0} {
-    # Vivado's boolean properties are not compatible with all tcl boolean variables.
-    if {[lindex $argv 0]} {
-        set DEBUG true
-    }
-}
+set EXT_JTAG false
+
+if {$argc > 0 && [lindex $argv 0]} { set DEBUG true }
+if {$argc > 1 && [lindex $argv 1]} { set EXT_JTAG true }
 
 # Create project
 set project occamy_xilinx

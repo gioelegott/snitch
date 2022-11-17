@@ -6,12 +6,10 @@
 
 # Parse arguments
 set DEBUG false
-if {$argc > 0} {
-    # Vivado's boolean properties are not compatible with all tcl boolean variables.
-    if {[lindex $argv 0]} {
-        set DEBUG true
-    }
-}
+set EXT_JTAG false
+
+if {$argc > 0 && [lindex $argv 0]} { set DEBUG true }
+if {$argc > 1 && [lindex $argv 1]} { set EXT_JTAG true }
 
 # Create project
 set project occamy_vcu128
@@ -30,6 +28,12 @@ source occamy_vcu128_bd.tcl
 add_files -fileset constrs_1 -norecurse occamy_vcu128_impl.xdc
 import_files -fileset constrs_1 occamy_vcu128_impl.xdc
 set_property used_in_synthesis false [get_files occamy_vcu128/occamy_vcu128.srcs/constrs_1/imports/fpga/occamy_vcu128_impl.xdc]
+
+if { $EXT_JTAG } {
+    add_files -fileset constrs_1 -norecurse occamy_vcu128_impl_ext_jtag.xdc
+    import_files -fileset constrs_1 occamy_vcu128_impl_ext_jtag.xdc
+    set_property used_in_synthesis false [get_files occamy_vcu128/occamy_vcu128.srcs/constrs_1/imports/fpga/occamy_vcu128_impl_ext_jtag.xdc]
+}
 
 # Generate wrapper
 make_wrapper -files [get_files ./occamy_vcu128/occamy_vcu128.srcs/sources_1/bd/occamy_vcu128/occamy_vcu128.bd] -top
@@ -104,6 +108,9 @@ if ($DEBUG) {
     }
 
     set_property target_constrs_file occamy_vcu128/occamy_vcu128.srcs/constrs_1/imports/fpga/occamy_vcu128_impl.xdc [current_fileset -constrset]
+    if { $EXT_JTAG } {
+        set_property target_constrs_file occamy_vcu128/occamy_vcu128.srcs/constrs_1/imports/fpga/occamy_vcu128_impl_ext_jtag.xdc [current_fileset -constrset]
+    }
     save_constraints -force
 
     implement_debug_core

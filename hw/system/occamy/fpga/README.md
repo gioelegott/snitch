@@ -31,7 +31,9 @@ make update-sources
 To compile Occamy for the VCU128, run the following command from this directory:
 
 ```
-make occamy_vcu128
+make occamy_vcu128 [DEBUG=1] [EXT_JTAG=1]
+# DEBUG = 1 will implements ILAs in your design
+# EXT_JTAG = 1 will connect the CVA6 debug module to an external JTAG chain, refer to `occamy_vcu128_impl_ext_jtag.xdc` for corresponding pins.
 ```
 
 
@@ -48,7 +50,6 @@ This is the current boot flow for Linux on Occamy:
 3. OpenSBI sets up the M-mode environment and drops to U-Boot in S-mode.
 
 4. U-Boot loads the Linux image from the SPI flash into DRAM, decompresses and boots it.
-
 
 ### Compiling Linux and U-Boot
 

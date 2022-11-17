@@ -73,7 +73,7 @@ module ariane import ariane_pkg::*; #(
   // Signals connecting more than one module
   // ------------------------------------------
   riscv::priv_lvl_t           priv_lvl;
-  (* mark_debug = "true" *) exception_t                 ex_commit; // exception from commit stage
+  exception_t                 ex_commit; // exception from commit stage
   bp_resolve_t                resolved_branch;
   (* mark_debug = "true" *) logic [riscv::VLEN-1:0]     pc_commit;
   logic                       eret;

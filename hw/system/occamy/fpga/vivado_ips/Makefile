@@ -7,23 +7,24 @@
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../../../..
-DEBUG       ?= 1
+VIVADO      ?= vivado
+BENDER_TARGETS := 
+# Use an ILA to observe the (* mark_debug = "true" *) signals
+DEBUG       ?= 0
+# Use external JTAG chain instead of Xilinx internal chain
+EXT_JTAG    ?= 0
 
-# Switch between internal JTAG chain or external one
-BSCANE      ?= 0
-ifeq ($(BSCANE),1)
-	BSCANE_ARG := -t bscane	
+ifeq ($(EXT_JTAG), 1)
+	BENDER_TARGETS := $(BENDER_TARGETS) -t bscane
 endif
-
-VIVADO ?= vitis-2020.2 vivado
 
 include $(ROOT)/util/Makefrag
 
 occamy_xilinx: define-sources.tcl
-	${VIVADO} -mode batch -source occamy_xilinx.tcl -tclargs $(DEBUG)
+	${VIVADO} -mode batch -source occamy_xilinx.tcl -tclargs $(DEBUG) $(EXT_JTAG)
 
 define-sources.tcl:
-	${BENDER} script vivado $(BSCANE_ARG) > $@
+	${BENDER} script vivado $(BENDER_TARGETS) > $@
 
 clean:
 	rm -rf .Xil occamy_xilinx vivado* define-sources.tcl component.xml

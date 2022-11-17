@@ -8,7 +8,10 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../../..
 ARIANE_SDK  ?= ${ROOT}/../ariane-sdk
+# Use an ILA to observe the (* mark_debug = "true" *) signals
 DEBUG       ?= 1
+# Use external JTAG chain instead of Xilinx internal chain
+EXT_JTAG    ?= 1
 VCU         ?= 01
 FPGA_ID     := 091847100576A
 
@@ -18,12 +21,6 @@ ifeq ($(VCU),02)
 endif
 
 VIVADO ?= vivado
-
-# Switch between internal JTAG chain or external one
-BSCANE      ?= 0
-ifeq ($(BSCANE),1)
-	BSCANE_ARG := -t bscane	
-endif
 
 include $(ROOT)/util/Makefrag
 

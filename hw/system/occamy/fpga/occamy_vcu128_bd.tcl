@@ -173,7 +173,7 @@ if { $bCheckIPsPassed != 1 } {
 
 # Procedure to create entire design; Provide argument to make
 # procedure reusable. If parentCell is "", will use root.
-proc create_root_design { parentCell DEBUG } {
+proc create_root_design { parentCell DEBUG EXT_JTAG } {
 
   variable script_folder
   variable design_name
@@ -215,16 +215,14 @@ proc create_root_design { parentCell DEBUG } {
   set uart_rx_i_0 [ create_bd_port -dir I uart_rx_i_0 ]
   set uart_tx_o_0 [ create_bd_port -dir O uart_tx_o_0 ]
 
-  if { $DEBUG } {
-    # JTAG interface on FMC XM105 Debug Card instead of BSCANE2 cell
+  if { $EXT_JTAG } {
+    # JTAG interface, note this will be connected to FPGA pins only if Occamy uses dmi_jtag_tap.sv
     set jtag_vdd_o_0   [ create_bd_port -dir O jtag_vdd_o_0 ]
     set jtag_gnd_o_0   [ create_bd_port -dir O jtag_gnd_o_0 ]
-    set jtag_vdd_o_1   [ create_bd_port -dir O jtag_vdd_o_1 ]
-    set jtag_gnd_o_1   [ create_bd_port -dir O jtag_gnd_o_1 ]
     set jtag_tck_i_0   [ create_bd_port -dir I jtag_tck_i_0 ]
     set jtag_tdo_o_0   [ create_bd_port -dir O jtag_tdo_o_0 ]
     set jtag_tdi_i_0   [ create_bd_port -dir I jtag_tdi_i_0 ]
-    set jtag_trst_ni_0 [ create_bd_port -dir I jtag_trst_ni_0 ]
+    # set jtag_trst_ni_0 [ create_bd_port -dir I jtag_trst_ni_0 ] optional
     set jtag_tms_i_0   [ create_bd_port -dir I jtag_tms_i_0 ]
   }
 
@@ -519,16 +517,17 @@ proc create_root_design { parentCell DEBUG } {
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins clk_wiz/reset] [get_bd_pins inv/Op1]
   connect_bd_net -net uart_rx_i_0_1 [get_bd_ports uart_rx_i_0] [get_bd_pins occamy_xilinx_0/uart_rx_i]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins occamy_xilinx_0/ext_irq_i] [get_bd_pins xlconcat_0/dout]
-  
-  if { $DEBUG } {
+  # Jtag port connections
+  connect_bd_net [get_bd_pins occamy_xilinx_0/jtag_trst_ni] [get_bd_pins const_high/dout]
+  if { $EXT_JTAG } {
     connect_bd_net -net jtag_tck_i_0_1 [get_bd_ports jtag_tck_i_0] [get_bd_pins occamy_xilinx_0/jtag_tck_i]
     connect_bd_net -net jtag_tms_i_0_1 [get_bd_ports jtag_tms_i_0] [get_bd_pins occamy_xilinx_0/jtag_tms_i]
     connect_bd_net -net jtag_tdi_i_0_1 [get_bd_ports jtag_tdi_i_0] [get_bd_pins occamy_xilinx_0/jtag_tdi_i]
-    connect_bd_net -net jtag_trst_ni_0_1 [get_bd_ports jtag_trst_ni_0] [get_bd_pins occamy_xilinx_0/jtag_trst_ni]
     connect_bd_net -net jtag_tdo_o_0_1 [get_bd_ports jtag_tdo_o_0] [get_bd_pins occamy_xilinx_0/jtag_tdo_o]
-    connect_bd_net -net jtag_vdd_o_0_1 [get_bd_ports jtag_vdd_o_*] [get_bd_pins const_high/dout]
-    connect_bd_net -net jtag_gnd_o_0_1 [get_bd_ports jtag_gnd_o_*] [get_bd_pins const_low/dout]
+    connect_bd_net [get_bd_ports jtag_vdd_o_*] [get_bd_pins const_high/dout]
+    connect_bd_net [get_bd_ports jtag_gnd_o_*] [get_bd_pins const_low/dout]
   }
+
 
 
   # Create address segments
@@ -875,6 +874,6 @@ proc create_root_design { parentCell DEBUG } {
 # MAIN FLOW
 ##################################################################
 
-create_root_design "" $DEBUG
+create_root_design "" $DEBUG $EXT_JTAG
 
 
