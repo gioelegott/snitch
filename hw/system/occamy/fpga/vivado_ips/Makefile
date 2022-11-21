@@ -14,7 +14,7 @@ DEBUG       ?= 0
 # Use external JTAG chain instead of Xilinx internal chain
 EXT_JTAG    ?= 0
 
-ifeq ($(EXT_JTAG), 1)
+ifeq ($(EXT_JTAG), 0)
 	BENDER_TARGETS := $(BENDER_TARGETS) -t bscane
 endif
 

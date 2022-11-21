@@ -37,9 +37,11 @@ ipx::infer_bus_interface clk_i xilinx.com:signal:clock_rtl:1.0 [ipx::current_cor
 
 # Reset interface
 ipx::infer_bus_interface rst_ni xilinx.com:signal:reset_rtl:1.0 [ipx::current_core]
+set_property value ACTIVE_LOW [ipx::add_bus_parameter POLARITY [ipx::get_bus_interfaces rst_ni]]
 
 # Associate clock to AXI interfaces
 for {set i 0} {$i < 8} {incr i} {ipx::associate_bus_interfaces -busif m_axi_hbm_$i -clock clk_i [ipx::current_core]}
+
 ipx::associate_bus_interfaces -busif m_axi_pcie -clock clk_i [ipx::current_core]
 ipx::associate_bus_interfaces -busif s_axi_pcie -clock clk_i [ipx::current_core]
 

@@ -10,9 +10,19 @@
 create_clock -period 200 -name jtag_tck_i_0 [get_pins test_dbg_vcu128_i/jtag_tck_i_0]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_pins jtag_tck_i_0_IBUF_inst/O]
 set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_pins jtag_tck_i_0_IBUF_inst/O]]
+set_input_jitter jtag_tck_i_0 1.000
 
-# Create asynchronous clock group between JTAG TCK and SoC clock.
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins test_dbg_vcu128_i/jtag_tck_i_0]] -group [get_clocks -of_objects [get_pins test_dbg_vcu128_i/clk_wiz/clk* -filter {DIRECTION == "OUT"}]]
+# JTAG clock is asynchronous with every other clocks.
+set_clock_groups -asynchronous -group [get_clocks jtag_tck_i_0]
+
+# Minimize routing delay
+set_input_delay  -clock jtag_tck_i_0 -clock_fall 5 [get_ports jtag_tdi_i_0]
+set_input_delay  -clock jtag_tck_i_0 -clock_fall 5 [get_ports jtag_tms_i_0]
+set_output_delay -clock jtag_tck_i_0             5 [get_ports jtag_tdo_o_0]
+
+set_max_delay -to   [get_ports { jtag_tdo_o_0 }] 20
+set_max_delay -from [get_ports { jtag_tms_i_0 }] 20
+set_max_delay -from [get_ports { jtag_tdi_i_0 }] 20
 
 # B23 - C14 (FMCP_HSPC_LA10_P) - J1.02 - VDD
 set_property PACKAGE_PIN B23     [get_ports jtag_vdd_o_0]
