@@ -58,12 +58,13 @@ endmacro()
 
 enable_testing()
 
-include_directories(include data)
+include_directories(include data src/utils)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
 add_library(kernels src/kernel/matmul_csr.c)
+add_library(utils src/utils/utils.c)
 
-target_link_libraries(kernels ${SNITCH_RUNTIME})
+target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 
 add_snitch_dphpc_executable(matmul_csr_csr src/main_matmul_csr_csr.c data/data_matmul.h)
 add_snitch_dphpc_executable(matmul_csr_dense src/main_matmul_csr_dense.c data/data_matmul.h)
