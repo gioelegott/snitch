@@ -69,5 +69,6 @@ target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 
 add_snitch_dphpc_executable(matmul_csr_csr src/main_matmul_csr_csr.c data/data_matmul.h)
 add_snitch_dphpc_executable(matmul_csr_dense src/main_matmul_csr_dense.c data/data_matmul.h)
+add_snitch_dphpc_executable(matmul_dense_dense src/main_matmul_dense_dense.c data/data_matmul.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
