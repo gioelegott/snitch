@@ -7,7 +7,7 @@
 # This constraint file is written for VCU128 + FMC XM105 Debug Card and is included only when EXT_JTAG = 1
 
 # 5 MHz max JTAG
-create_clock -period 200 -name jtag_tck_i_0 [get_pins test_dbg_vcu128_i/jtag_tck_i_0]
+create_clock -period 200 -name jtag_tck_i_0 [get_pins occamy_vcu128_i/occamy_xilinx_0/jtag_tck_i]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_pins jtag_tck_i_0_IBUF_inst/O]
 set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_pins jtag_tck_i_0_IBUF_inst/O]]
 set_input_jitter jtag_tck_i_0 1.000
