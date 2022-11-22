@@ -11,6 +11,7 @@ void matmul_csr_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
 
   res->rows = A->rows;
   res->cols = B->cols;
+  res->nnz = 0;
 
   for (int i = 0; i < A->rows; i++) {
     for (int j = 0; j < B->cols; j++) {
@@ -36,6 +37,7 @@ void matmul_csr_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
 void matmul_csr_dense(csr_matrix *A, dense_matrix *B, csr_matrix *res) {
   res->rows = A->rows;
   res->cols = B->cols;
+  res->nnz = 0;
 
   for (int i = 0; i < A->rows; i++) {
     for (int j = 0; j < B->cols; j++) {
