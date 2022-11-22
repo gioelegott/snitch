@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.13)
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
     set(CMAKE_TOOLCHAIN_FILE toolchain-llvm CACHE STRING "Toolchain to use")
+    set(SNITCH_SIMULATOR ${CMAKE_CURRENT_SOURCE_DIR}/../../hw/system/snitch_cluster/bin/snitch_cluster.vlt CACHE PATH "")
 
     project(DPHPC LANGUAGES C ASM)
     include(SnitchUtilities)
