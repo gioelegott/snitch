@@ -71,5 +71,3 @@ add_snitch_dphpc_executable(matmul_csr_csr src/main_matmul_csr_csr.c data/data_m
 add_snitch_dphpc_executable(matmul_csr_dense src/main_matmul_csr_dense.c data/data_matmul.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
-
-add_snitch_raw_test_args(matmul_csr_csr matmul_csr_csr --configuration ${CMAKE_CURRENT_LIST_DIR}/../banshee/config/snitch_cluster.yaml)
