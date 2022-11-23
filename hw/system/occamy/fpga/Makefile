@@ -31,7 +31,7 @@ bootrom/bootrom-spl.coe:
 	${MAKE} -C bootrom
 
 occamy_vcu128: vivado_ips/occamy_xilinx define_defines_includes_no_simset.tcl bootrom/bootrom-spl.coe
-	${VIVADO} -source occamy_vcu128.tcl -tclargs $(DEBUG) $(EXT_JTAG)
+	${VIVADO} -mode batch -source occamy_vcu128.tcl -tclargs $(DEBUG) $(EXT_JTAG)
 
 define_defines_includes_no_simset.tcl: $(BENDER_FILES)
 	${BENDER} script vivado --only-defines --only-includes --no-simset > $@

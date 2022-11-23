@@ -33,18 +33,18 @@ module dmi_jtag_tap #(
   output logic        tdo_oe_o, // Data out output enable
   input  logic        testmode_i,
   // JTAG is interested in writing the DTM CSR register
-  output logic        tck_o,
+  (* mark_debug = "true" *) output logic        tck_o,
   // Synchronous reset of the dmi module triggered by JTAG TAP
-  output logic        dmi_clear_o,
-  output logic        update_o,
-  output logic        capture_o,
-  output logic        shift_o,
-  output logic        tdi_o,
-  output logic        dtmcs_select_o,
-  input  logic        dtmcs_tdo_i,
+  (* mark_debug = "true" *) output logic        dmi_clear_o,
+  (* mark_debug = "true" *) output logic        update_o,
+  (* mark_debug = "true" *) output logic        capture_o,
+  (* mark_debug = "true" *) output logic        shift_o,
+  (* mark_debug = "true" *) output logic        tdi_o,
+  (* mark_debug = "true" *) output logic        dtmcs_select_o,
+  (* mark_debug = "true" *) input  logic        dtmcs_tdo_i,
   // we want to access DMI register
-  output logic        dmi_select_o,
-  input  logic        dmi_tdo_i
+  (* mark_debug = "true" *) output logic        dmi_select_o,
+  (* mark_debug = "true" *) input  logic        dmi_tdo_i
 );
 
   typedef enum logic [3:0] {
