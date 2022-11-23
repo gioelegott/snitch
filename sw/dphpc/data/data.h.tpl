@@ -18,23 +18,23 @@
 ///////////////////////////     INPUT      ////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-csr_matrix A[2];
+csr_matrix A[${channel_size}];
 
-% for m, m_str, m_name in zip([A0, A1], ['A0', 'A1'], ['A[0]', 'A[1]']):
-// Data arrays for input matrix ${m_str}
+% for i, m in enumerate(A):
+// Data arrays for input matrix A[${i}]
 /*
 ${m.todense()}
 */
-double ${m_str}_data[${m.nnz}] = ${array_to_cstr(m.data)};
-int ${m_str}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
-int ${m_str}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
+double A${i}_data[${m.nnz}] = ${array_to_cstr(m.data)};
+int A${i}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
+int A${i}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
 % endfor \
 
-// Array struct for matrix ${m_str} 
+// Array struct for matrix A[${i}]
 void assign_A(){
   if (snrt_cluster_core_idx() == 0){
-% for m, m_str, m_name in zip([A0, A1], ['A0', 'A1'], ['A[0]', 'A[1]']):
-    ${m_name} = (csr_matrix){${m_str}_data, ${m_str}_indices, ${m_str}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
+% for i, m in enumerate(A):
+    A[${i}] = (csr_matrix){A${i}_data, A${i}_indices, A${i}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
 % endfor \
 
   }
@@ -44,23 +44,23 @@ void assign_A(){
 ///////////////////////////     FILTER      ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-csr_matrix FILTER[2];
+csr_matrix FILTER[${channel_size}];
 
-% for m, m_str, m_name in zip([FILTER0, FILTER1], ['FILTER0', 'FILTER1'], ['FILTER[0]', 'FILTER[1]']):
-// Data arrays for filter ${m_str}
+% for i, m in enumerate(FILTER):
+// Data arrays for input matrix FILTER[${i}]
 /*
 ${m.todense()}
 */
-double ${m_str}_data[${m.nnz}] = ${array_to_cstr(m.data)};
-int ${m_str}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
-int ${m_str}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
+double FILTER${i}_data[${m.nnz}] = ${array_to_cstr(m.data)};
+int FILTER${i}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
+int FILTER${i}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
 % endfor \
 
-// Array struct for matrix ${m_str}
-void assign_B(){
+// Array struct for matrix FILTER[${i}]
+void assign_FILTER(){
   if (snrt_cluster_core_idx() == 0){
-% for m, m_str, m_name in zip([FILTER0, FILTER1], ['FILTER0', 'FILTER1'], ['FILTER[0]', 'FILTER[1]']):
-    ${m_name} = (csr_matrix){${m_str}_data, ${m_str}_indices, ${m_str}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
+% for i, m in enumerate(FILTER):
+    FILTER[${i}] = (csr_matrix){FILTER${i}_data, FILTER${i}_indices, FILTER${i}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
 % endfor \
 
   }

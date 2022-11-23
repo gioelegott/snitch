@@ -70,23 +70,43 @@ def main():
 
     args = parser.parse_args()
 
-    A0 = gen_rand_csr_matrix(m=4, n=4, density=0.4)
-    A1 = gen_rand_csr_matrix(m=4, n=4, density=0.4)
-    FILTER0 = gen_rand_csr_matrix(m=2, n=2, density=0.4)
-    FILTER1 = gen_rand_csr_matrix(m=2, n=2, density=0.4)
+    ###############################
+    ######## Matrices Gen #########
+    ###############################
+    channel_size = 2
+    
+    A = []
+    for i in range(channel_size):
+        A.append(gen_rand_csr_matrix(m=4, n=4, density=0.4))
 
-    A0_TEN = torch.from_numpy(A0.todense())
-    A1_TEN = torch.from_numpy(A1.todense())
-    A_TEN  = torch.stack((A0_TEN, A1_TEN), 0)
+    FILTER = []
+    for j in range(channel_size):
+        FILTER.append(gen_rand_csr_matrix(m=2, n=2, density=0.4))
 
-    F0_TEN = torch.from_numpy(FILTER0.todense())
-    F1_TEN = torch.from_numpy(FILTER1.todense())
-    F_TEN  = torch.stack((F0_TEN, F1_TEN), 0).unsqueeze(0)
+    ###############################
+    ######## Golden Model #########
+    ###############################
+    A_torch = {}
+    A_TEN = []
+    for i in range(channel_size):
+        A_torch[i] = torch.from_numpy(A[i].todense())
+        A_TEN.append(A_torch[i])
+    A_TEN = torch.stack(A_TEN, 0)
+
+    F_torch = {}
+    F_TEN = []
+    for j in range(channel_size):
+        F_torch[j] = torch.from_numpy(FILTER[j].todense())
+        F_TEN.append(F_torch[j])
+    F_TEN = torch.stack(F_TEN, 0).unsqueeze(0)
 
     RES0_TEN = conv2d(ifmap=A_TEN, weights=F_TEN, padding=0, stride=1).squeeze(0)
     RES0 = sp.csr_matrix(RES0_TEN.detach().numpy())
 
-    kwargs = {'name': 'conv2d_csr', 'A0': A0, 'A1': A1, 'FILTER0': FILTER0, 'FILTER1': FILTER1, 'RES0' : RES0}
+    ###############################
+    ######## Output  File #########
+    ###############################
+    kwargs = {'name': 'conv2d_csr', 'A' : A, 'FILTER': FILTER, 'RES0' : RES0, 'channel_size' : channel_size}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 

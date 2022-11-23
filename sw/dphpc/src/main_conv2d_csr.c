@@ -13,6 +13,10 @@
 int main() {
   if (snrt_cluster_core_idx() != 0) return 0;
 
+  assign_A();
+  assign_FILTER();
+  assign_RES();
+  
   csr_matrix res;  
   // Initialize the result matrix
   res.rows = A[0].rows - FILTER[0].rows +1;
@@ -31,6 +35,8 @@ int main() {
 
   // Check the result
   int errors = 0;
+  printf("RES has %d non-zero values, RES has %d non-zero values \n", res.nnz, RES.nnz);
+
   for (int i = 0; i < res.nnz; i++) {
     //printf("res value is %.6f \n", res.values[i]);
     if (fabs(res.values[i] - RES.values[i]) > 0.001) {
