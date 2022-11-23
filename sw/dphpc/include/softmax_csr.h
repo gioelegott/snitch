@@ -10,8 +10,8 @@
 
 double my_fabs(double x);
 inline double my_exp(double x);
-void softmax_csr_single(int axis, csr_matrix volatile *A, csr_matrix volatile *res);
-void softmax_csr_parallel(int axis, csr_matrix volatile *A, csr_matrix volatile *res, int core_id, int nPE);
+void softmax_csr_single(int axis, csr_matrix volatile *A, double volatile *res);
+void softmax_csr_parallel(int axis, csr_matrix volatile *A, double volatile *res, int core_id, int nPE);
 
 
 

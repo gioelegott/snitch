@@ -53,11 +53,12 @@ int main() {
   for(int i = 0; i < (A.rows + 1); i++) {
     in.row_ptr[i] = A.row_ptr[i];
   }
+  printf("A.values[0] = %f\n", A.values[0]);
 
   // Run the softmax
-  softmax_csr_single(AXIS, &in, &res);
+  softmax_csr_single(AXIS, &in, res.values);
   size_t time_init = benchmark_get_cycle();
-  softmax_csr_single(AXIS, &in, &res);
+  softmax_csr_single(AXIS, &in, res.values);
   size_t time_end = benchmark_get_cycle();
 
   // Check the result
@@ -104,13 +105,17 @@ int main() {
   snrt_cluster_hw_barrier();
 
   // Run the softmax
-  size_t time_init = benchmark_get_cycle();
-  softmax_csr_parallel(AXIS, &in, &res, core_id, nPE);
-  size_t time_end = benchmark_get_cycle();
+  if (core_id != 8) {
+    softmax_csr_parallel(AXIS, &in, res.values, core_id, nPE);
+    size_t time_init = benchmark_get_cycle();
+    softmax_csr_parallel(AXIS, &in, res.values, core_id, nPE);
+    size_t time_end = benchmark_get_cycle();
+  }
+  snrt_cluster_hw_barrier();
 
   if (core_id == 0) {
     // Check the result
-    int errors = 0;
+    errors = 0;
     for (int i = 0; i < res.nnz; i++) {
         if (my_fabs(res.values[i] - C.values[i]) > ERROR) {
             errors++;
