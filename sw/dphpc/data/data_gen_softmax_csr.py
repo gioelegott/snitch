@@ -54,12 +54,20 @@ def main():
         action='store_true',
         help='Set verbose'
     )
+    parser.add_argument(
+        "-d",
+        "--dimension",
+        type=int,
+        required=False,
+        default=5,
+        help='Matrix dimension'
+    )
 
     args = parser.parse_args()
 
     # Create sparse matrix
-    n = 5
-    m = 5
+    n = args.dimension
+    m = args.dimension
     density = 0.1
     A = sp.random(m, n, density, format='csr')
 
