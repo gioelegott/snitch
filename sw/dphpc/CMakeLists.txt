@@ -55,11 +55,12 @@ enable_testing()
 include_directories(include data)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
-add_library(kernels src/kernel/matmul_csr.c)
+add_library(kernels src/kernel/matmul_csr.c src/kernel/conv2d_csr.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME})
 
 add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
+add_snitch_dphpc_executable(conv2d_csr src/main_conv2d_csr.c data/data_conv2d_csr.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
 
