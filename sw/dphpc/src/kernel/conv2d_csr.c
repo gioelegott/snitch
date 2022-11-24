@@ -7,7 +7,7 @@
 #include "conv2d_csr.h"
 #include "printf.h"
 
-void conv2d_csr(struct csr_matrix *A, struct csr_matrix *filter, csr_matrix *res, int channel_in) {
+void conv2d_csr(struct csr_matrix *A, struct csr_matrix *filter, struct csr_matrix *res, int channel_in) {
 
   res->rows = A[0].rows - filter[0].rows + 1;
   res->cols = A[0].cols - filter[0].cols + 1;
