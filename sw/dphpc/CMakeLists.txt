@@ -23,14 +23,8 @@ macro(add_snitch_dphpc_executable name)
     add_executable(${ARGV})
     target_link_libraries(${name} ${SNITCH_RUNTIME})
     target_link_options(${name} PRIVATE "SHELL:-T ${LINKER_SCRIPT}")
-    string(REGEX MATCHALL "_[a-z]+" FORMATS ${name})
-    list(GET FORMATS 0 FORMAT_A)
-    list(GET FORMATS 1 FORMAT_B)
-    string(REGEX MATCH "[a-z]+" FORMAT_A_STRIPPED ${FORMAT_A})
-    string(REGEX MATCH "[a-z]+" FORMAT_B_STRIPPED ${FORMAT_B})
-    string(REGEX MATCH "^[^_]+" NAME_STRIPPED ${name})
     add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${NAME_STRIPPED}.h
+        OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${name}.h
         COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data.h.tpl
         DEPENDS data/data_gen.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
@@ -68,7 +62,7 @@ add_library(utils src/utils/utils.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 
-add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
+# add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
 add_snitch_dphpc_executable(conv2d_csr src/main_conv2d_csr.c data/data_conv2d_csr.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
