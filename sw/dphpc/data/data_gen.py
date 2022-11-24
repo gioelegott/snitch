@@ -33,7 +33,7 @@ def conv2d(ifmap, weights, padding=1, stride=1):
     ci, ih, iw = ifmap.shape
     co, _,fh, fw = weights.shape
 
-    conv2d = nn.Conv2d(ci, co, (fh, fw), padding=((fh-1)//2, (fw-1)//2))
+    conv2d = nn.Conv2d(ci, co, (fh, fw), padding=0)
     conv2d.weight = nn.Parameter(weights, requires_grad=False)
     conv2d.bias = nn.Parameter(torch.zeros_like(conv2d.bias, dtype=weights.dtype), requires_grad=False)
     ofmap = conv2d(ifmap)
@@ -73,40 +73,49 @@ def main():
     ###############################
     ######## Matrices Gen #########
     ###############################
-    channel_size = 2
+    channel_size = 8
     
     A = []
     for i in range(channel_size):
-        A.append(gen_rand_csr_matrix(m=4, n=4, density=0.4))
+        A.append(gen_rand_csr_matrix(m=16, n=16, density=0.4))
 
     FILTER = []
-    for j in range(channel_size):
-        FILTER.append(gen_rand_csr_matrix(m=2, n=2, density=0.4))
+    for i in range(channel_size):
+        FIL = []
+        for j in range(channel_size):
+            FIL.append(gen_rand_csr_matrix(m=4, n=4, density=0.4))
+        FILTER.append(FIL)
 
     ###############################
     ######## Golden Model #########
     ###############################
     A_torch = {}
-    A_TEN = []
+    A_TENSOR = []
     for i in range(channel_size):
         A_torch[i] = torch.from_numpy(A[i].todense())
-        A_TEN.append(A_torch[i])
-    A_TEN = torch.stack(A_TEN, 0)
+        A_TENSOR.append(A_torch[i])
+    A_TENSOR = torch.stack(A_TENSOR, 0)
 
-    F_torch = {}
-    F_TEN = []
-    for j in range(channel_size):
-        F_torch[j] = torch.from_numpy(FILTER[j].todense())
-        F_TEN.append(F_torch[j])
-    F_TEN = torch.stack(F_TEN, 0).unsqueeze(0)
+    F_TENSOR = []
+    for i in range(channel_size):
+        F_torch = {}
+        F_TEN = []
+        for j in range(channel_size):
+            F_torch[j] = torch.from_numpy(FILTER[i][j].todense())
+            F_TEN.append(F_torch[j])
+        F_TENSOR.append(torch.stack(F_TEN, 0)) 
+    F_TENSOR = torch.stack(F_TENSOR,0)
 
-    RES0_TEN = conv2d(ifmap=A_TEN, weights=F_TEN, padding=0, stride=1).squeeze(0)
-    RES0 = sp.csr_matrix(RES0_TEN.detach().numpy())
+    RES_TENSOR = conv2d(ifmap=A_TENSOR, weights=F_TENSOR, padding=0, stride=1)
+    RES_TENSOR = RES_TENSOR.detach()
+    RES = []
+    for i in range(channel_size):
+        RES.append(sp.csr_matrix(RES_TENSOR[i].numpy()))
 
     ###############################
     ######## Output  File #########
     ###############################
-    kwargs = {'name': 'conv2d_csr', 'A' : A, 'FILTER': FILTER, 'RES0' : RES0, 'channel_size' : channel_size}
+    kwargs = {'name': 'conv2d_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 

@@ -44,23 +44,29 @@ void assign_A(){
 ///////////////////////////     FILTER      ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-csr_matrix FILTER[${channel_size}];
+csr_matrix FILTER[${channel_size}][${channel_size}];
 
-% for i, m in enumerate(FILTER):
-// Data arrays for input matrix FILTER[${i}]
+% for i, j in enumerate(FILTER):
+% for k, m in enumerate(j):
+
+// Data arrays for input matrix FILTER[${i}][${k}]
 /*
 ${m.todense()}
 */
-double FILTER${i}_data[${m.nnz}] = ${array_to_cstr(m.data)};
-int FILTER${i}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
-int FILTER${i}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
+double FILTER${i}_${k}_data[${m.nnz}] = ${array_to_cstr(m.data)};
+int FILTER${i}_${k}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
+int FILTER${i}_${k}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
+
+% endfor
 % endfor \
 
-// Array struct for matrix FILTER[${i}]
+// Array struct for matrix FILTER[${i}][${k}]
 void assign_FILTER(){
   if (snrt_cluster_core_idx() == 0){
-% for i, m in enumerate(FILTER):
-    FILTER[${i}] = (csr_matrix){FILTER${i}_data, FILTER${i}_indices, FILTER${i}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
+% for i, j in enumerate(FILTER):
+% for k, m in enumerate(j):
+     FILTER[${i}][${k}] = (csr_matrix){FILTER${i}_${k}_data, FILTER${i}_${k}_indices, FILTER${i}_${k}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
+% endfor
 % endfor \
 
   }
@@ -70,23 +76,23 @@ void assign_FILTER(){
 //////////////////////////     RESULTS      ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-csr_matrix RES;
-% for m, m_str, m_name in zip([RES0], ['RES0'], ['RES[0]']):
-// Data arrays for results ${m_str}
+csr_matrix RES[${channel_size}];
+
+% for i, m in enumerate(RES):
+// Data arrays for input matrix RES[${i}]
 /*
 ${m.todense()}
 */
-double ${m_str}_data[${m.nnz}] = ${array_to_cstr(m.data)};
-int ${m_str}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
-int ${m_str}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
-
+double RES${i}_data[${m.nnz}] = ${array_to_cstr(m.data)};
+int RES${i}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
+int RES${i}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
 % endfor \
 
-// Array struct for matrix ${m_str}
+// Array struct for matrix RES[${i}]
 void assign_RES(){
   if (snrt_cluster_core_idx() == 0){
-% for m, m_str, m_name in zip([RES0], ['RES0'], ['RES[0]']):
-    RES = (csr_matrix){${m_str}_data, ${m_str}_indices, ${m_str}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
+% for i, m in enumerate(RES):
+    RES[${i}] = (csr_matrix){RES${i}_data, RES${i}_indices, RES${i}_indptr, ${m.nnz}, ${m.shape[0]}, ${m.shape[1]}};
 % endfor \
 
   }
