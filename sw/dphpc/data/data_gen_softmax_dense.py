@@ -45,7 +45,7 @@ def main():
         "--tpl",
         type=pathlib.Path,
         required=False,
-        default=pathlib.Path.cwd() / "data/data_softmax.h.tpl",
+        default=pathlib.Path.cwd() / "data/data_softmax_dense.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -63,6 +63,15 @@ def main():
         help='Matrix dimension'
     )
 
+    parser.add_argument(
+        "-a",
+        "--axis",
+        type=int,
+        required=False,
+        default=0,
+        help='Softmax axis'
+    )
+
     args = parser.parse_args()
 
     # Create sparse matrix
@@ -74,12 +83,12 @@ def main():
     #Compute result
     A_dense = A.todense()
     A_dense = tf.convert_to_tensor(A_dense)
-    C_dense = tf.keras.activations.softmax(A_dense, axis=0)
+    C_dense = tf.keras.activations.softmax(A_dense, axis=args.axis)
     #Convert result to sparse format
     C_dense = C_dense.numpy()
-    C = sp.csr_matrix(C_dense)
+    A_dense = A_dense.numpy()
 
-    kwargs = {'name': 'softmax_csr', 'A': A, 'C': C}
+    kwargs = {'name': 'softmax_dense', 'A': A_dense.reshape(-1), 'C': C_dense.reshape(-1), 'dim' : n}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 

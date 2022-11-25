@@ -1,10 +1,12 @@
 #!/bin/bash
 # Benchmark shell script
 
+axis=0
+
 HW_DIR=$(dirname $(realpath “${BASH_SOURCE:-$0}”))
 SW_DIR="$HW_DIR/../../../sw/dphpc"
 RT_DIR="$HW_DIR/../../.."
-RESULTS_DIR="$RT_DIR/results_softmax_mc_axis1"
+RESULTS_DIR="$RT_DIR/results_softmaxdense_sc_axis0"
 echo $HW_DIR
 echo $SW_DIR
 echo $RT_DIR
@@ -16,10 +18,10 @@ mkdir "$RESULTS_DIR/dim_$dim"
     do
         echo "Iteration $i"
         cd "$SW_DIR/data"
-        python3 data_gen_softmax_csr.py --dimension $dim --axis 1
+        python3 data_gen_softmax_dense.py --dimension $dim --axis $axis
         cd $HW_DIR
-        make softmax_csr -C sw/build/dphpc
-        ./bin/snitch_cluster.vlt ./sw/build/dphpc/softmax_csr
+        make softmax_dense -C sw/build/dphpc
+        ./bin/snitch_cluster.vlt ./sw/build/dphpc/softmax_dense
         make traces
         mv "$HW_DIR/logs" "$RESULTS_DIR/dim_$dim/logs$i"
         cd $SW_DIR

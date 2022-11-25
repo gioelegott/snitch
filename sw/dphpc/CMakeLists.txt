@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.13)
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
     set(CMAKE_TOOLCHAIN_FILE toolchain-llvm CACHE STRING "Toolchain to use")
+    set(SNITCH_SIMULATOR ${CMAKE_CURRENT_SOURCE_DIR}/../../hw/system/snitch_cluster/bin/snitch_cluster.vlt CACHE PATH "")
 
     project(DPHPC LANGUAGES C ASM)
     include(SnitchUtilities)
@@ -41,7 +42,7 @@ macro(add_snitch_dphpc_executable name)
             DEPENDS $<TARGET_FILE:${name}>)
     endif()
     # Run target for RTL simulator
-    if (SNITCH_SIMULATOR AND SNITCH_RUNTIME STREQUAL "snRuntime-cluster")
+    if (SNITCH_RUNTIME STREQUAL "snRuntime-cluster")
         add_custom_target( run-rtl-${name}
             COMMAND ${SNITCH_SIMULATOR} $<TARGET_FILE:${name}>
             COMMAND for f in logs/trace_hart_*.dasm\; do ${SPIKE_DASM} < $$f | ${PYTHON} ${SNRUNTIME_SRC_DIR}/../../util/gen_trace.py > $$\(echo $$f | sed 's/\\.dasm/\\.txt/'\)\; done
@@ -56,7 +57,7 @@ enable_testing()
 include_directories(include data src/utils src/kernels)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
-add_library(kernels src/kernel/matmul_csr.c src/kernel/softmax_csr.c)
+add_library(kernels src/kernel/matmul_csr.c src/kernel/softmax_csr.c src/kernel/softmax_dense.c)
 add_library(utils src/utils/utils.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
@@ -64,6 +65,7 @@ target_link_libraries(utils ${SNITCH_RUNTIME})
 
 add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
 add_snitch_dphpc_executable(softmax_csr src/main_softmax_csr.c data/data_softmax_csr.h)
+add_snitch_dphpc_executable(softmax_dense src/main_softmax_dense.c data/data_softmax_dense.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
 
