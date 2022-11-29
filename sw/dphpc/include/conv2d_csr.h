@@ -8,4 +8,4 @@
 
 #include "matrix_types.h"
 
-void conv2d_csr(csr_matrix *A, csr_matrix *filter, csr_matrix *res, int channel_in);
+void conv2d_csr(csr_matrix **A, csr_matrix **filter, csr_matrix *res, int channel_in);

@@ -7,10 +7,10 @@
 #include "conv2d_csr.h"
 #include "printf.h"
 
-void conv2d_csr(struct csr_matrix *A, struct csr_matrix *filter, struct csr_matrix *res, int channel_in) {
+void conv2d_csr(struct csr_matrix **A, struct csr_matrix **filter, struct csr_matrix *res, int channel_in) {
 
-  res->rows = A[0].rows - filter[0].rows + 1;
-  res->cols = A[0].cols - filter[0].cols + 1;
+  res->rows = A[0]->rows - filter[0]->rows + 1;
+  res->cols = A[0]->cols - filter[0]->cols + 1;
 
   for (int i = 0; i < res->rows; i++) {
     for (int j = 0; j < res->cols; j++) {
@@ -18,11 +18,11 @@ void conv2d_csr(struct csr_matrix *A, struct csr_matrix *filter, struct csr_matr
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
         // CSR Version Inner Loop:
-        for (int kx = 0; kx < filter[ci].rows; kx ++) {
-          for (int kx_f = filter[ci].row_ptr[kx]; kx_f < filter[ci].row_ptr[kx + 1]; kx_f++) {
-            for (int kx_a = A[ci].row_ptr[kx + i]; kx_a < A[ci].row_ptr[kx + i + 1]; kx_a++)  {
-              if (filter[ci].col_idx[kx_f] + j == A[ci].col_idx[kx_a]) {
-                sum += A[ci].values[kx_a] * filter[ci].values[kx_f];
+        for (int kx = 0; kx < filter[ci]->rows; kx ++) {
+          for (int kx_f = filter[ci]->row_ptr[kx]; kx_f < filter[ci]->row_ptr[kx + 1]; kx_f++) {
+            for (int kx_a = A[ci]->row_ptr[kx + i]; kx_a < A[ci]->row_ptr[kx + i + 1]; kx_a++)  {
+              if (filter[ci]->col_idx[kx_f] + j == A[ci]->col_idx[kx_a]) {
+                sum += A[ci]->values[kx_a] * filter[ci]->values[kx_f];
                 break;
               }
             }

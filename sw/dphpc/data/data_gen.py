@@ -73,17 +73,17 @@ def main():
     ###############################
     ######## Matrices Gen #########
     ###############################
-    channel_size = 8
+    channel_size = 2
     
     A = []
     for i in range(channel_size):
-        A.append(gen_rand_csr_matrix(m=16, n=16, density=0.4))
+        A.append(gen_rand_csr_matrix(m=8, n=8, density=0.4))
 
     FILTER = []
     for i in range(channel_size):
         FIL = []
         for j in range(channel_size):
-            FIL.append(gen_rand_csr_matrix(m=4, n=4, density=0.4))
+            FIL.append(gen_rand_csr_matrix(m=3, n=3, density=0.4))
         FILTER.append(FIL)
 
     ###############################
