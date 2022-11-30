@@ -37,7 +37,6 @@ int main() {
     matrix_A = snrt_l1alloc(2 * N * N * sizeof(int));
     for(int i = 0; i < N * N; i++) {
         matrix_A[i] = A[i];
-        matrix_A[i] = A[i];
     }
     printf("A[0] = %f\n", A[0]);
 
@@ -68,7 +67,6 @@ int main() {
         // Allocate space for the input matrix
         matrix_A = snrt_l1alloc(2 * N * N * sizeof(int));
         for(int i = 0; i < N * N; i++) {
-            matrix_A[i] = A[i];
             matrix_A[i] = A[i];
         }
         printf("A[0] = %f\n", A[0]);

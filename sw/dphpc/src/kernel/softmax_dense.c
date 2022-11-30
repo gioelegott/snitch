@@ -132,6 +132,7 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
                 double a0 = A[i * Ncol + j];
                 a0 = logit * my_exp(a0);
                 res[i * Ncol + j] = a0;
+                j++;
             }
         }
 
@@ -179,6 +180,7 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
                 double a0 = A[i * Ncol + j];
                 a0 = logit * my_exp(a0);
                 res[i * Ncol + j] = a0;
+                j++;
             }
         }
 
@@ -234,6 +236,7 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
                 double a0 = A[i * Ncol + j];
                 a0 = logit * my_exp(a0);
                 res[i * Ncol + j] = a0;
+                j++;
             }
         }
 
@@ -281,6 +284,7 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
                 double a0 = A[i * Ncol + j];
                 a0 = logit * my_exp(a0);
                 res[i * Ncol + j] = a0;
+                j++;
             }
         }
 
