@@ -45,7 +45,7 @@ def main():
         "--tpl",
         type=pathlib.Path,
         required=False,
-        default=pathlib.Path.cwd() / "data/data_softmax_dense.h.tpl",
+        default=pathlib.Path.cwd() / "data_softmax_dense.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(

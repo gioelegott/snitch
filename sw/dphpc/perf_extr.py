@@ -127,11 +127,11 @@ def main():
                     df_max.to_frame().T,
                     df_total.to_frame().T])
     # rename last two rows
-    df.iloc[-2, 0] = "mean"
-    df.iloc[-1, 0] = "std"
+    df.iloc[-5, 0] = "mean"
+    df.iloc[-4, 0] = "std"
     df.iloc[-3, 0] = "min"
-    df.iloc[-4, 0] = "max"
-    df.iloc[-5, 0] = "total"
+    df.iloc[-2, 0] = "max"
+    df.iloc[-1, 0] = "total"
     # pretty print dataframe without index
     print(df)
 
