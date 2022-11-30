@@ -24,7 +24,6 @@
 // 'CHANNELS' >= NUM_COMP_CORES': 
 //  -> kernel will do full cluster parallel computation;
 #define NUM_COMP_CORES 8
-#define CHANNELS 8
 
 // Declare output matrix
 csr_matrix *matrix_A[CHANNELS], *matrix_FILTER[CHANNELS][CHANNELS], *matrix_res[CHANNELS];  
