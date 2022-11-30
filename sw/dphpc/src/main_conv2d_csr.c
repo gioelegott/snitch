@@ -17,8 +17,15 @@
 ///////////////////////////////////////////////////////////////////////
 //////////////////////////     CONFIG       ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
-#define NUM_COMP_CORES 1
-#define CHANNELS 2
+// 'NUM_COMP_CORES' = 1: 
+//  -> kernel will do serial computation;
+// 'CHANNELS' < NUM_COMP_CORES': 
+//  -> kernel will do partial parallel computation;
+// 'CHANNELS' >= NUM_COMP_CORES': 
+//  -> kernel will do full cluster parallel computation;
+#define NUM_COMP_CORES 8
+#define CHANNELS 8
+
 // Declare output matrix
 csr_matrix *matrix_A[CHANNELS], *matrix_FILTER[CHANNELS][CHANNELS], *matrix_res[CHANNELS];  
 
@@ -26,7 +33,8 @@ csr_matrix *matrix_A[CHANNELS], *matrix_FILTER[CHANNELS][CHANNELS], *matrix_res[
 //////////////////////////      MAIN        ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
 int main() {
-  
+  const int compute_id = snrt_cluster_compute_core_idx();
+
   // ``````````````````````````//
   //####### Matrix Init #######//
   // ......................... //
@@ -34,6 +42,7 @@ int main() {
   assign_FILTER();
   assign_RES();
   snrt_cluster_hw_barrier();
+  
   // ``````````````````````````//
   //####### Matrix Alloc ######//
   // ......................... //
@@ -76,9 +85,11 @@ int main() {
         snrt_dma_start_1d((void *)matrix_FILTER[k][j]->row_ptr, (void *)FILTER[k][j].row_ptr, (FILTER[k][j].rows+1) * sizeof(int));
       }
     }
+    
     // Wait for DMA to finish
     snrt_dma_wait_all();
   }
+  
   // Wait for all cores to finish DMA
   snrt_cluster_hw_barrier();
 
@@ -87,32 +98,53 @@ int main() {
   // ......................... //
   int errors = 0;
   
-  if (snrt_cluster_core_idx() == 0) {
-    // Calculation
-    printf("Start Kernel Calculation \n");
-    benchmark_get_cycle();
-    for (int i = 0; i < CHANNELS; i++) { 
-      conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS);
+  // Serial
+  #if (NUM_COMP_CORES == 1)
+    if (compute_id == 0) {  
+      printf("Start Single Core Kernel Calculation \n");
+      benchmark_get_cycle();
+      for (int i = 0; i < CHANNELS; i++) { 
+        conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS);
+      }
+      benchmark_get_cycle();
     }
-    benchmark_get_cycle();
-    printf("Finish Kernel Calculation\n");
-
-    // Check the result
+  
+  // Parallel
+  #else
+    int num_paral_cores = NUM_COMP_CORES;
+    int chnl_core = CHANNELS / NUM_COMP_CORES;    
+    if (CHANNELS < NUM_COMP_CORES) {
+      num_paral_cores = CHANNELS;
+      chnl_core = 1;
+    }
+    if (compute_id < num_paral_cores) {
+      benchmark_get_cycle();
+      for (int i= compute_id * chnl_core; i < (compute_id + 1) * chnl_core; i++) {
+        conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS);
+      }
+      benchmark_get_cycle();
+    }
+  #endif
+  
+  // Wait for all cores to finish
+  snrt_cluster_hw_barrier();
+  
+  // Verification
+  if (compute_id == 0) {
+    printf("Start Results Verification\n");
     for (int i = 0; i < CHANNELS; i++) {
-      //printf("matrix_res[%d] has %d non-zero values, RES[%d] has %d non-zero values \n", i, matrix_res[i]->nnz, i, RES[i].nnz);
       for (int j = 0; j < matrix_res[i]->nnz; j++) {
         if (fabs(matrix_res[i]->values[j] - RES[i].values[j]) > 0.001) {
           errors++;
         }
       }
       if (errors != 0) {
-        printf("Errors: %d/%d!\n", errors, matrix_res[i]->nnz);
+        printf("Errors: %d/%d!\n", errors, matrix_res[i]->nnz * CHANNELS);
       }
     }
     if (errors == 0) {
       printf("Congratulation! The Results are Correct!\n");
     }
-  
   }
   
   // Wait for all cores to finish
