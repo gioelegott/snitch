@@ -103,13 +103,13 @@ def main():
     
     A = []
     for i in range(channel_size):
-        A.append(gen_rand_csr_matrix(m=matrix_size, n=matrix_size, density=0.4))
+        A.append(gen_rand_csr_matrix(m=matrix_size, n=matrix_size, density=0.1))
 
     FILTER = []
     for i in range(channel_size):
         FIL = []
         for j in range(channel_size):
-            FIL.append(gen_rand_csr_matrix(m=filter_size, n=filter_size, density=0.4))
+            FIL.append(gen_rand_csr_matrix(m=filter_size, n=filter_size, density=0.1))
         FILTER.append(FIL)
 
     ###############################
