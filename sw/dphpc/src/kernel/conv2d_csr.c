@@ -39,33 +39,29 @@ void conv2d_csr(struct csr_matrix **A, struct csr_matrix **filter, struct csr_ma
   }
 }
 
-/* Backup for first version of dense CONV2D Kernel */
-/*
-void conv2d_csr(csr_matrix *A, csr_matrix *filter, csr_matrix *res) {
+void conv2d_dense(struct dense_matrix **A, struct dense_matrix **filter, struct csr_matrix *res, int channel_in) {
 
-  res->rows = A.rows - filter.rows + 1;
-  res->cols = A.cols - filter.cols + 1;
+  res->rows = A[0]->rows - filter[0]->rows + 1;
+  res->cols = A[0]->cols - filter[0]->cols + 1;
 
-  for (int co = 0; co < filter.chnlout) {
-    for (int i = 0; i < res->rows; i++) {
-      for (int j = 0; j < res->cols; j++) {
-        double sum = 0;
-        // "Channel IN" Loop
-        for (int ci=0; ci < filter.chnlin; ci++){
-          for (int kx = 0; kx < filter.rows; kx ++) {
-            for (int ky = 0; ky < filter.cols; ky ++) {
-              sum += A.values[ci][(i * A.cols)+ j + (kx * A.cols) + ky] * filter.values[co][ci][kx * B.cols + ky];
-            }
+  for (int i = 0; i < res->rows; i++) {
+    for (int j = 0; j < res->cols; j++) {
+      double sum = 0;
+      // "Channel IN" Loop
+      for (int ci=0; ci < channel_in; ci++){
+        for (int kx = 0; kx < filter[ci]->rows; kx ++) {
+          for (int ky = 0; ky < filter[ci]->cols; ky ++) {
+            sum += A[ci]->values[(i * A[ci]->cols)+ j + (kx * A[ci]->cols) + ky] * filter[ci]->values[kx * filter[ci]->cols + ky];
           }
         }
-        if (sum != 0.0) {
-          res->values[co][res->nnz[co]] = sum;
-          res->col_idx[co][res->nnz[co]] = j;
-          res->nnz[co]++;
-        }
       }
-      res->row_ptr[co][i + 1] = res->nnz[co];
+      if (sum != 0.0) {
+        res->values[res->nnz] = sum;
+        res->col_idx[res->nnz] = j;
+        res->nnz++;
+      }
     }
+    res->row_ptr[i + 1] = res->nnz;
   }
 }
-*/
+

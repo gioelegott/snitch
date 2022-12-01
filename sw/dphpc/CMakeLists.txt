@@ -30,6 +30,12 @@ macro(add_snitch_dphpc_executable name)
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     )
     add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_dense_${name}.h
+        COMMAND ./data/data_dense_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data_dense.h.tpl
+        DEPENDS data/data_dense_gen.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    )
+    add_custom_command(
         TARGET ${name}
         POST_BUILD
         COMMAND ${CMAKE_OBJDUMP} -dhS $<TARGET_FILE:${name}> > $<TARGET_FILE:${name}>.s)
@@ -64,5 +70,6 @@ target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 
 # add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
 add_snitch_dphpc_executable(conv2d_csr src/main_conv2d_csr.c data/data_conv2d_csr.h)
+add_snitch_dphpc_executable(conv2d_dense src/main_conv2d_dense.c data/data_dense_conv2d_dense.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
