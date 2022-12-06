@@ -59,7 +59,7 @@ def main():
         type=int,
         required=False,
         default=4,
-        help='Input & Output channel size'
+        help='Input matrix size'
     )
     parser.add_argument(
         "-f",
@@ -67,7 +67,15 @@ def main():
         type=int,
         required=False,
         default=3,
-        help='Input & Output channel size'
+        help='Filter matrix size'
+    )
+    parser.add_argument(
+        "-d",
+        "--density",
+        type=float,
+        required=False,
+        default=0.1,
+        help='Input matrix density'
     )
     parser.add_argument(
         "-o",
@@ -100,16 +108,17 @@ def main():
     channel_size = args.channel_size
     matrix_size = args.matrix_size
     filter_size = args.filter_size
+    density = args.density
     
     A = []
     for i in range(channel_size):
-        A.append(gen_rand_csr_matrix(m=matrix_size, n=matrix_size, density=0.1))
+        A.append(gen_rand_csr_matrix(m=matrix_size, n=matrix_size, density=density))
 
     FILTER = []
     for i in range(channel_size):
         FIL = []
         for j in range(channel_size):
-            FIL.append(gen_rand_csr_matrix(m=filter_size, n=filter_size, density=0.1))
+            FIL.append(gen_rand_csr_matrix(m=filter_size, n=filter_size, density=density))
         FILTER.append(FIL)
 
     ###############################
