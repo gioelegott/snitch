@@ -11,10 +11,10 @@ echo $HW_DIR
 echo $SW_DIR
 echo $RT_DIR
 
-for dim in 5 10 20 30 40 50
+for dim in 10 20 30 40 50 60
 do
 mkdir "$RESULTS_DIR/dim_$dim"
-    for i in 1 2 3 4 5 6 7 8 9 10
+    for i in {1..50}
     do
         echo "Iteration $i"
         cd "$SW_DIR/data"
@@ -27,5 +27,6 @@ mkdir "$RESULTS_DIR/dim_$dim"
         cd $SW_DIR
         echo "$RESULTS_DIR/dim_$dim/logs$i/results.csv"
         ./perf_extr.py --nproc 8 --section 1 --input "$RESULTS_DIR/dim_$dim/logs$i" --output "$RESULTS_DIR/dim_$dim/logs$i/results.csv"
+        cd $HW_DIR
     done
 done

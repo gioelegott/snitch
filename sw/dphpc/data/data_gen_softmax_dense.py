@@ -77,15 +77,19 @@ def main():
     # Create sparse matrix
     n = args.dimension
     m = args.dimension
+    ax = args.axis
     density = 0.1
     A = sp.random(m, n, density, format='csr')
 
     #Compute result
     A_dense = A.todense()
+    A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
+    print(A_dense)
     A_dense = tf.convert_to_tensor(A_dense)
     C_dense = tf.keras.activations.softmax(A_dense, axis=args.axis)
     #Convert result to sparse format
     C_dense = C_dense.numpy()
+    print(C_dense)
     A_dense = A_dense.numpy()
 
     kwargs = {'name': 'softmax_dense', 'A': A_dense.reshape(-1), 'C': C_dense.reshape(-1), 'dim' : n}

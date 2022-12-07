@@ -20,7 +20,7 @@ double volatile *matrix_res;
 double volatile *matrix_A;
 
 int volatile errors;
-double volatile ERROR = 1e-3;
+double volatile ERROR = 1e-2;
 
 int main() {
 

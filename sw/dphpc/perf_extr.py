@@ -8,6 +8,7 @@
 import pandas as pd
 import argparse
 import pathlib
+from scipy import stats
 
 
 def extract_perf_data(log_file: str, proc_id: int) -> list:
@@ -114,6 +115,7 @@ def main():
 
     # compute metrics
     df_mean = df.mean(numeric_only=True)
+    df_hmean = pd.Series(stats.hmean(df.iloc[:,1:],axis=0), index=df_mean.index)
     df_std = df.std(numeric_only=True)
     df_min = df.min()
     df_max = df.max()
@@ -122,12 +124,14 @@ def main():
     # concat as a new row
     df = pd.concat([df,
                     df_mean.to_frame().T,
+                    df_hmean.to_frame().T,
                     df_std.to_frame().T,
                     df_min.to_frame().T,
                     df_max.to_frame().T,
                     df_total.to_frame().T])
     # rename last two rows
-    df.iloc[-5, 0] = "mean"
+    df.iloc[-6, 0] = "mean"
+    df.iloc[-5, 0] = "hmean"
     df.iloc[-4, 0] = "std"
     df.iloc[-3, 0] = "min"
     df.iloc[-2, 0] = "max"

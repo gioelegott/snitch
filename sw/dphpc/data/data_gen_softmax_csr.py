@@ -62,21 +62,32 @@ def main():
         default=5,
         help='Matrix dimension'
     )
+    parser.add_argument(
+        "-ax",
+        "--axis",
+        type=int,
+        required=False,
+        default=0,
+        help='Matrix dimension'
+    )
 
     args = parser.parse_args()
 
     # Create sparse matrix
     n = args.dimension
     m = args.dimension
+    ax = args.axis
     density = 0.1
     A = sp.random(m, n, density, format='csr')
 
     #Compute result
     A_dense = A.todense()
+    A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
     A_dense = tf.convert_to_tensor(A_dense)
-    C_dense = tf.keras.activations.softmax(A_dense, axis=0)
+    C_dense = tf.keras.activations.softmax(A_dense, axis=ax)
     #Convert result to sparse format
     C_dense = C_dense.numpy()
+    print(C_dense)
     C = sp.csr_matrix(C_dense)
 
     kwargs = {'name': 'softmax_csr', 'A': A, 'C': C}

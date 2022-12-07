@@ -11,8 +11,8 @@
 #include "data_softmax_csr.h"
 #include "softmax_csr.h"
 
-#define PARALLEL
-#define AXIS (1)
+#define SINGLE
+#define AXIS (0)
 #define NUM_COMP_CORES 8
 
 csr_matrix volatile matrix_res;
@@ -57,14 +57,14 @@ int main() {
     printf("A.values[0] = %f\n", A.values[0]);
 
     // Run the softmax
-    softmax_csr_single(AXIS, matrix_A, matrix_res.values);
+    softmax_csr_single(AXIS, &matrix_A, matrix_res.values);
     size_t time_init = benchmark_get_cycle();
-    softmax_csr_single(AXIS, matrix_A, matrix_res.values);
+    softmax_csr_single(AXIS, &matrix_A, matrix_res.values);
     size_t time_end = benchmark_get_cycle();
 
     // Check the result
     for (int i = 0; i < matrix_res.nnz; i++) {
-        // printf("matrix_res->values[%d] = %f\n", i, matrix_res->values[i]);
+        //printf("matrix_res->values[%d] = %f\n", i, matrix_res.values[i]);
         if (my_fabs(matrix_res.values[i] - C.values[i]) > ERROR) {
             errors++;
         }

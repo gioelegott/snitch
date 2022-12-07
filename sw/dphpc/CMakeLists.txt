@@ -72,3 +72,5 @@ set(SNITCH_TEST_PREFIX snDPHPC-)
 add_snitch_raw_test_args(matmul_csr matmul_csr --configuration ${CMAKE_CURRENT_LIST_DIR}/../banshee/config/snitch_cluster.yaml)
 
 add_snitch_raw_test_args(softmax_csr softmax_csr --configuration ${CMAKE_CURRENT_LIST_DIR}/../banshee/config/snitch_cluster.yaml)
+
+add_snitch_raw_test_args(softmax_dense softmax_dense --configuration ${CMAKE_CURRENT_LIST_DIR}/../banshee/config/snitch_cluster.yaml)
