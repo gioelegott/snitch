@@ -29,3 +29,22 @@ void dma_memset(void *ptr, uint8_t value, uint32_t len) {
         snrt_dma_start_2d(ptr, ptr, 64, 64, 0, len / 64);
     snrt_dma_wait_all();
 }
+
+void dense_to_csr(dense_matrix *A, csr_matrix *res) {
+
+    res->nnz = 0;
+    res->rows = A->rows;
+    res->cols = A->cols;
+
+    for (uint32_t i = 0; i < A->rows; i++) {
+        res->row_ptr[i] = res->nnz;
+        for (uint32_t j = 0; j < A->cols; j++) {
+            if (A->values[i * A->cols + j] != 0) {
+                res->col_idx[res->nnz] = j;
+                res->values[res->nnz] = A->values[i * A->cols + j];
+                res->nnz++;
+            }
+        }
+    }
+    res->row_ptr[A->rows] = res->nnz;
+}

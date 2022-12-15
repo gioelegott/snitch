@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "snrt.h"
+#include "matrix_types.h"
 
 /**
  * @brief returns cycle number and injects marker
@@ -20,3 +21,11 @@ uint32_t benchmark_get_cycle();
  * @param len number of bytes, must be multiple of DMA bus-width
  */
 void dma_memset(void* ptr, uint8_t value, uint32_t len);
+
+/**
+ * @brief converts a dense matrix to a CSR matrix
+ *
+ * @param A dense matrix
+ * @param res CSR matrix
+ */
+void dense_to_csr(dense_matrix *A, csr_matrix *res);
