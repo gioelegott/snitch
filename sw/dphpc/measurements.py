@@ -202,8 +202,8 @@ def main():
         "--num_runs",
         type=int,
         required=False,
-        default=10,
-        help='Number of runs'
+        default=50,
+        help='Number of maximum runs, it will stop when confidence interval is small enough'
     )
 
     args = parser.parse_args()
