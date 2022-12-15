@@ -70,6 +70,20 @@ def main():
         default=0.1,
         help='Density of matrices'
     )
+    parser.add_argument(
+        "-n",
+        "--nproc",
+        type=int,
+        required=False,
+        default=8,
+        help='Number of processing cores'
+    )
+    parser.add_argument(
+        "-m",
+        "--measurement",
+        action='store_true',
+        help='Skip correctness check'
+    )
 
     args = parser.parse_args()
 
@@ -78,7 +92,7 @@ def main():
     C = A * B
     C.sort_indices()
 
-    kwargs = {'name': 'matmul', 'A': A, 'B': B, 'C': C}
+    kwargs = {'name': 'matmul', 'A': A, 'B': B, 'C': C, 'nproc': args.nproc, 'measurement': args.measurement}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 

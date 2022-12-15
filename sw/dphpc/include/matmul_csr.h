@@ -13,3 +13,5 @@ void matmul_csr_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res);
 void matmul_csr_dense(csr_matrix *A, dense_matrix *B, csr_matrix *res);
 
 void matmul_dense_dense(dense_matrix *A, dense_matrix *B, dense_matrix *res);
+
+void matmul_csr_dense_to_dense(csr_matrix *A, dense_matrix *B, dense_matrix *res);

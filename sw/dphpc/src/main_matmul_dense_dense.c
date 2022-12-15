@@ -11,8 +11,6 @@
 #include "snrt.h"
 #include "printf.h"
 
-#define NUM_COMP_CORES 1
-
 dense_matrix *matrix_A, *matrix_B, *matrix_res;
 
 int main() {
@@ -80,8 +78,9 @@ int main() {
   snrt_cluster_hw_barrier();
 
   // Check the result
+  int errors = 0;
+#ifndef MEASUREMENT
   if (compute_id == 0) {
-    int errors = 0;
     for (unsigned int i = 0; i < (int)sizeof(C_data_dense)/sizeof(double); i++) {
 
       if (fabs(matrix_res->values[i] - C_data_dense[i]) > 0.001) {
@@ -92,6 +91,7 @@ int main() {
     if (errors != 0) {
       printf("Errors: %d/%d!\n", errors, sizeof(C_data_dense)/sizeof(double));
     }
-    return 0;
   }
+#endif
+  return errors;
 }

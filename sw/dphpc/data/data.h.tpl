@@ -16,6 +16,10 @@
 
 #include "matrix_types.h"
 
+#define NUM_COMP_CORES ${nproc}
+% if measurement:
+#define MEASUREMENT
+% endif
 % for m, m_str in zip([A, B, C], ['A', 'B', 'C']):
 
 // Data arrays for matrix ${m_str}

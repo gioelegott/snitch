@@ -11,8 +11,6 @@
 #include "snrt.h"
 #include "printf.h"
 
-#define NUM_COMP_CORES 1
-
 csr_matrix *matrix_A, *matrix_res;
 dense_matrix *matrix_B;
 
@@ -64,6 +62,7 @@ int main() {
 
   // Check the result
   int errors = 0;
+#ifndef MEASUREMENT
   for (int i = 0; i < matrix_res->nnz; i++) {
 
     if (fabs(matrix_res->values[i] - C.values[i]) > 0.001) {
@@ -74,6 +73,6 @@ int main() {
   if (errors != 0) {
     printf("Errors: %d/%d!\n", errors, matrix_res->nnz);
   }
-
+#endif
   return errors;
 }
