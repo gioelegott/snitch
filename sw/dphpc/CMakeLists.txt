@@ -63,13 +63,14 @@ enable_testing()
 include_directories(include data src/utils)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
-add_library(kernels src/kernel/matmul_csr.c)
 add_library(utils src/utils/utils.c)
+add_library(kernels src/kernel/matmul_csr.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 
 add_snitch_dphpc_executable(matmul_csr_csr src/main_matmul_csr_csr.c data/data_matmul.h)
 add_snitch_dphpc_executable(matmul_csr_dense src/main_matmul_csr_dense.c data/data_matmul.h)
+add_snitch_dphpc_executable(matmul_csr_dense_to_dense src/main_matmul_csr_dense_to_dense.c data/data_matmul.h)
 add_snitch_dphpc_executable(matmul_dense_dense src/main_matmul_dense_dense.c data/data_matmul.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
