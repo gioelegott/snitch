@@ -39,7 +39,7 @@ def mean_confidence_interval(data, confidence):
     return m[0], se[0], h[0]
 
 
-def run_measurements(outdir: pathlib.Path, test_config: list):
+def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
 
     # Create outdir
     outdir.mkdir(parents=True, exist_ok=True)
@@ -48,38 +48,53 @@ def run_measurements(outdir: pathlib.Path, test_config: list):
         for n in cfg['nproc']:
             for s in cfg['size']:
                 results = []
-                for i in range(cfg['num_runs']):
+                if cfg['num_runs'] < nproc:
+                    nproc = cfg['num_runs']
+                for i in range(0, cfg['num_runs'], nproc):
                     # Run measurement
-                    logging.info(f"Running measurement {i+1}/{cfg['num_runs']} of {cfg['binary']} with {n} cores and size {s}")
-                    # Clean
-                    cmd = "cd build && cmake -DSNITCH_RUNTIME=snRuntime-cluster .. && make clean && cd .."
+                    logging.info(f"Running measurement {i+1}-{i+nproc}/{cfg['num_runs']} of {cfg['binary']} with {n} cores and size {s}")
+                    # Remove build folders
+                    cmd = "rm -rf build*"
                     print(cmd)
                     subprocess.run(cmd, shell=True, check=True)
-                    # Generate data
-                    cmd = f"./data/data_gen.py -s {s} -n {n} -m"
-                    print(cmd)
-                    subprocess.run(cmd, shell=True, check=True)
-                    # Build & Run
-                    cmd = f"cd build && make run-rtl-{cfg['binary']} && cd .."
-                    print(cmd)
-                    subprocess.run(cmd, shell=True, check=True)
+                    for p in range(nproc):
+                        # Create build folder for each core
+                        cmd = f"mkdir -p build_{p}"
+                        print(cmd)
+                        subprocess.run(cmd, shell=True, check=True)
+                        # Generate data
+                        cmd = f"./data/data_gen.py -s {s} -n {n} -m"
+                        print(cmd)
+                        subprocess.run(cmd, shell=True, check=True)
+                        # Build
+                        cmd = f"cd build_{p} && cmake -DSNITCH_RUNTIME=snRuntime-cluster .. && make"
+                        print(cmd)
+                        subprocess.run(cmd, shell=True, check=True)
+                    # Run in parallel
+                    processses = []
+                    for j in range(nproc):
+                        # Make sure to run it in fast mode to prevent recompilation/linking of data
+                        cmd = f"cd build_{j} && make run-rtl-{cfg['binary']}/fast"
+                        print(cmd)
+                        processses.append(subprocess.Popen(cmd, shell=True))
                     # Extract results
-                    out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i}.csv"
-                    cmd = f"./perf_extr.py -i build/logs -o {out_csv} -n {n}"
-                    print(cmd)
-                    subprocess.run(cmd, shell=True, check=True)
-                    # Read in results to compute confidence interval
-                    df = pd.read_csv(out_csv, index_col=0)
-                    cycles = df.loc['mean', 'cycles']
-                    logging.info(f"Mean cycles: {cycles}")
-                    results.append(cycles)
+                    for j, p in enumerate(processses):
+                        p.wait()
+                        out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}.csv"
+                        cmd = f"./perf_extr.py -i build_{j}/logs -o {out_csv} -n {n}"
+                        print(cmd)
+                        subprocess.run(cmd, shell=True, check=True)
+                        # Read in results to compute confidence interval
+                        df = pd.read_csv(out_csv, index_col=0)
+                        cycles = df.loc['mean', 'cycles']
+                        logging.info(f"Results of run {i+j}: Cycles: {cycles}")
+                        results.append(cycles)
                     # Compute confidence interval
-                    if i > 5:
-                        m, se, h = mean_confidence_interval(pd.DataFrame(results), 0.95)
-                        logging.info(f"Confidence interval: {m} +/- {h}")
-                        # Break when confidence interval is smaller than 1% of mean
-                        if h/m < 0.01:
-                            break
+                    m, se, h = mean_confidence_interval(pd.DataFrame(results), 0.95)
+                    logging.info(f"Confidence interval: {m} +/- {h}")
+                    # Break when confidence interval is smaller than 1% of mean
+                    if h/m < 0.01:
+                        break
 
 
 def plot(indir: pathlib.Path, outdir: pathlib.Path):
@@ -169,42 +184,15 @@ def main():
 
     # Parse arguments
     parser = argparse.ArgumentParser(description='Run measurements')
-    parser.add_argument(
-        "-i",
-        "--indir",
-        type=pathlib.Path,
-        default=script_path / "results",
-        required=False,
-        help='Path to input file'
-    )
-    parser.add_argument(
-        "-o",
-        "--outdir",
-        type=pathlib.Path,
-        default=script_path / "results",
-        required=False,
-        help='Path to output directory'
-    )
-    parser.add_argument(
-        "-p",
-        "--plot",
-        action='store_true',
-        help='Plot results'
-    )
-    parser.add_argument(
-        "-r",
-        "--run",
-        action='store_true',
-        help='Run measurements'
-    )
-    parser.add_argument(
-        "-n",
-        "--num_runs",
-        type=int,
-        required=False,
-        default=50,
-        help='Number of maximum runs, it will stop when confidence interval is small enough'
-    )
+    parser.add_argument("-i", "--indir", type=pathlib.Path, default=script_path / "results", required=False,
+                        help='Path to input file')
+    parser.add_argument("-o", "--outdir", type=pathlib.Path, default=script_path / "results", required=False,
+                        help='Path to output directory')
+    parser.add_argument("-p", "--plot", action='store_true', help='Plot results')
+    parser.add_argument("-r", "--run", action='store_true', help='Run measurements')
+    parser.add_argument("-n", "--nproc", type=int, required=False, default=8, help='Number of tests in parallel')
+    parser.add_argument("-t", "--num_tests", type=int, required=False, default=50,
+                        help='Number of maximum runs, it will stop when confidence interval is small enough')
 
     args = parser.parse_args()
 
@@ -212,12 +200,12 @@ def main():
 
     test_cfg = []
     test_cfg.append({'binary': 'matmul_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': 1})
-    test_cfg.append({'binary': 'matmul_csr_dense', 'nproc': [1], 'size': size, 'num_runs': args.num_runs})
-    test_cfg.append({'binary': 'matmul_csr_csr', 'nproc': [1], 'size': size, 'num_runs': args.num_runs})
-    test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_runs})
+    test_cfg.append({'binary': 'matmul_csr_dense', 'nproc': [1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'matmul_csr_csr', 'nproc': [1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
 
     if args.run:
-        run_measurements(outdir=args.outdir, test_config=test_cfg)
+        run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc)
 
     if args.plot:
         plot(indir=args.indir, outdir=args.outdir)
