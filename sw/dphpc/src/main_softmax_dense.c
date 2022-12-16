@@ -12,7 +12,7 @@
 #include "softmax_dense.h"
 #include "softmax_csr.h"
 
-#define SINGLE
+#define PARALLEL
 #define AXIS (0)
 #define NUM_COMP_CORES 8
 
@@ -73,29 +73,24 @@ int main() {
     }
     snrt_cluster_hw_barrier();
 
-    // Run the softmax
-    if (core_id != 8) {
-        //softmax_dense_parallel(AXIS, matrix_A, matrix_res->values, core_id, nPE);
-        size_t time_init = benchmark_get_cycle();
+    benchmark_get_cycle();
+    if (core_id < 8)
         softmax_dense_parallel(AXIS, matrix_A, matrix_res, core_id, nPE - 1, N, N);
-        size_t time_end = benchmark_get_cycle();
-    }
+    benchmark_get_cycle();
     snrt_cluster_hw_barrier();
+    benchmark_get_cycle();
 
-    if (core_id == 0) {
-        // Check the result
-        for (int i = 0; i < N * N; i++) {
-            // printf("matrix_res[%d] = %f\n", i, matrix_res[i]);
-            if (my_fabs(matrix_res[i] - C[i]) > ERROR) {
-                errors++;
-            }
-        }
-        if (errors == 0) {
-            printf("Test passed!\n");
+    if (core_id != 0) return 0;
+    // Check the result
+    for (int i = 0; i < N * N; i++) {
+        // printf("matrix_res[%d] = %f\n", i, matrix_res[i]);
+        if (my_fabs(matrix_res[i] - C[i]) > ERROR) {
+            errors++;
         }
     }
-    snrt_cluster_hw_barrier();
-
+    if (errors == 0) {
+        printf("Test passed!\n");
+    }
     return errors;
 
 #endif

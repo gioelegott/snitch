@@ -106,29 +106,25 @@ int main() {
     }
     snrt_cluster_hw_barrier();
 
-    // Run the softmax
-    if (core_id != 8) {
-        //softmax_csr_parallel(AXIS, matrix_A, matrix_res->values, core_id, nPE);
-        size_t time_init = benchmark_get_cycle();
+    benchmark_get_cycle();
+    if (core_id < 8)
         softmax_csr_parallel(AXIS, &matrix_A, matrix_res.values, core_id, nPE-1);
-        size_t time_end = benchmark_get_cycle();
-    }
+    benchmark_get_cycle();
     snrt_cluster_hw_barrier();
+    benchmark_get_cycle();
 
-    if (core_id == 0) {
-        // Check the result
-        errors = 0;
-        for (int i = 0; i < A.rows * A.cols; i++) {
-            // printf("matrix_res.values[%d] = %f\n", i, matrix_res.values[i]);
-            if (my_fabs(matrix_res.values[i] - C.values[i]) > ERROR) {
-                errors++;
-            }
-        }
-        if (errors == 0) {
-            printf("Test passed!\n");
+    if (core_id != 0) return 0;
+    // Check the result
+    errors = 0;
+    for (int i = 0; i < A.rows * A.cols; i++) {
+        // printf("matrix_res.values[%d] = %f\n", i, matrix_res.values[i]);
+        if (my_fabs(matrix_res.values[i] - C.values[i]) > ERROR) {
+            errors++;
         }
     }
-    snrt_cluster_hw_barrier();
+    if (errors == 0) {
+        printf("Test passed!\n");
+    }
 
     return errors;
 

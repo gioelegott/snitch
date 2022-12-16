@@ -110,8 +110,38 @@ def main():
             # print with orange color
             print(f"\033[33mWarning: Section {args.section} not found in {log_file}\033[0m")
 
+    metrics_list_barrier = []
+
+    # Extract performance data (barrier)
+    for p, log_file in enumerate(log_files[:args.nproc]):
+        # Extract performance data of current core file
+        metrics_of_current_proc = extract_perf_data(log_file, p)
+        # Append specific section to list of all cores
+        try:
+            metrics_list_barrier.append(metrics_of_current_proc[args.section + 1])
+        except IndexError:
+            # print with orange color
+            print(f"\033[33mWarning: Section {args.section} not found in {log_file}\033[0m")
+
     # Convert list of dict to pandas dataframe
-    df = pd.DataFrame(metrics_list)
+    df_kernel = pd.DataFrame(metrics_list)
+    df_barrier = pd.DataFrame(metrics_list_barrier)
+
+    df = df_kernel
+    df.loc[:, "cycles"] = df_kernel.loc[:, "cycles"] + df_barrier.loc[:, "cycles"]
+    df.loc[:, "snitch_stores"] = df_kernel.loc[:, "snitch_stores"] + df_barrier.loc[:, "snitch_stores"]
+    df.loc[:, "fpss_loads"] = df_kernel.loc[:, "fpss_loads"] + df_barrier.loc[:, "fpss_loads"]
+    for k in ["snitch_occupancy", "fpss_occupancy", "fpss_fpu_occupancy", "fpss_fpu_rel_occupancy", "total_ipc"]:
+        df.loc[:, k] = (df_kernel.loc[:, "cycles"] * df_kernel.loc[:, k] + df_barrier.loc[:, "cycles"] * df_barrier.loc[:, k]) / df.loc[:, "cycles"]
+    df.loc[:, "synch_overhead"] = df_barrier.loc[:, "cycles"] / df.loc[:, "cycles"]
+
+    del df["snitch_avg_load_latency"]
+    del df["snitch_fseq_rel_offloads"]
+    del df["fseq_yield"]
+    del df["fseq_fpu_yield"]
+    del df["fpss_section_latency"]
+    del df["fpss_avg_fpu_latency"]
+    del df["fpss_avg_load_latency"]
 
     # compute metrics
     df_mean = df.mean(numeric_only=True)
