@@ -94,6 +94,14 @@ def main():
         help='Path to mako template'
     )
     parser.add_argument(
+        "-tdense",
+        "--tpldense",
+        type=pathlib.Path,
+        required=False,
+        default=script_path / "data_dense.h.tpl",
+        help='Path to mako template'
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action='store_true',
@@ -109,6 +117,8 @@ def main():
     matrix_size = args.matrix_size
     filter_size = args.filter_size
     density = args.density
+    A_dense_elements = matrix_size * matrix_size
+    filter_dense_elements = filter_size * filter_size
     
     A = []
     for i in range(channel_size):
@@ -151,8 +161,10 @@ def main():
     ######## Output  File #########
     ###############################
     kwargs = {'name': 'conv2d_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size}
-
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
+
+    kwargs = {'name': 'conv2d_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'A_dense_elements' : A_dense_elements, 'filter_dense_elements' : filter_dense_elements}
+    gen_data_header_file(args.outdir, args.tpldense, **kwargs)
 
 
 if __name__ == "__main__":

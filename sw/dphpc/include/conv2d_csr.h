@@ -10,3 +10,4 @@
 
 void conv2d_csr(csr_matrix **A, csr_matrix **filter, csr_matrix *res, int channel_in);
 void conv2d_dense(dense_matrix **A, dense_matrix **filter, csr_matrix *res, int channel_in);
+void conv2d_csr_dense(csr_matrix **A, dense_matrix **filter, csr_matrix *res, int channel_in);

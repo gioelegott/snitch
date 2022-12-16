@@ -111,7 +111,7 @@ int main() {
   // Parallel
   #else
     int num_paral_cores = NUM_COMP_CORES;
-    int chnl_core = CHANNELS / NUM_COMP_CORES;    
+    int chnl_core = CHANNELS / NUM_COMP_CORES;
     if (CHANNELS < NUM_COMP_CORES) {
       num_paral_cores = CHANNELS;
       chnl_core = 1;
