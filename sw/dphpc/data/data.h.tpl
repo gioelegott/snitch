@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 \
 <% def array_to_cstr(array):
+    if len(array) == 0:
+        return '{}'
     out = '{'
     for a in array.flatten():
         out += '{}, '.format(a)
