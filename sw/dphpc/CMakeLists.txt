@@ -52,7 +52,6 @@ macro(add_snitch_dphpc_executable name)
         add_custom_target( run-rtl-${name}
             COMMAND ${SNITCH_SIMULATOR} $<TARGET_FILE:${name}>
             COMMAND for f in logs/trace_hart_*.dasm\; do ${SPIKE_DASM} < $$f | ${PYTHON} ${SNRUNTIME_SRC_DIR}/../../util/gen_trace.py > $$\(echo $$f | sed 's/\\.dasm/\\.txt/'\)\; done
-            COMMAND ${CMAKE_CURRENT_LIST_DIR}/perf_extr.py --nproc 8 --section 1 --output ${name}_perf.csv
             DEPENDS $<TARGET_FILE:${name}>)
     endif()
     target_link_libraries(${name} kernels)
