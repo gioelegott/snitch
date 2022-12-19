@@ -12,7 +12,7 @@
 #include "utils.h"
 #include "snrt.h"
 #include "printf.h"
-#include "data_conv2d_dense.h"
+#include "data_conv2d_csr_csr_dense.h"
 
 ///////////////////////////////////////////////////////////////////////
 //////////////////////////     CONFIG       ///////////////////////////
@@ -26,8 +26,8 @@
 #define NUM_COMP_CORES 8
 
 // Declare output matrix
-dense_matrix *matrix_A[CHANNELS], *matrix_FILTER[CHANNELS][CHANNELS]; 
-csr_matrix *matrix_res[CHANNELS];  
+csr_matrix *matrix_A[CHANNELS], *matrix_FILTER[CHANNELS][CHANNELS];
+dense_matrix *matrix_res[CHANNELS]; 
 
 ///////////////////////////////////////////////////////////////////////
 //////////////////////////      MAIN        ///////////////////////////
@@ -45,11 +45,9 @@ int main() {
   //####### Const Value #######//
   // ......................... //
   const int compute_id = snrt_cluster_compute_core_idx();
-  const int A_col      = A_dense[0].cols;
-  const int filter_row = FILTER_dense[0][0].rows;
-  const int filter_col = FILTER_dense[0][0].cols;
-  const int res_row    = A_dense[0].rows - FILTER_dense[0][0].rows + 1;
-  const int res_col    = A_dense[0].cols - FILTER_dense[0][0].cols + 1;
+  const int filter_row = FILTER[0][0].rows;
+  const int res_row    = A[0].rows - FILTER[0][0].rows + 1;
+  const int res_col    = A[0].cols - FILTER[0][0].cols + 1;
   
   // ``````````````````````````//
   //####### Matrix Alloc ######//
@@ -58,29 +56,39 @@ int main() {
     for (int j = 0; j < CHANNELS; j++) {
 
       // Allocate memory for matrix data A
-      matrix_A[j] = snrt_l1alloc(sizeof(dense_matrix));
-      matrix_A[j]->values = snrt_l1alloc(A_dense[j].rows * A_dense[j].cols * sizeof(double));
-      matrix_A[j]->rows = A_dense[j].rows;
-      matrix_A[j]->cols = A_dense[j].cols;
+      matrix_A[j] = snrt_l1alloc(sizeof(csr_matrix));
+      matrix_A[j]->values = snrt_l1alloc(A[j].nnz * sizeof(double));
+      matrix_A[j]->col_idx = snrt_l1alloc(A[j].nnz  * sizeof(int));
+      matrix_A[j]->row_ptr = snrt_l1alloc((A[j].rows+1) * sizeof(int));
+      matrix_A[j]->nnz = A[j].nnz;
+      matrix_A[j]->rows = A[j].rows;
+      matrix_A[j]->cols = A[j].cols;
 
       // Allocate memory for filter data FILTER
       for (int k = 0; k < CHANNELS; k++) {
-        matrix_FILTER[k][j] = snrt_l1alloc(sizeof(dense_matrix));
-        matrix_FILTER[k][j]->values = snrt_l1alloc(FILTER_dense[k][j].rows * FILTER_dense[k][j].cols * sizeof(double));
-        matrix_FILTER[k][j]->rows = FILTER_dense[k][j].rows;
-        matrix_FILTER[k][j]->cols = FILTER_dense[k][j].cols;
+        matrix_FILTER[k][j] = snrt_l1alloc(sizeof(csr_matrix));
+        matrix_FILTER[k][j]->values = snrt_l1alloc(FILTER[k][j].nnz * sizeof(double));
+        matrix_FILTER[k][j]->col_idx = snrt_l1alloc(FILTER[k][j].nnz  * sizeof(int));
+        matrix_FILTER[k][j]->row_ptr = snrt_l1alloc((FILTER[k][j].rows+1) * sizeof(int));
+        matrix_FILTER[k][j]->nnz = FILTER[k][j].nnz;
+        matrix_FILTER[k][j]->rows = FILTER[k][j].rows;
+        matrix_FILTER[k][j]->cols = FILTER[k][j].cols;
       }
 
       // Allocate memory for matrix data res
-      matrix_res[j] = snrt_l1alloc(sizeof(csr_matrix));
-      matrix_res[j]->values = snrt_l1alloc(RES[j].nnz * sizeof(double));
-      matrix_res[j]->col_idx = snrt_l1alloc(RES[j].nnz  * sizeof(int));
-      matrix_res[j]->row_ptr = snrt_l1alloc((RES[j].rows+1) * sizeof(int));
+      matrix_res[j] = snrt_l1alloc(sizeof(dense_matrix));
+      matrix_res[j]->values = snrt_l1alloc(RES_dense[j].rows * RES_dense[j].cols * sizeof(double));
+      matrix_res[j]->rows = RES_dense[j].rows;
+      matrix_res[j]->cols = RES_dense[j].cols;
 
       // Copy matrix data to L1
-      snrt_dma_start_1d((void *)matrix_A[j]->values, (void *)A_dense[j].values, A_dense[j].rows * A_dense[j].cols * sizeof(double));
+      snrt_dma_start_1d((void *)matrix_A[j]->values, (void *)A[j].values, A[j].nnz * sizeof(double));
+      snrt_dma_start_1d((void *)matrix_A[j]->col_idx, A[j].col_idx, A[j].nnz  * sizeof(int));
+      snrt_dma_start_1d((void *)matrix_A[j]->row_ptr, (void *)A[j].row_ptr, (A[j].rows+1) * sizeof(int));
       for (int k = 0; k < CHANNELS; k++) {
-        snrt_dma_start_1d((void *)matrix_FILTER[k][j]->values, (void *)FILTER_dense[k][j].values, FILTER_dense[k][j].rows * FILTER_dense[k][j].cols * sizeof(double));
+        snrt_dma_start_1d((void *)matrix_FILTER[k][j]->values, (void *)FILTER[k][j].values, FILTER[k][j].nnz * sizeof(double));
+        snrt_dma_start_1d((void *)matrix_FILTER[k][j]->col_idx, (void *)FILTER[k][j].col_idx, FILTER[k][j].nnz  * sizeof(int));
+        snrt_dma_start_1d((void *)matrix_FILTER[k][j]->row_ptr, (void *)FILTER[k][j].row_ptr, (FILTER[k][j].rows+1) * sizeof(int));
       }
     }
     
@@ -102,7 +110,7 @@ int main() {
       printf("Start Single Core Kernel Calculation \n");
       benchmark_get_cycle();
       for (int i = 0; i < CHANNELS; i++) { 
-        conv2d_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, A_col, filter_row, filter_col, res_row, res_col);
+        conv2d_csr_csr_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, filter_row, res_row, res_col);
       }
       benchmark_get_cycle();
     }
@@ -110,7 +118,7 @@ int main() {
   // Parallel
   #else
     int num_paral_cores = NUM_COMP_CORES;
-    int chnl_core = CHANNELS / NUM_COMP_CORES;    
+    int chnl_core = CHANNELS / NUM_COMP_CORES;
     if (CHANNELS < NUM_COMP_CORES) {
       num_paral_cores = CHANNELS;
       chnl_core = 1;
@@ -118,7 +126,7 @@ int main() {
     if (compute_id < num_paral_cores) {
       benchmark_get_cycle();
       for (int i= compute_id * chnl_core; i < (compute_id + 1) * chnl_core; i++) {
-        conv2d_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, A_col, filter_row, filter_col, res_row, res_col);
+        conv2d_csr_csr_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, filter_row, res_row, res_col);
       }
       benchmark_get_cycle();
     }
@@ -131,13 +139,15 @@ int main() {
   if (compute_id == 0) {
     printf("Start Results Verification\n");
     for (int i = 0; i < CHANNELS; i++) {
-      for (int j = 0; j < matrix_res[i]->nnz; j++) {
-        if (fabs(matrix_res[i]->values[j] - RES[i].values[j]) > 0.001) {
-          errors++;
+      for (int j = 0; j < res_row; j++) {
+        for (int k = 0; k < res_col; k++){
+          if (fabs(matrix_res[i]->values[j * res_col + k] - RES_dense[i].values[j * res_col + k]) > 0.001) {
+            errors++;
+          }
         }
       }
       if (errors != 0) {
-        printf("Errors: %d/%d!\n", errors, matrix_res[i]->nnz * CHANNELS);
+        printf("Errors: %d/%d!\n", errors, res_row * res_col * CHANNELS);
       }
     }
     if (errors == 0) {

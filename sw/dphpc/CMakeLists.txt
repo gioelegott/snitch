@@ -57,14 +57,15 @@ enable_testing()
 include_directories(include data src/utils)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
-add_library(kernels src/kernel/matmul_csr.c src/kernel/conv2d_csr.c)
+add_library(kernels src/kernel/conv2d_csr.c)
 add_library(utils src/utils/utils.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 
-# add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
-add_snitch_dphpc_executable(conv2d_csr src/main_conv2d_csr.c data/data_conv2d_csr.h)
-add_snitch_dphpc_executable(conv2d_dense src/main_conv2d_dense.c data/data_conv2d_dense.h)
-add_snitch_dphpc_executable(conv2d_csr_dense src/main_conv2d_csr_dense.c data/data_conv2d_dense.h)
+add_snitch_dphpc_executable(conv2d_csr_csr_csr       src/main_conv2d_csr_csr_csr.c       data/data_conv2d_csr_csr_csr.h      )
+add_snitch_dphpc_executable(conv2d_csr_csr_dense     src/main_conv2d_csr_csr_dense.c     data/data_conv2d_csr_csr_dense.h    )
+add_snitch_dphpc_executable(conv2d_csr_dense_csr     src/main_conv2d_csr_dense_csr.c     data/data_conv2d_csr_dense_csr.h    )
+add_snitch_dphpc_executable(conv2d_csr_dense_dense   src/main_conv2d_csr_dense_dense.c   data/data_conv2d_csr_dense_dense.h  )
+add_snitch_dphpc_executable(conv2d_dense_dense_dense src/main_conv2d_dense_dense_dense.c data/data_conv2d_dense_dense_dense.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
