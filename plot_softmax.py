@@ -34,6 +34,30 @@ def create_dataframe(directory, stat, metric, **kwargs):
 
     return df_out
 
+def create_dataframe2(directory, test_config: list, stat, metric, **kwargs):
+    binary = test_config['binary']
+    nproc = test_config['num_proc']
+    dims  = test_config['dimensions']
+    nruns = test_config['num_runs']
+    axis  = test_config['axis']
+    os.chdir(directory)
+    path = os.getcwd()
+    df_out = pd.DataFrame()
+    #loops over different dimensions
+    for dim in dims:
+        #loops over different tests
+        distribution = []
+        j = 0
+        for file in os.listdir(path):
+            filename = f"{binary}_n{nproc}_s{dim}_r{j}_a{test_config['axis']}.csv"
+            if (file == filename):
+                filepath = os.path.join(path, filename)
+                df = pd.read_csv(filepath)
+                distribution.extend(df.loc[df['desc'] == stat, metric].to_numpy())
+                j=j+1
+        df_out[dim] = distribution
+    return df_out
+
 def mean_confidence_interval(data, confidence):
     m = data.apply(np.mean, axis=0)
     se = data.apply(stats.sem)
@@ -57,36 +81,89 @@ def mean_confidence_interval_ratio(data1, data2, confidence):
         h.append(stats.sem(div) * stats.t.ppf((1 + confidence) / 2., n-1))
     return m, se, h
 
+## DENSE SOFTMAX - SINGLE - AX0
+#dims = np.array([10, 20, 30 , 40, 50]);
+#directory = '/scratch2/mbertuletti/snitch/results_softmaxdense_sc_axis0'
+#sc_dense_cycles = create_dataframe(directory, 'mean', 'cycles')
+#sc_dense_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
+#sc_dense_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+## CRS SOFTMAX - SINGLE - AX0
+#directory = '/scratch2/mbertuletti/snitch/results_softmax_sc_axis0'
+#sc_csr0_cycles = create_dataframe(directory, 'mean', 'cycles')
+#sc_csr0_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
+#sc_csr0_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+## CRS SOFTMAX - SINGLE - AX1
+#directory = '/scratch2/mbertuletti/snitch/results_softmax_sc_axis1'
+#sc_csr1_cycles = create_dataframe(directory, 'mean', 'cycles')
+#sc_csr1_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
+#sc_csr1_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+## DENSE SOFTMAX - PARALLEL - AX0
+#directory = '/scratch2/mbertuletti/snitch/results_softmaxdense_mc_axis0'
+#mc_dense_cycles = create_dataframe(directory, 'mean', 'cycles')
+#mc_dense_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
+#mc_dense_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+## CRS SOFTMAX -PARALLEL - AX0
+#directory = '/scratch2/mbertuletti/snitch/results_softmax_mc_axis0'
+#mc_csr0_cycles = create_dataframe(directory, 'mean', 'cycles')
+#mc_csr0_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
+#mc_csr0_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+## CRS SOFTMAX -PARALLEL - AX1
+#directory = '/scratch2/mbertuletti/snitch/results_softmax_mc_axis1'
+#mc_csr1_cycles = create_dataframe(directory, 'mean', 'cycles')
+#mc_csr1_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
+#mc_csr1_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
 
-directory = '/scratch2/mbertuletti/snitch/results_softmaxdense_sc_axis0'
-sc_dense_cycles = create_dataframe(directory, 'mean', 'cycles')
-sc_dense_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
-sc_dense_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
 
-directory = '/scratch2/mbertuletti/snitch/results_softmax_sc_axis0'
-sc_csr0_cycles = create_dataframe(directory, 'mean', 'cycles')
-sc_csr0_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
-sc_csr0_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+directory = '/scratch2/mbertuletti/snitch/sw/dphpc/results2'
+dims = np.array([8, 16, 32, 64]);
+dims_normalized = np.log2(dims)*8
 
-directory = '/scratch2/mbertuletti/snitch/results_softmax_sc_axis1'
-sc_csr1_cycles = create_dataframe(directory, 'mean', 'cycles')
-sc_csr1_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
-sc_csr1_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+# DENSE SOFTMAX - SINGLE - AX0
+config = {'binary': 'softmax_dense', 'num_proc': 1, 'dimensions': dims, 'num_runs': 1, 'axis': -1}
+sc_dense_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+sc_dense_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+sc_dense_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+# CRS SOFTMAX - SINGLE - AX0
+config = {'binary': 'softmax_csr', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10, 'axis': -1}
+sc_csr0_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+sc_csr0_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+sc_csr0_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+# CRS SOFTMAX - SINGLE - AX1
+config = {'binary': 'softmax_csr', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
+sc_csr1_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+sc_csr1_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+sc_csr1_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+# DENSE SOFTMAX - PARALLEL - AX0
+config = {'binary': 'softmax_dense', 'num_proc': 8, 'dimensions': dims, 'num_runs': 1, 'axis': -1}
+mc_dense_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+mc_dense_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+mc_dense_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+mc_dense_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
+# CRS SOFTMAX -PARALLEL - AX0
+config = {'binary': 'softmax_csr', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': -1}
+mc_csr0_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+mc_csr0_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+mc_csr0_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+mc_csr0_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
+# CRS SOFTMAX -PARALLEL - AX1
+config = {'binary': 'softmax_csr', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
+mc_csr1_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+mc_csr1_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+mc_csr1_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+mc_csr1_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
 
-directory = '/scratch2/mbertuletti/snitch/results_softmaxdense_mc_axis0'
-mc_dense_cycles = create_dataframe(directory, 'mean', 'cycles')
-mc_dense_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
-mc_dense_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
-
-directory = '/scratch2/mbertuletti/snitch/results_softmax_mc_axis0'
-mc_csr0_cycles = create_dataframe(directory, 'mean', 'cycles')
-mc_csr0_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
-mc_csr0_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
-
-directory = '/scratch2/mbertuletti/snitch/results_softmax_mc_axis1'
-mc_csr1_cycles = create_dataframe(directory, 'mean', 'cycles')
-mc_csr1_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
-mc_csr1_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
+#############################################################################
+# CRS SOFTMAX - SINGLE - AX1
+config = {'binary': 'softmax_csr_version2', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
+sc_csr12_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+sc_csr12_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+sc_csr12_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+# CRS SOFTMAX -PARALLEL - AX1
+config = {'binary': 'softmax_csr_version2', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
+mc_csr12_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+mc_csr12_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+mc_csr12_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+mc_csr12_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
 
 #############################################################################
 # PLOT FEATURES
@@ -119,33 +196,40 @@ fig0 = plt.figure(figsize=(15, 6))
 ax0= plt.subplot2grid((2, 2), (0, 0), rowspan=1)
 ax1= plt.subplot2grid((2, 2), (1, 0), rowspan=1)
 ax2= plt.subplot2grid((2, 2), (0, 1), rowspan=2)
-dims = np.array([10, 20, 30 , 40, 50]);
 cmap = mcp.gen_color(cmap="Spectral_r",n=6)
 
 ##LINES
 #m, se, h = mean_confidence_interval(sc_dense_cycles, 0.95)
-#l1, = ax0.plot(dims, m[1:], marker="o", linewidth=2.0, color=cmap[0])
+#l1, = ax0.plot(dims, m, marker="o", linewidth=2.0, color=cmap[0])
 #m, se, h = mean_confidence_interval(sc_csr0_cycles, 0.95)
-#l2, = ax0.plot(dims, m[1:], marker="x", linewidth=2.0, color=cmap[1])
-#plt.fill_between(dims, m[1:] - h[1:], m[1:] + h[1:], color='k', alpha=0.2)
+#l2, = ax0.plot(dims, m, marker="x", linewidth=2.0, color=cmap[1])
+#plt.fill_between(dims, m - h, m + h, color='k', alpha=0.2)
 #m, se, h = mean_confidence_interval(sc_csr1_cycles, 0.95)
-#l3, = ax0.plot(dims, m[1:], marker="x", linewidth=2.0, color=cmap[2])
-#plt.fill_between(dims, m[1:] - h[1:], m[1:] + h[1:], color='k', alpha=0.2)
+#l3, = ax0.plot(dims, m, marker="x", linewidth=2.0, color=cmap[2])
+#plt.fill_between(dims, m - h, m + h, color='k', alpha=0.2)
 #BARS
-width = 2
+width = 1.5
 m, se, h = mean_confidence_interval(sc_dense_cycles, 0.95)
-l1 = ax0.bar(dims-width, m[1:], width, color=cmap[0], edgecolor='k')
+l1 = ax0.bar(dims_normalized-3*width/2, m, width, color=cmap[0], edgecolor='k')
+
 m, se, h = mean_confidence_interval(sc_csr0_cycles, 0.95)
-l2 = ax0.bar(dims, m[1:], width, color=cmap[1], edgecolor='k')
-ax0.errorbar(dims, m[1:], 2*np.array(h[1:]), fmt='none', ecolor='r', elinewidth=2)
+l2 = ax0.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
+ax0.errorbar(dims_normalized-width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
 m, se, h = mean_confidence_interval(sc_csr1_cycles, 0.95)
-l3 = ax0.bar(dims+width, m[1:], width, color=cmap[2], edgecolor='k')
-ax0.errorbar(dims+width, m[1:], 2*np.array(h[1:]), fmt='none', ecolor='r', elinewidth=2)
-ax0.legend([l1, l2, l3], ['dense', 'CRS axis-0', 'CRS axis-1'], loc='upper left', facecolor='white', framealpha=1)
+l3 = ax0.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
+ax0.errorbar(dims_normalized+width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+m, se, h = mean_confidence_interval(sc_csr12_cycles, 0.95)
+l4 = ax0.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
+ax0.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+ax0.legend([l1, l2, l3, l4], ['dense', 'CRS axis-0', 'CRS axis-1', 'CRS axis-1 v2'], loc='upper left', facecolor='white', framealpha=1)
+ax0.set_xticks(dims_normalized, dims)
 ax0.set_xlabel('Input dimension')
 ax0.set_ylabel('Cycles')
 ax0.set_title('SOFTMAX Single-core')
-ax0.set(ylim=(0, 300000), yticks=np.arange(0, 300000, 50000))
+ax0.set(ylim=(0, 10**6), yticks=np.arange(0, 10**6, 10**5))
 ax0.ticklabel_format(axis="y", style="sci", scilimits=(0,0), useMathText=True)
 
 
@@ -154,52 +238,68 @@ plt.tight_layout()
 
 ##LINES
 #m, se, h = mean_confidence_interval(mc_dense_cycles, 0.95)
-#l1, = ax1.plot(dims, m[1:], marker="o", linewidth=2.0, color=cmap[0])
+#l1, = ax1.plot(dims_normalized, m, marker="o", linewidth=2.0, color=cmap[0])
 #m, se, h = mean_confidence_interval(mc_csr0_cycles, 0.95)
-#l2, = ax1.plot(dims, m[1:], marker="x", linewidth=2.0, color=cmap[1])
-#plt.fill_between(dims, m[1:] - h[1:], m[1:] + h[1:], color='k', alpha=0.2)
+#l2, = ax1.plot(dims_normalized, m, marker="x", linewidth=2.0, color=cmap[1])
+#plt.fill_between(dims_normalized, m - h, m + h, color='k', alpha=0.2)
 #m, se, h = mean_confidence_interval(mc_csr1_cycles, 0.95)
-#l3, = ax1.plot(dims, m[1:], marker="x", linewidth=2.0, color=cmap[2])
-#plt.fill_between(dims, m[1:] - h[1:], m[1:] + h[1:], color='k', alpha=0.2)
+#l3, = ax1.plot(dims_normalized, m, marker="x", linewidth=2.0, color=cmap[2])
+#plt.fill_between(dims_normalized, m - h, m + h, color='k', alpha=0.2)
 #BARS
-width = 2
+width = 1.5
 m, se, h = mean_confidence_interval(mc_dense_cycles, 0.95)
-l1 = ax1.bar(dims-width, m[1:], width, color=cmap[0], edgecolor='k')
+l1 = ax1.bar(dims_normalized-3*width/2, m, width, color=cmap[0], edgecolor='k')
+
 m, se, h = mean_confidence_interval(mc_csr0_cycles, 0.95)
-l2 = ax1.bar(dims, m[1:], width, color=cmap[1], edgecolor='k')
-ax1.errorbar(dims, m[1:], 2*np.array(h[1:]), fmt='none', ecolor='r', elinewidth=2)
+l2 = ax1.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
+ax1.errorbar(dims_normalized-width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
 m, se, h = mean_confidence_interval(mc_csr1_cycles, 0.95)
-l3 = ax1.bar(dims+width, m[1:], width, color=cmap[2], edgecolor='k')
-ax1.errorbar(dims+width, m[1:], 2*np.array(h[1:]), fmt='none', ecolor='r', elinewidth=2)
-ax1.legend([l1, l2, l3], ['dense', 'CRS axis-0', 'CRS axis-1'], loc='upper left', facecolor='white', framealpha=1)
+l3 = ax1.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
+ax1.errorbar(dims_normalized+width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+m, se, h = mean_confidence_interval(mc_csr12_cycles, 0.95)
+l4 = ax1.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
+ax1.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+ax1.legend([l1, l2, l3, l4], ['dense', 'CRS axis-0', 'CRS axis-1', 'CRS axis-1 v2'], loc='upper left', facecolor='white', framealpha=1)
+ax1.set_xticks(dims_normalized, dims)
 ax1.set_xlabel('Input dimension')
 ax1.set_ylabel('Cycles')
 ax1.set_title('SOFTMAX 8-cores')
-ax1.set(ylim=(0, 50000), yticks=np.arange(0, 50000, 15000))
+ax1.set(ylim=(0, 2*10**5), yticks=np.arange(0, 2*10**5, 5*10**4))
 ax1.ticklabel_format(axis="y", style="sci", scilimits=(0,0), useMathText=True)
 ax1.grid(True)
 plt.tight_layout()
 
 ##LINES
 #m, se, h = mean_confidence_interval_ratio(sc_dense_cycles, mc_dense_cycles, 0.95)
-#l1, = ax2.plot(dims, m[1:], marker="o", linewidth=2.0, color=cmap[0])
+#l1, = ax2.plot(dims_normalized, m, marker="o", linewidth=2.0, color=cmap[0])
 #m, se, h = mean_confidence_interval_ratio(sc_csr0_cycles, mc_csr0_cycles, 0.95)
-#l2, = ax2.plot(dims, m[1:], marker="x", linewidth=2.0, color=cmap[1])
-#plt.fill_between(dims, np.array(m[1:]) - np.array(h[1:]), m[1:] + np.array(h[1:]), color='k', alpha=0.2)
+#l2, = ax2.plot(dims_normalized, m, marker="x", linewidth=2.0, color=cmap[1])
+#plt.fill_between(dims_normalized, np.array(m) - np.array(h), m + np.array(h), color='k', alpha=0.2)
 #m, se, h = mean_confidence_interval_ratio(sc_csr1_cycles, mc_csr1_cycles, 0.95)
-#l3, = ax2.plot(dims, m[1:], marker="x", linewidth=2.0, color=cmap[2])
-#plt.fill_between(dims, np.array(m[1:]) - np.array(h[1:]), np.array(m[1:]) + np.array(h[1:]), color='k', alpha=0.2)
+#l3, = ax2.plot(dims_normalized, m, marker="x", linewidth=2.0, color=cmap[2])
+#plt.fill_between(dims_normalized, np.array(m) - np.array(h), np.array(m) + np.array(h), color='k', alpha=0.2)
 #BARS
-width = 2
+width = 1.5
 m, se, h = mean_confidence_interval_ratio(sc_dense_cycles, mc_dense_cycles, 0.95)
-l1 = ax2.bar(dims-width, m[1:], width, color=cmap[0], edgecolor='k')
+l1 = ax2.bar(dims_normalized-3*width/2, m, width, color=cmap[0], edgecolor='k')
+
 m, se, h = mean_confidence_interval_ratio(sc_csr0_cycles, mc_csr0_cycles, 0.95)
-l2 = ax2.bar(dims, m[1:], width, color=cmap[1], edgecolor='k')
-ax2.errorbar(dims, m[1:], 2*np.array(h[1:]), fmt='none', ecolor='r', elinewidth=2)
+l2 = ax2.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
+ax2.errorbar(dims_normalized-width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
 m, se, h = mean_confidence_interval_ratio(sc_csr1_cycles, mc_csr1_cycles, 0.95)
-l3 = ax2.bar(dims+width, m[1:], width, color=cmap[2], edgecolor='k')
-ax2.errorbar(dims+width, m[1:], 2*np.array(h[1:]), fmt='none', ecolor='r', elinewidth=2)
-ax2.legend([l1, l2, l3], ['dense', 'CRS axis-0', 'CRS axis-1'], loc='upper left', facecolor='white', framealpha=1)
+l3 = ax2.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
+ax2.errorbar(dims_normalized+width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+m, se, h = mean_confidence_interval_ratio(sc_csr12_cycles, mc_csr12_cycles, 0.95)
+l4 = ax2.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
+ax2.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+ax2.legend([l1, l2, l3, l4], ['dense', 'CRS axis-0', 'CRS axis-1', 'CRS axis-1 v2'], loc='upper left', facecolor='white', framealpha=1)
+ax2.set_xticks(dims_normalized, dims)
 ax2.set_xlabel('Input dimension')
 ax2.set_ylabel('Speed-up')
 ax2.set_title('SOFTMAX Speed-UP')
@@ -215,38 +315,48 @@ plt.tight_layout()
 fig1 = plt.figure(figsize=(11, 6))
 ax0= plt.subplot2grid((2, 2), (0, 0), colspan=2)
 ax1= plt.subplot2grid((2, 2), (1, 0), colspan=2)
-dims = np.array([10, 20, 30 , 40, 50]);
 cmap = mcp.gen_color(cmap="RdBu",n=6)
 cmap=cmap[2:4]
-patterns = [ " ", "/" , ".", "*" ]
+patterns = [ "", "/" , ".", "x" ]
 
-ax0.bar(dims-width, sc_dense_coreipc.apply(np.mean, axis=0)[1:], width,
+ax0.bar(dims_normalized-3*width/2, sc_dense_coreipc.apply(np.mean, axis=0), width,
         color=cmap[0], hatch=patterns[0], edgecolor='k')
-ax0.bar(dims-width, sc_dense_fpssipc.apply(np.mean, axis=0)[1:], width,
-        bottom=sc_dense_coreipc.apply(np.mean, axis=0)[1:],
+ax0.bar(dims_normalized-3*width/2, sc_dense_fpssipc.apply(np.mean, axis=0), width,
+        bottom=sc_dense_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[0], edgecolor='k')
-ax0.bar(dims, sc_csr0_coreipc.apply(np.mean, axis=0)[1:], width,
-        yerr=3*sc_csr0_coreipc.apply(np.std, axis=0)[1:],
+
+ax0.bar(dims_normalized-width/2, sc_csr0_coreipc.apply(np.mean, axis=0), width,
+        yerr=3*sc_csr0_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims, sc_csr0_fpssipc.apply(np.mean, axis=0)[1:], width,
-        yerr=sc_csr0_fpssipc.apply(np.std, axis=0)[1:], bottom=sc_csr0_coreipc.apply(np.mean, axis=0)[1:],
+ax0.bar(dims_normalized-width/2, sc_csr0_fpssipc.apply(np.mean, axis=0), width,
+        yerr=sc_csr0_fpssipc.apply(np.std, axis=0), bottom=sc_csr0_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims+width, sc_csr1_coreipc.apply(np.mean, axis=0)[1:], width,
-        yerr=3*sc_csr1_coreipc.apply(np.std, axis=0)[1:],
+
+ax0.bar(dims_normalized+width/2, sc_csr1_coreipc.apply(np.mean, axis=0), width,
+        yerr=3*sc_csr1_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims+width, sc_csr1_fpssipc.apply(np.mean, axis=0)[1:], width,
-        yerr=3*sc_csr1_fpssipc.apply(np.std, axis=0)[1:], bottom=sc_csr1_coreipc.apply(np.mean, axis=0)[1:],
+ax0.bar(dims_normalized+width/2, sc_csr1_fpssipc.apply(np.mean, axis=0), width,
+        yerr=3*sc_csr1_fpssipc.apply(np.std, axis=0), bottom=sc_csr1_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+ax0.bar(dims_normalized+3*width/2, sc_csr12_coreipc.apply(np.mean, axis=0), width,
+        yerr=3*sc_csr12_coreipc.apply(np.std, axis=0),
+        color=cmap[0], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax0.bar(dims_normalized+3*width/2, sc_csr12_fpssipc.apply(np.mean, axis=0), width,
+        yerr=3*sc_csr12_fpssipc.apply(np.std, axis=0), bottom=sc_csr12_coreipc.apply(np.mean, axis=0),
+        color=cmap[1], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
 ax0.legend( [plt.bar([0], [0], color=cmap[0], edgecolor='k'),
              plt.bar([0], [0], color=cmap[1], edgecolor='k'),
              plt.bar([0], [0], color='w', edgecolor='k'),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[1]),
-             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[2])],
-            ["INT-core IPC", "FP-SS IPC","Dense", "CRS axis-0", "CRS axis-1"],
-            loc='upper right', bbox_to_anchor=(1.3, 1), facecolor='white', framealpha=1)
+             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[2]),
+             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[3])],
+            ["INT-core IPC", "FP-SS IPC","Dense", "CRS axis-0", "CRS axis-1", "CRS axis-1 v2"],
+            loc='upper right', bbox_to_anchor=(1.3, 1.1), facecolor='white', framealpha=1)
+ax0.set_xticks(dims_normalized, dims)
 ax0.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
-ax0.text(42, 1.05, 'IDEAL Occupation', color='r', fontsize=MEDIUM_SIZE)
+ax0.text(42, 1.05, 'IDEAL IPC', color='r', fontsize=MEDIUM_SIZE)
 ax0.axhline(y = 1, color = 'r', linestyle = '--')
 ax0.set_xlabel('Input dimension')
 ax0.set_ylabel('Cycles')
@@ -254,106 +364,63 @@ ax0.set_title('Occupation Single-core')
 ax0.grid(True)
 plt.tight_layout()
 
-ax1.bar(dims-width, mc_dense_coreipc.apply(np.mean, axis=0)[1:], width,
-        color=cmap[0], hatch=patterns[0], edgecolor='k')
-ax1.bar(dims-width, mc_dense_fpssipc.apply(np.mean, axis=0)[1:], width,
-        bottom=mc_dense_coreipc.apply(np.mean, axis=0)[1:],
-        color=cmap[1], hatch=patterns[0], edgecolor='k')
-ax1.bar(dims, mc_csr0_coreipc.apply(np.mean, axis=0)[1:], width,
-        yerr=3*mc_csr0_coreipc.apply(np.std, axis=0)[1:],
-        color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims, mc_csr0_fpssipc.apply(np.mean, axis=0)[1:], width,
-        yerr=mc_csr0_fpssipc.apply(np.std, axis=0)[1:], bottom=mc_csr0_coreipc.apply(np.mean, axis=0)[1:],
-        color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims+width, mc_csr1_coreipc.apply(np.mean, axis=0)[1:], width,
-        yerr=3*mc_csr1_coreipc.apply(np.std, axis=0)[1:],
-        color=cmap[0], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims+width, mc_csr1_fpssipc.apply(np.mean, axis=0)[1:], width,
-        yerr=3*mc_csr1_fpssipc.apply(np.std, axis=0)[1:], bottom=mc_csr1_coreipc.apply(np.mean, axis=0)[1:],
-        color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
-ax1.legend( [plt.bar([0], [0], color=cmap[0], edgecolor='k'),
-             plt.bar([0], [0], color=cmap[1], edgecolor='k'),
-             plt.bar([0], [0], color='w', edgecolor='k'),
-             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[1]),
-             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[2])],
-            ["INT-core IPC", "FP-SS IPC","Dense", "CRS axis-0", "CRS axis-1"],
-            loc='upper right', bbox_to_anchor=(1.3, 1), facecolor='white', framealpha=1)
+s1 = mc_dense_coreipc.apply(np.mean, axis=0)
+s2 = mc_dense_fpssipc.apply(np.mean, axis=0)
+s3 = mc_dense_synchov.apply(np.mean, axis=0)
+ax1.bar(dims_normalized-3*width/2, s1, width, color=cmap[0], hatch=patterns[0], edgecolor='k')
+ax1.bar(dims_normalized-3*width/2, s2, width, bottom=s1, color=cmap[1], hatch=patterns[0], edgecolor='k')
+ax1.bar(dims_normalized-3*width/2, s3, width, bottom=s1+s2, color='lightgray', edgecolor='k')
+
+s1 = mc_csr0_coreipc.apply(np.mean, axis=0)
+s2 = mc_csr0_fpssipc.apply(np.mean, axis=0)
+s3 = mc_csr0_synchov.apply(np.mean, axis=0)
+ax1.bar(dims_normalized-width/2, s1, width, yerr=mc_csr0_coreipc.apply(np.std, axis=0),
+        color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized-width/2, s2, width, yerr=mc_csr0_fpssipc.apply(np.std, axis=0), bottom=s1,
+        color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized-width/2, s3, width, yerr=mc_csr0_synchov.apply(np.std, axis=0), bottom=s1+s2,
+        color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+s1 = mc_csr1_coreipc.apply(np.mean, axis=0)
+s2 = mc_csr1_fpssipc.apply(np.mean, axis=0)
+s3 = mc_csr1_synchov.apply(np.mean, axis=0)
+ax1.bar(dims_normalized+width/2, s1, width, yerr=mc_csr1_coreipc.apply(np.std, axis=0),
+        color=cmap[0], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized+width/2, s2, width, yerr=mc_csr1_fpssipc.apply(np.std, axis=0), bottom=s1,
+        color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized+width/2, s3, width, yerr=mc_csr1_synchov.apply(np.std, axis=0), bottom=s1+s2,
+        color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+s1 = mc_csr12_coreipc.apply(np.mean, axis=0)
+s2 = mc_csr12_fpssipc.apply(np.mean, axis=0)
+s3 = mc_csr12_synchov.apply(np.mean, axis=0)
+ax1.bar(dims_normalized+3*width/2, s1, width, yerr=mc_csr12_coreipc.apply(np.std, axis=0),
+        color=cmap[0], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized+3*width/2, s2, width, yerr=mc_csr12_fpssipc.apply(np.std, axis=0), bottom=s1,
+        color=cmap[1], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized+3*width/2, s3, width, yerr=mc_csr12_synchov.apply(np.std, axis=0), bottom=s1+s2,
+        color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+ax1.legend( [plt.bar([3], [0], color=cmap[0], edgecolor='k'),
+             plt.bar([3], [0], color=cmap[1], edgecolor='k'),
+             plt.bar([3], [0], color='lightgray', edgecolor='k'),
+             plt.bar([3], [0], color='w', edgecolor='k'),
+             plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[1]),
+             plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[2]),
+             plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[3])],
+            ["INT-core IPC", "FP-SS IPC", "Synch.", "Dense", "CRS axis-0", "CRS axis-1", "CRS axis-1 v2"],
+            loc='upper right', bbox_to_anchor=(1.3, 1.1), facecolor='white', framealpha=1)
+ax1.set_xticks(dims_normalized, dims)
 ax1.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
-ax1.set(xlim=(5,55))
-ax1.text(42, 1.05, 'IDEAL Occupation', color='r', fontsize=MEDIUM_SIZE)
+ax1.set(xlim=ax0.get_xlim())
+ax1.text(42, 1.05, 'IDEAL IPC', color='r', fontsize=MEDIUM_SIZE)
 ax1.axhline(y = 1, color = 'r', linestyle = '--')
 ax1.set_xlabel('Input dimension')
 ax1.set_ylabel('Cycles')
 ax1.set_title('Occupation 8-cores')
 ax1.grid(True)
 plt.tight_layout()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## plot IPC:
-#fig1, ax1 = plt.subplots()
-#plt.xlabel('Input dimension')
-#plt.ylabel('IPC')
-#plt.title('Single-core DENSE')
-#dims = np.array([5, 10, 20, 30 , 40, 50]);
-#width = 3
-#ax1.bar(dims, (single_core_0dense['snitch_occ_mean']).to_numpy(), width, color='tab:blue')
-#ax1.bar(dims, (single_core_0dense['fpsubs_occ_mean']).to_numpy(), width, bottom=(single_core_0dense['snitch_occ_mean']).to_numpy(), color='tab:red')
-#ax1.set(xlim=(0, 60), xticks=np.arange(0, 60, 10),
-#       ylim=(0, 1.2), yticks=np.arange(0, 1.2, 0.2))
-#ax1.legend(['Snitch IPC', 'FSS IPU'], loc='upper left')
-#plt.axhline(y = 1, color = 'r', linestyle = '--')
-#plt.grid(True)
-#plt.tight_layout()
-
-## plot IPC:
-#fig2, ax2 = plt.subplots()
-#plt.xlabel('Input dimension')
-#plt.ylabel('IPC')
-#plt.title('Single-core CRS0')
-#dims = np.array([5, 10, 20, 30 , 40, 50]);
-#width = 3
-#ax2.bar(dims, (single_core_0['snitch_occ_mean']).to_numpy(), width, yerr=3*(single_core_0['snitch_occ_std']).to_numpy(), color='tab:blue')
-#ax2.bar(dims, (single_core_0['fpsubs_occ_mean']).to_numpy(), width, yerr=3*(single_core_0['fpsubs_occ_std']).to_numpy(), bottom=(single_core_0['snitch_occ_mean']).to_numpy(), color='tab:red')
-#ax2.set(xlim=(0, 60), xticks=np.arange(0, 60, 10),
-#       ylim=(0, 1.2), yticks=np.arange(0, 1.2, 0.2))
-#ax2.legend(['Snitch IPC', 'FSS IPU'], loc='upper left')
-#plt.axhline(y = 1, color = 'r', linestyle = '--')
-#plt.grid(True)
-#plt.tight_layout()
-
-## plot IPC:
-#fig3, ax3 = plt.subplots()
-#plt.xlabel('Input dimension')
-#plt.ylabel('IPC')
-#plt.title('Single-core CRS1')
-#dims = np.array([5, 10, 20, 30 , 40, 50]);
-#width = 3
-#ax3.bar(dims, (single_core_1['snitch_occ_mean']).to_numpy(), width, yerr=3*(single_core_1['snitch_occ_std']).to_numpy(), color='tab:blue')
-#ax3.bar(dims, (single_core_1['fpsubs_occ_mean']).to_numpy(), width, yerr=3*(single_core_1['fpsubs_occ_std']).to_numpy(), bottom=(single_core_1['snitch_occ_mean']).to_numpy(), color='tab:red')
-#ax3.set(xlim=(0, 60), xticks=np.arange(0, 60, 10),
-#       ylim=(0, 1.2), yticks=np.arange(0, 1.2, 0.2))
-#ax3.legend(['Snitch IPC', 'FSS IPU'], loc='upper left')
-#plt.axhline(y = 1, color = 'r', linestyle = '--')
-#plt.grid(True)
-#plt.tight_layout()
-
 
 
 plt.show()
