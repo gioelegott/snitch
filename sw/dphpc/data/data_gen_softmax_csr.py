@@ -36,7 +36,7 @@ def main():
         "-o",
         "--outdir",
         type=pathlib.Path,
-        default=pathlib.Path.cwd(),
+        default=pathlib.Path.cwd() / "data/",
         required=False,
         help='Select out directory of generated data files'
     )
@@ -45,7 +45,7 @@ def main():
         "--tpl",
         type=pathlib.Path,
         required=False,
-        default=pathlib.Path.cwd() / "data_softmax.h.tpl",
+        default=pathlib.Path.cwd() / "data/data_softmax_csr.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -60,6 +60,14 @@ def main():
         type=int,
         required=False,
         default=5,
+        help='Matrix dimension'
+    )
+    parser.add_argument(
+        "-n",
+        "--nproc",
+        type=int,
+        required=False,
+        default=1,
         help='Matrix dimension'
     )
     parser.add_argument(
@@ -80,17 +88,40 @@ def main():
     density = 0.1
     A = sp.random(m, n, density, format='csr')
 
-    #Compute result
-    A_dense = A.todense()
-    A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
-    A_dense = tf.convert_to_tensor(A_dense)
-    C_dense = tf.keras.activations.softmax(A_dense, axis=ax)
+    if(ax==-1):
+        #Compute result
+        A_dense = A.todense()
+        print(A_dense)
+        A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
+        A_dense = tf.convert_to_tensor(A_dense)
+        C_dense = tf.keras.activations.softmax(A_dense, axis=ax)
+    else:
+        # Columns
+        A_dense = A.todense()
+        print(A_dense)
+        A_dense = np.transpose(A_dense) - np.transpose(np.max(np.array(A_dense), axis=0, keepdims=True))
+        A_dense = np.transpose(A_dense)
+        print(A_dense)
+        A_dense = tf.convert_to_tensor(A_dense)
+        C_dense = tf.keras.activations.softmax(A_dense, axis=0)
+
+#    #Compute result
+#    A_dense = A.todense()
+#    A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
+#    A_dense = tf.convert_to_tensor(A_dense)
+#    C_dense = tf.keras.activations.softmax(A_dense, axis=ax)
+
     #Convert result to sparse format
     C_dense = C_dense.numpy()
     print(C_dense)
     C = sp.csr_matrix(C_dense)
 
-    kwargs = {'name': 'softmax_csr', 'A': A, 'C': C}
+    kwargs = {'name'    : 'softmax_csr',
+              'A'       : A,
+              'C'       : C,
+              'dim'     : n,
+              'nproc'   : args.nproc,
+              'axis'    : ax}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 

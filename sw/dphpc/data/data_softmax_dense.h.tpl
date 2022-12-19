@@ -11,6 +11,8 @@
 %> \
 
 #define N (${dim})
+#define N_PROC (${nproc})
+#define AXIS (${axis})
 
 % for m, m_str in zip([A, C], ['A', 'C']):
 

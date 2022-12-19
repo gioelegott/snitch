@@ -36,7 +36,7 @@ def main():
         "-o",
         "--outdir",
         type=pathlib.Path,
-        default=pathlib.Path.cwd(),
+        default=pathlib.Path.cwd() / "data/",
         required=False,
         help='Select out directory of generated data files'
     )
@@ -45,7 +45,7 @@ def main():
         "--tpl",
         type=pathlib.Path,
         required=False,
-        default=pathlib.Path.cwd() / "data_softmax_dense.h.tpl",
+        default=pathlib.Path.cwd() / "data/data_softmax_dense.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -62,13 +62,20 @@ def main():
         default=5,
         help='Matrix dimension'
     )
-
+    parser.add_argument(
+        "-n",
+        "--nproc",
+        type=int,
+        required=False,
+        default=1,
+        help='Matrix dimension'
+    )
     parser.add_argument(
         "-a",
         "--axis",
         type=int,
         required=False,
-        default=0,
+        default=1,
         help='Softmax axis'
     )
 
@@ -81,18 +88,33 @@ def main():
     density = 0.1
     A = sp.random(m, n, density, format='csr')
 
-    #Compute result
-    A_dense = A.todense()
-    A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
-    print(A_dense)
-    A_dense = tf.convert_to_tensor(A_dense)
-    C_dense = tf.keras.activations.softmax(A_dense, axis=args.axis)
+    if(ax==-1):
+        #Compute result
+        A_dense = A.todense()
+        print(A_dense)
+        A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
+        A_dense = tf.convert_to_tensor(A_dense)
+        C_dense = tf.keras.activations.softmax(A_dense, axis=ax)
+    else:
+        # Columns
+        A_dense = A.todense()
+        print(A_dense)
+        A_dense = np.transpose(A_dense) - np.transpose(np.max(np.array(A_dense), axis=0, keepdims=True))
+        A_dense = np.transpose(A_dense)
+        print(A_dense)
+        A_dense = tf.convert_to_tensor(A_dense)
+        C_dense = tf.keras.activations.softmax(A_dense, axis=0)
+
     #Convert result to sparse format
     C_dense = C_dense.numpy()
     print(C_dense)
-    A_dense = A_dense.numpy()
 
-    kwargs = {'name': 'softmax_dense', 'A': A_dense.reshape(-1), 'C': C_dense.reshape(-1), 'dim' : n}
+    kwargs = {'name'    : 'softmax_dense',
+              'A'       : np.asarray(A.todense()).flatten(),
+              'C'       : C_dense.flatten(),
+              'dim'     : n,
+              'nproc'   : args.nproc,
+              'axis'    : ax}
 
     gen_data_header_file(args.outdir, args.tpl, **kwargs)
 
