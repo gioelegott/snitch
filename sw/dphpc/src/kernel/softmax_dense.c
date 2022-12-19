@@ -89,7 +89,7 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
     double sum, max, logit;
 
     // For axis zero
-    if (axis == 0) {
+    if (axis == -1) {
 
         for (i = 0; i < Nrow; i++) {
             max = 0;
@@ -159,9 +159,9 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
             max = 0;
             for (i = 0; i < 4 * (Nrow >> 2U); i += 4) {
                 double a0 = A[i * Ncol + j];
-                double a1 = A[i * Ncol + j + 1];
-                double a2 = A[i * Ncol + j + 2];
-                double a3 = A[i * Ncol + j + 3];
+                double a1 = A[(i + 1) * Ncol + j];
+                double a2 = A[(i + 2) * Ncol + j];
+                double a3 = A[(i + 3) * Ncol + j];
                 max = max < a0 ? a0 : max;
                 max = max < a1 ? a1 : max;
                 max = max < a2 ? a2 : max;
@@ -170,14 +170,14 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
             while (i < Nrow) {
                 double a0 = A[i * Ncol + j];
                 max = max < a0 ? a0 : max;
-                j++;
+                i++;
             }
             sum = 0;
             for (i = 0; i < 4 * (Nrow >> 2U); i += 4) {
                 double a0 = A[i * Ncol + j];
-                double a1 = A[i * Ncol + j + 1];
-                double a2 = A[i * Ncol + j + 2];
-                double a3 = A[i * Ncol + j + 3];
+                double a1 = A[(i + 1) * Ncol + j];
+                double a2 = A[(i + 2) * Ncol + j];
+                double a3 = A[(i + 3) * Ncol + j];
                 a0 = my_exp(a0 - max);
                 a1 = my_exp(a1 - max);
                 a2 = my_exp(a2 - max);
@@ -187,7 +187,7 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
                 sum += a2;
                 sum += a3;
             }
-            while (i < Ncol) {
+            while (i < Nrow) {
                 double a0 = A[i * Ncol + j];
                 a0 = my_exp(a0 - max);
                 sum += a0;
@@ -196,23 +196,23 @@ void softmax_dense_single(int axis, double volatile *A, double volatile *res, in
             logit = (double) 1 / sum;
             for (i = 0; i < 4 * (Nrow >> 2U); i += 4) {
                 double a0 = A[i * Ncol + j];
-                double a1 = A[i * Ncol + j + 1];
-                double a2 = A[i * Ncol + j + 2];
-                double a3 = A[i * Ncol + j + 3];
+                double a1 = A[(i + 1) * Ncol + j];
+                double a2 = A[(i + 2) * Ncol + j];
+                double a3 = A[(i + 3) * Ncol + j];
                 a0 = logit * my_exp(a0 - max);
                 a1 = logit * my_exp(a1 - max);
                 a2 = logit * my_exp(a2 - max);
                 a3 = logit * my_exp(a3 - max);
                 res[i * Ncol + j] = a0;
-                res[i * Ncol + j + 1] = a1;
-                res[i * Ncol + j + 2] = a2;
-                res[i * Ncol + j + 3] = a3;
+                res[(i + 1) * Ncol + j] = a1;
+                res[(i + 2) * Ncol + j] = a2;
+                res[(i + 3) * Ncol + j] = a3;
             }
-            while (i < Ncol) {
+            while (i < Nrow) {
                 double a0 = A[i * Ncol + j];
                 a0 = logit * my_exp(a0 - max);
                 res[i * Ncol + j] = a0;
-                j++;
+                i++;
             }
         }
 
@@ -225,7 +225,7 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
     double sum, max, logit;
 
     // For axis zero
-    if (axis == 0) {
+    if (axis == -1) {
 
         for (i = core_id; i < Nrow; i += nPE) {
             max = 0;
@@ -295,9 +295,9 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
             max = 0;
             for (i = 0; i < 4 * (Nrow >> 2U); i += 4) {
                 double a0 = A[i * Ncol + j];
-                double a1 = A[i * Ncol + j + 1];
-                double a2 = A[i * Ncol + j + 2];
-                double a3 = A[i * Ncol + j + 3];
+                double a1 = A[(i + 1) * Ncol + j];
+                double a2 = A[(i + 2) * Ncol + j];
+                double a3 = A[(i + 3) * Ncol + j];
                 max = max < a0 ? a0 : max;
                 max = max < a1 ? a1 : max;
                 max = max < a2 ? a2 : max;
@@ -306,14 +306,14 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
             while (i < Nrow) {
                 double a0 = A[i * Ncol + j];
                 max = max < a0 ? a0 : max;
-                j++;
+                i++;
             }
             sum = 0;
             for (i = 0; i < 4 * (Nrow >> 2U); i += 4) {
                 double a0 = A[i * Ncol + j];
-                double a1 = A[i * Ncol + j + 1];
-                double a2 = A[i * Ncol + j + 2];
-                double a3 = A[i * Ncol + j + 3];
+                double a1 = A[(i + 1) * Ncol + j];
+                double a2 = A[(i + 2) * Ncol + j];
+                double a3 = A[(i + 3) * Ncol + j];
                 a0 = my_exp(a0 - max);
                 a1 = my_exp(a1 - max);
                 a2 = my_exp(a2 - max);
@@ -323,7 +323,7 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
                 sum += a2;
                 sum += a3;
             }
-            while (i < Ncol) {
+            while (i < Nrow) {
                 double a0 = A[i * Ncol + j];
                 a0 = my_exp(a0 - max);
                 sum += a0;
@@ -332,23 +332,23 @@ void softmax_dense_parallel(int axis, double volatile *A, double volatile *res, 
             logit = (double) 1 / sum;
             for (i = 0; i < 4 * (Nrow >> 2U); i += 4) {
                 double a0 = A[i * Ncol + j];
-                double a1 = A[i * Ncol + j + 1];
-                double a2 = A[i * Ncol + j + 2];
-                double a3 = A[i * Ncol + j + 3];
+                double a1 = A[(i + 1) * Ncol + j];
+                double a2 = A[(i + 2) * Ncol + j];
+                double a3 = A[(i + 3) * Ncol + j];
                 a0 = logit * my_exp(a0 - max);
                 a1 = logit * my_exp(a1 - max);
                 a2 = logit * my_exp(a2 - max);
                 a3 = logit * my_exp(a3 - max);
                 res[i * Ncol + j] = a0;
-                res[i * Ncol + j + 1] = a1;
-                res[i * Ncol + j + 2] = a2;
-                res[i * Ncol + j + 3] = a3;
+                res[(i + 1) * Ncol + j] = a1;
+                res[(i + 2) * Ncol + j] = a2;
+                res[(i + 3) * Ncol + j] = a3;
             }
-            while (i < Ncol) {
+            while (i < Nrow) {
                 double a0 = A[i * Ncol + j];
                 a0 = logit * my_exp(a0 - max);
                 res[i * Ncol + j] = a0;
-                j++;
+                i++;
             }
         }
 

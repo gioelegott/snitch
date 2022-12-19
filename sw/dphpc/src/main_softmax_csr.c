@@ -11,22 +11,18 @@
 #include "data_softmax_csr.h"
 #include "softmax_csr.h"
 
-#define SINGLE
-#define AXIS (0)
-#define NUM_COMP_CORES 8
-
 csr_matrix volatile matrix_res;
 csr_matrix volatile matrix_A;
 
 int volatile errors;
-double volatile ERROR = 1e-3;
+double volatile ERROR = 1e-2;
 
 int main() {
 
     int volatile core_id = snrt_cluster_core_idx();
     int nPE = snrt_cluster_core_num();
 
-#if defined(SINGLE)
+#if (N_PROC == 1)
 
     if (core_id != 0) return 0;
 
@@ -48,16 +44,19 @@ int main() {
     matrix_A.cols = A.cols;
     matrix_A.nnz = A.nnz;
     for(int i = 0; i < A.nnz; i++) {
-    matrix_A.values[i] = A.values[i];
-    matrix_A.col_idx[i] = A.col_idx[i];
+        matrix_A.values[i] = A.values[i];
+        matrix_A.col_idx[i] = A.col_idx[i];
     }
     for(int i = 0; i < (A.rows + 1); i++) {
-    matrix_A.row_ptr[i] = A.row_ptr[i];
+        matrix_A.row_ptr[i] = A.row_ptr[i];
+    }
+    for(int i = 0; i < A.rows*A.cols; i++) {
+        matrix_res.values[i] = 0.0;
     }
     printf("A.values[0] = %f\n", A.values[0]);
 
     // Run the softmax
-    softmax_csr_single(AXIS, &matrix_A, matrix_res.values);
+    //softmax_csr_single(AXIS, &matrix_A, matrix_res.values);
     size_t time_init = benchmark_get_cycle();
     softmax_csr_single(AXIS, &matrix_A, matrix_res.values);
     size_t time_end = benchmark_get_cycle();
@@ -75,7 +74,7 @@ int main() {
 
     return errors;
 
-#elif defined(PARALLEL)
+#elif (N_PROC == 8)
 
     if (core_id == 0) {
         // Allocate space for the result matrix

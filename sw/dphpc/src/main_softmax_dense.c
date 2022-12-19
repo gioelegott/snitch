@@ -12,10 +12,6 @@
 #include "softmax_dense.h"
 #include "softmax_csr.h"
 
-#define PARALLEL
-#define AXIS (0)
-#define NUM_COMP_CORES 8
-
 double volatile *matrix_res;
 double volatile *matrix_A;
 
@@ -27,7 +23,7 @@ int main() {
     int volatile core_id = snrt_cluster_core_idx();
     int nPE = snrt_cluster_core_num();
 
-#if defined(SINGLE)
+#if (N_PROC == 1)
 
     if (core_id != 0) return 0;
 
@@ -48,7 +44,6 @@ int main() {
 
     // Check the result
     for (int i = 0; i < N * N; i++) {
-        // printf("matrix_res[%d] = %f\n", i, matrix_res[i]);
         if (my_fabs(matrix_res[i] - C[i]) > ERROR) {
             errors++;
         }
@@ -59,7 +54,7 @@ int main() {
 
     return errors;
 
-#elif defined(PARALLEL)
+#elif (N_PROC == 8)
 
     if (core_id == 0) {
         // Allocate space for the result matrix

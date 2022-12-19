@@ -106,10 +106,10 @@ void softmax_csr_single(int axis, csr_matrix volatile *A, double volatile *res) 
     A_values = A->values;
 
     int elr, elr_next, idx;
-    double register logit, sum, max, emax;
+    double logit, sum, max, emax;
 
     // For axis zero
-    if (axis == 0) {
+    if (axis == -1) {
 
         k = 0;
         for (i = 0; i < n_rows; i++) {
@@ -148,56 +148,31 @@ void softmax_csr_single(int axis, csr_matrix volatile *A, double volatile *res) 
     // For other axes
     } else {
 
-        k = 0;
-        while (k < nnz) {
-            idx = A_col_idx[k];
-            max = res[idx];
-            max = max < A_values[k] ? A_values[k] : max;
-            res[idx] = max;
-            k++;
-        }
-        k = 0;
-        while (k < nnz) {
-            idx = A_col_idx[k];
-            sum = res[n_cols + idx];
-            max = res[idx];
-            sum += my_exp(A_values[k] - max);
-            res[n_cols + idx] = sum;
-            k++;
-        }
-        for (j = 0; j < n_cols; j++) {
-            sum = res[n_cols + j];
-            max = res[j];
-            emax = my_exp(0.0-max);
-            logit = (1.0 / sum) * emax;
-            for (i = 0; i < n_rows; i++) {
-                res[i * n_cols + j] = logit;
-            }
-        }
-        k = 0;
-        for (i = 0; i < n_rows; i++) {
-            elr = A_row_ptr[i];
-            elr_next = A_row_ptr[i + 1];
-            while (k < elr_next) {
-                idx = A_col_idx[k];
-                res[i * n_cols + idx] *= my_exp(A_values[k]);
-                k++;
-            }
-        }
-
 //        for (j = 0; j < n_cols; j++) {
-//            // Compute the sum
-//            sum = n_cols;
+//            // Compute the max
+//            max = 0;
 //            k = 0;
 //            while (k < n_nnz) {
-//                if (A_col_idx[k] == j) {
-//                    sum -= 1;
-//                    sum += my_exp(A_values[k]);
+//                idx = A_col_idx[k];
+//                if (idx == j) {
+//                    max = max < A_values[k] ? A_values[k] : max;
+//                }
+//                k++;
+//            }
+//            // Compute the sum
+//            emax = my_exp(0.0-max);
+//            sum = n_cols * emax;
+//            k = 0;
+//            while (k < n_nnz) {
+//                idx = A_col_idx[k];
+//                if (idx == j) {
+//                    sum -= emax;
+//                    sum += my_exp(A_values[k] - max);
 //                }
 //                k++;
 //            }
 //            // Compute the logits
-//            logit = (double) (1.0 / sum);
+//            logit = (1.0 / sum) * emax;;
 //            k = A_row_ptr[0];
 //            for (i = 0; i < n_rows; i++) {
 //                elr_next = A_row_ptr[i + 1];
@@ -210,6 +185,55 @@ void softmax_csr_single(int axis, csr_matrix volatile *A, double volatile *res) 
 //                }
 //            }
 //        }
+
+        k = 0;
+        while (k < n_nnz) {
+            idx = A_col_idx[k];
+            max = res[idx];
+            max = max < A_values[k] ? A_values[k] : max;
+            //printf("%f %d\n", max, k);
+            res[idx] = max;
+            k++;
+        }
+        k = 0;
+        while (k < n_nnz) {
+            idx = A_col_idx[k];
+            max = res[idx];
+            sum = res[n_cols + idx];
+            sum += my_exp(A_values[k] - max);
+            //printf("%f %d\n", sum, k);
+            res[n_cols + idx] = sum;
+            res[2*n_cols + idx] += 1;
+            k++;
+        }
+        for (j = 0; j < n_cols; j++) {
+            max = res[j];
+            sum = res[n_cols + j];
+            k = res[2*n_cols + j];
+            emax = my_exp(0.0-max);
+            sum += emax * (n_rows - k);
+            logit = (1.0 / sum) * emax;
+            for (i = 0; i < 4 * (n_rows >> 2U); i += 4) {
+                res[i * n_cols + j] = logit;
+                res[(i + 1) * n_cols + j] = logit;
+                res[(i + 2) * n_cols + j] = logit;
+                res[(i + 3) * n_cols + j] = logit;
+            }
+            while (i < n_rows) {
+                res[i * n_cols + j] = logit;
+                i++;
+            }
+        }
+        k = 0;
+        for (i = 0; i < n_rows; i++) {
+            elr = A_row_ptr[i];
+            elr_next = A_row_ptr[i + 1];
+            while (k < elr_next) {
+                idx = A_col_idx[k];
+                res[i * n_cols + idx] *= my_exp(A_values[k]);
+                k++;
+            }
+        }
 
     }
 };
@@ -233,7 +257,7 @@ void softmax_csr_parallel(int axis, csr_matrix volatile *A, double volatile *res
     double logit, sum, max, emax;
 
     // For axis zero
-    if (axis == 0) {
+    if (axis == -1) {
 
         for (i = core_id; i < n_rows; i += nPE) {
             elr = A_row_ptr[i];
@@ -272,40 +296,98 @@ void softmax_csr_parallel(int axis, csr_matrix volatile *A, double volatile *res
     // For other axes
     } else {
 
+        int32_t nel;
+        double A_val;
+
         for (j = core_id; j < n_cols; j += nPE) {
             // Compute the max
+            nel = 0;
             max = 0;
             k = 0;
             while (k < n_nnz) {
-                if (A_col_idx[k] == j) {
-                    max = max < A_values[k] ? A_values[k] : max;
+                idx = A_col_idx[k];
+                if (idx == j) {
+                    A_val = A_values[k];
+                    max = (max < A_val) ? A_val : max;
+                    res[nel * n_cols + j] = A_val;
+                    nel += 1;
                 }
                 k++;
             }
             // Compute the sum
-            sum = n_cols;
+            emax = (max == 0) ? 1 : my_exp(0.0-max);
+            sum = n_cols * emax;
             k = 0;
-            while (k < n_nnz) {
-                if (A_col_idx[k] == j) {
-                    sum -= 1;
-                    sum += my_exp(A_values[k] - max);
-                }
+            while (k < nel) {
+                A_val = res[k * n_cols + j];
+                sum -= emax;
+                sum += my_exp(A_val - max);
                 k++;
             }
-            // Compute the logits
-            logit = (double) (my_exp(0.0 - max); / sum);
+//            // Compute the logits
+//            logit = (1.0 / sum) * emax;
+//            for (i = 0; i < 4*(n_rows >> 2U); i++) {
+//                res[i * n_cols + j] = logit;
+//                res[(i + 1) * n_cols + j] = logit;
+//                res[(i + 2) * n_cols + j] = logit;
+//                res[(i + 3) * n_cols + j] = logit;
+//            }
+//           while (i < n_rows) {
+//                res[i * n_rows + j] = logit;
+//                j++;
+//            }
             k = A_row_ptr[0];
+            logit = (1.0 / sum) * emax;
             for (i = 0; i < n_rows; i++) {
                 elr_next = A_row_ptr[i + 1];
                 res[i * n_cols + j] = logit;
                 while(k < elr_next) {
-                    if (A_col_idx[k] == j) {
+                    idx = A_col_idx[k];
+                    if (idx == j) {
                         res[i * n_cols + j] = logit * my_exp(A_values[k]);
                     }
                     k++;
                 }
             }
         }
+
+//        for (j = core_id; j < n_cols; j += nPE) {
+//            // Compute the max
+//            max = 0;
+//            k = 0;
+//            while (k < n_nnz) {
+//                idx = A_col_idx[k];
+//                if (idx == j) {
+//                    max = max < A_values[k] ? A_values[k] : max;
+//                }
+//                k++;
+//            }
+//            // Compute the sum
+//            emax = my_exp(0.0-max);
+//            sum = n_cols * emax;
+//            k = 0;
+//            while (k < n_nnz) {
+//                idx = A_col_idx[k];
+//                if (idx == j) {
+//                    sum -= emax;
+//                    sum += my_exp(A_values[k] - max);
+//                }
+//                k++;
+//            }
+//            // Compute the logits
+//            logit = (1.0 / sum) * emax;;
+//            k = A_row_ptr[0];
+//            for (i = 0; i < n_rows; i++) {
+//                elr_next = A_row_ptr[i + 1];
+//                res[i * n_cols + j] = logit;
+//                while(k < elr_next) {
+//                    if (A_col_idx[k] == j) {
+//                        res[i * n_cols + j] = logit * my_exp(A_values[k]);
+//                    }
+//                    k++;
+//                }
+//            }
+//        }
 
     }
 
