@@ -32,8 +32,6 @@ csr_matrix *matrix_A[CHANNELS], *matrix_FILTER[CHANNELS][CHANNELS], *matrix_res[
 //////////////////////////      MAIN        ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
 int main() {
-  const int compute_id = snrt_cluster_compute_core_idx();
-
   // ``````````````````````````//
   //####### Matrix Init #######//
   // ......................... //
@@ -41,6 +39,14 @@ int main() {
   assign_FILTER();
   assign_RES();
   snrt_cluster_hw_barrier();
+
+  // ``````````````````````````//
+  //####### Const Value #######//
+  // ......................... //
+  const int compute_id = snrt_cluster_compute_core_idx();
+  const int filter_row = FILTER[0][0].rows;
+  const int res_row    = A[0].rows - FILTER[0][0].rows + 1;
+  const int res_col    = A[0].cols - FILTER[0][0].cols + 1;
   
   // ``````````````````````````//
   //####### Matrix Alloc ######//
@@ -103,7 +109,7 @@ int main() {
       printf("Start Single Core Kernel Calculation \n");
       benchmark_get_cycle();
       for (int i = 0; i < CHANNELS; i++) { 
-        conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS);
+        conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, filter_row, res_row, res_col);
       }
       benchmark_get_cycle();
     }
@@ -119,7 +125,7 @@ int main() {
     if (compute_id < num_paral_cores) {
       benchmark_get_cycle();
       for (int i= compute_id * chnl_core; i < (compute_id + 1) * chnl_core; i++) {
-        conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS);
+        conv2d_csr(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, filter_row, res_row, res_col);
       }
       benchmark_get_cycle();
     }
