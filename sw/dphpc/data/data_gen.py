@@ -86,19 +86,43 @@ def main():
         help='Select out directory of generated data files'
     )
     parser.add_argument(
-        "-t",
-        "--tpl",
+        "-t_ccc",
+        "--tpl_ccc",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data.h.tpl",
+        default=script_path / "data_ccc.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
-        "-tdense",
-        "--tpldense",
+        "-t_ccd",
+        "--tpl_ccd",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_dense.h.tpl",
+        default=script_path / "data_ccd.h.tpl",
+        help='Path to mako template'
+    )
+    parser.add_argument(
+        "-t_ddd",
+        "--tpl_ddd",
+        type=pathlib.Path,
+        required=False,
+        default=script_path / "data_ddd.h.tpl",
+        help='Path to mako template'
+    )
+    parser.add_argument(
+        "-t_cdc",
+        "--tpl_cdc",
+        type=pathlib.Path,
+        required=False,
+        default=script_path / "data_cdc.h.tpl",
+        help='Path to mako template'
+    )
+    parser.add_argument(
+        "-t_cdd",
+        "--tpl_cdd",
+        type=pathlib.Path,
+        required=False,
+        default=script_path / "data_cdd.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -119,6 +143,7 @@ def main():
     density = args.density
     A_dense_elements = matrix_size * matrix_size
     filter_dense_elements = filter_size * filter_size
+    RES_dense_elements = (matrix_size - filter_size + 1) * (matrix_size - filter_size + 1)
     
     A = []
     for i in range(channel_size):
@@ -160,12 +185,20 @@ def main():
     ###############################
     ######## Output  File #########
     ###############################
-    kwargs = {'name': 'conv2d_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size}
-    gen_data_header_file(args.outdir, args.tpl, **kwargs)
+    kwargs = {'name': 'conv2d_csr_csr_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size}
+    gen_data_header_file(args.outdir, args.tpl_ccc, **kwargs)
+    
+    kwargs = {'name': 'conv2d_csr_csr_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'RES_dense_elements' : RES_dense_elements}
+    gen_data_header_file(args.outdir, args.tpl_ccd, **kwargs)
 
-    kwargs = {'name': 'conv2d_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'A_dense_elements' : A_dense_elements, 'filter_dense_elements' : filter_dense_elements}
-    gen_data_header_file(args.outdir, args.tpldense, **kwargs)
+    kwargs = {'name': 'conv2d_dense_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'A_dense_elements' : A_dense_elements, 'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
+    gen_data_header_file(args.outdir, args.tpl_ddd, **kwargs)
 
+    kwargs = {'name': 'conv2d_csr_dense_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size,'filter_dense_elements' : filter_dense_elements}
+    gen_data_header_file(args.outdir, args.tpl_cdc, **kwargs)
+    
+    kwargs = {'name': 'conv2d_csr_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size,'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
+    gen_data_header_file(args.outdir, args.tpl_cdd, **kwargs)
 
 if __name__ == "__main__":
     main()
