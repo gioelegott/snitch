@@ -572,6 +572,7 @@ def annotate_fpu(
                 if oper_name != 'NONE':
                     ret.append('{:<4} = {}'.format(oper_name, val))
         # Load / Store requests
+        perf_metrics[curr_sec]['fpss_stores'] += 0
         if extras['lsu_q_hs']:
             s = extras['ls_size']
             if extras['is_load']:
