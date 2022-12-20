@@ -86,9 +86,17 @@ csr_matrix RES[${channel_size}];
 /*
 ${m.todense()}
 */
+
+% if m.nnz==0 :
+double RES${i}_data[${m.nnz}] = {};
+int RES${i}_indices[${m.nnz}] = {};
+int RES${i}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
+% else:
 double RES${i}_data[${m.nnz}] = ${array_to_cstr(m.data)};
 int RES${i}_indices[${m.nnz}] = ${array_to_cstr(m.indices)};
 int RES${i}_indptr[${m.shape[1]+1}] = ${array_to_cstr(m.indptr)};
+%endif
+
 % endfor \
 
 // Array struct for matrix RES[${i}]
