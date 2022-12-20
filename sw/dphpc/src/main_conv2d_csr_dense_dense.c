@@ -17,13 +17,7 @@
 ///////////////////////////////////////////////////////////////////////
 //////////////////////////     CONFIG       ///////////////////////////
 ///////////////////////////////////////////////////////////////////////
-// 'NUM_COMP_CORES' = 1: 
-//  -> kernel will do serial computation;
-// 'CHANNELS' < NUM_COMP_CORES': 
-//  -> kernel will do partial parallel computation;
-// 'CHANNELS' >= NUM_COMP_CORES': 
-//  -> kernel will do full cluster parallel computation;
-#define NUM_COMP_CORES 8
+#define VERIFY 0
 
 // Declare output matrix
 csr_matrix *matrix_A[CHANNELS];  
@@ -133,6 +127,7 @@ int main() {
   benchmark_get_cycle();
   
   // Verification
+#if (VERIFY == 1)
   if (compute_id == 0) {
     printf("Start Results Verification\n");
     for (int i = 0; i < CHANNELS; i++) {
@@ -154,6 +149,7 @@ int main() {
   
   // Wait for all cores to finish
   snrt_cluster_hw_barrier();
+#endif
   
   return errors;
 }

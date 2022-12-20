@@ -54,6 +54,14 @@ def main():
         help='Input & Output channel size'
     )
     parser.add_argument(
+        "-n",
+        "--num_proc",
+        type=int,
+        required=False,
+        default=8,
+        help='Number of processors'
+    )
+    parser.add_argument(
         "-m",
         "--matrix_size",
         type=int,
@@ -137,13 +145,14 @@ def main():
     ###############################
     ######## Matrices Gen #########
     ###############################
-    channel_size = args.channel_size
-    matrix_size = args.matrix_size
-    filter_size = args.filter_size
-    density = args.density
-    A_dense_elements = matrix_size * matrix_size
+    channel_size          = args.channel_size
+    num_proc              = args.num_proc
+    matrix_size           = args.matrix_size
+    filter_size           = args.filter_size
+    density               = args.density
+    A_dense_elements      = matrix_size * matrix_size
     filter_dense_elements = filter_size * filter_size
-    RES_dense_elements = (matrix_size - filter_size + 1) * (matrix_size - filter_size + 1)
+    RES_dense_elements    = (matrix_size - filter_size + 1) * (matrix_size - filter_size + 1)
     
     A = []
     for i in range(channel_size):
@@ -185,20 +194,21 @@ def main():
     ###############################
     ######## Output  File #########
     ###############################
-    kwargs = {'name': 'conv2d_csr_csr_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size}
+    kwargs = {'name': 'conv2d_csr_csr_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc}
     gen_data_header_file(args.outdir, args.tpl_ccc, **kwargs)
     
-    kwargs = {'name': 'conv2d_csr_csr_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'RES_dense_elements' : RES_dense_elements}
+    kwargs = {'name': 'conv2d_csr_csr_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc, 'RES_dense_elements' : RES_dense_elements}
     gen_data_header_file(args.outdir, args.tpl_ccd, **kwargs)
 
-    kwargs = {'name': 'conv2d_dense_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'A_dense_elements' : A_dense_elements, 'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
+    kwargs = {'name': 'conv2d_dense_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc, 'A_dense_elements' : A_dense_elements, 'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
     gen_data_header_file(args.outdir, args.tpl_ddd, **kwargs)
 
-    kwargs = {'name': 'conv2d_csr_dense_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size,'filter_dense_elements' : filter_dense_elements}
+    kwargs = {'name': 'conv2d_csr_dense_csr', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc, 'filter_dense_elements' : filter_dense_elements}
     gen_data_header_file(args.outdir, args.tpl_cdc, **kwargs)
     
-    kwargs = {'name': 'conv2d_csr_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size,'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
+    kwargs = {'name': 'conv2d_csr_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc, 'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
     gen_data_header_file(args.outdir, args.tpl_cdd, **kwargs)
 
 if __name__ == "__main__":
     main()
+    
