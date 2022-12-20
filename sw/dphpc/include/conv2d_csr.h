@@ -13,3 +13,4 @@ void conv2d_csr_csr_dense(csr_matrix **A, csr_matrix **filter, dense_matrix *res
 void conv2d_csr_dense_csr(csr_matrix **A, dense_matrix **filter, csr_matrix *res, int channel_in, int filter_row, int filter_col, int res_row, int res_col);
 void conv2d_csr_dense_dense(csr_matrix **A, dense_matrix **filter, dense_matrix *res, int channel_in, int filter_row, int filter_col, int res_row, int res_col);
 void conv2d_dense_dense_dense(dense_matrix **A, dense_matrix **filter, dense_matrix *res, int channel_in, int res_row, int res_col);
+void conv2d_dense_csr_dense(dense_matrix **A, csr_matrix **filter, dense_matrix *res, int channel_in, int filter_row, int A_col, int res_row, int res_col);

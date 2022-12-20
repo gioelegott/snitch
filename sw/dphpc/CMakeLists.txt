@@ -66,5 +66,6 @@ add_snitch_dphpc_executable(conv2d_csr_csr_dense     src/main_conv2d_csr_csr_den
 add_snitch_dphpc_executable(conv2d_csr_dense_csr     src/main_conv2d_csr_dense_csr.c     data/data_conv2d_csr_dense_csr.h    )
 add_snitch_dphpc_executable(conv2d_csr_dense_dense   src/main_conv2d_csr_dense_dense.c   data/data_conv2d_csr_dense_dense.h  )
 add_snitch_dphpc_executable(conv2d_dense_dense_dense src/main_conv2d_dense_dense_dense.c data/data_conv2d_dense_dense_dense.h)
+add_snitch_dphpc_executable(conv2d_dense_csr_dense src/main_conv2d_dense_csr_dense.c data/data_conv2d_dense_csr_dense.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)

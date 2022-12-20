@@ -129,3 +129,23 @@ void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **fil
     }
   }
 }
+
+void conv2d_dense_csr_dense(struct dense_matrix **A, struct csr_matrix **filter, struct dense_matrix *res, int channel_in, int filter_row, int A_col, int res_row, int res_col) {
+  for (int i = 0; i < res_row; i++) {
+    for (int j = 0; j < res_col; j++) {
+      double sum = 0;
+      // "Channel IN" Loop
+      for (int ci=0; ci < channel_in; ci++){
+        // CSR Version Inner Loop:
+        for (int kx = 0; kx < filter_row; kx ++) {
+          for (int kx_f = filter[ci]->row_ptr[kx]; kx_f < filter[ci]->row_ptr[kx + 1]; kx_f++)  {
+            int A_col_idx = filter[ci]->col_idx[kx_f] + j;
+            int A_row_idx = kx + i;
+            sum += A[ci]->values[A_row_idx * A_col + A_col_idx] * filter[ci]->values[kx_f];
+          }
+        }
+      } 
+      res->values[i * res_col + j] = sum;
+    }
+  }
+}

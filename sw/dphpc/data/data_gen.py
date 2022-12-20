@@ -134,6 +134,14 @@ def main():
         help='Path to mako template'
     )
     parser.add_argument(
+        "-t_dcd",
+        "--tpl_dcd",
+        type=pathlib.Path,
+        required=False,
+        default=script_path / "data_dcd.h.tpl",
+        help='Path to mako template'
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action='store_true',
@@ -208,6 +216,9 @@ def main():
     
     kwargs = {'name': 'conv2d_csr_dense_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc, 'filter_dense_elements' : filter_dense_elements, 'RES_dense_elements' : RES_dense_elements}
     gen_data_header_file(args.outdir, args.tpl_cdd, **kwargs)
+
+    kwargs = {'name': 'conv2d_dense_csr_dense', 'A' : A, 'FILTER': FILTER, 'RES' : RES, 'channel_size' : channel_size, 'num_proc' : num_proc, 'A_dense_elements' : A_dense_elements, 'RES_dense_elements' : RES_dense_elements}
+    gen_data_header_file(args.outdir, args.tpl_dcd, **kwargs)
 
 if __name__ == "__main__":
     main()
