@@ -134,6 +134,7 @@ int main() {
   
   // Wait for all cores to finish
   snrt_cluster_hw_barrier();
+  benchmark_get_cycle();
   
   // Verification
   if (compute_id == 0) {

@@ -111,17 +111,17 @@ void conv2d_csr_dense_dense(struct csr_matrix **A, struct dense_matrix **filter,
   }
 }
 
-void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **filter, struct dense_matrix *res, int channel_in, int A_col, int filter_row, int filter_col, int res_row, int res_col) {
+void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **filter, struct dense_matrix *res, int channel_in, int res_row, int res_col) {
   for (int i = 0; i < res_row; i++) {
     for (int j = 0; j < res_col; j++) {
       double sum = 0;
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
-        for (int kx = 0; kx < filter_row; kx ++) {
+        int A_col = A[ci]->cols;
+        int filter_col = filter[ci]->cols;
+        for (int kx = 0; kx < filter[ci]->rows; kx ++) {
           for (int ky = 0; ky < filter_col; ky ++) {
-            int A_idx = (i + kx) * A_col + j + ky;
-            int f_idx = kx * filter_col + ky;
-            sum += A[ci]->values[A_idx] * filter[ci]->values[f_idx];
+            sum += A[ci]->values[i * A_col + j + kx * A_col + ky] * filter[ci]->values[kx * filter_col + ky];
           }
         }
       }
