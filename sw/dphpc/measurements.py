@@ -99,6 +99,8 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
                     # Break when confidence interval is smaller than 1% of mean
                     if ((i > 10) & (h/m < 0.01)):
                         break
+                    if (h/m)==0 :
+                        break
 
 
 #def plot(indir: pathlib.Path, outdir: pathlib.Path):
