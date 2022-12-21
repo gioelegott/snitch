@@ -209,15 +209,27 @@ def main():
 
     args = parser.parse_args()
 
-    size = [4, 8]
-
-    # -1 first axis 1 second axis
     test_cfg = []
-    test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
+    size = [4, 8]
+    # -1 first axis 1 second axis
     test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'conv2d_csr_csr_csr', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'conv2d_csr_dense_csr', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
+
+    size = [16]
+    # -1 first axis 1 second axis
+    test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    
+    size = [32]
+    # -1 first axis 1 second axis
+    test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
 
     if args.run:
         run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc)
