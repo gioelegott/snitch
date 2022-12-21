@@ -95,7 +95,7 @@ int main() {
       printf("Start Single Core Kernel Calculation \n");
       benchmark_get_cycle();
       for (int i = 0; i < CHANNELS; i++) { 
-        conv2d_dense_dense_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, res_row, res_col);
+        conv2d_dense_dense_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, A_col, filter_col, filter_row, res_row, res_col);
       }
       benchmark_get_cycle();
     }
@@ -111,7 +111,7 @@ int main() {
     if (compute_id < num_paral_cores) {
       benchmark_get_cycle();
       for (int i= compute_id * chnl_core; i < (compute_id + 1) * chnl_core; i++) {
-        conv2d_dense_dense_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, res_row, res_col);
+        conv2d_dense_dense_dense(matrix_A, matrix_FILTER[i], matrix_res[i], CHANNELS, A_col, filter_col, filter_row, res_row, res_col);
       }
       benchmark_get_cycle();
     }

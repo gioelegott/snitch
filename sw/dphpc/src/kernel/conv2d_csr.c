@@ -8,9 +8,10 @@
 #include "printf.h"
 
 void conv2d_csr_csr_csr(struct csr_matrix **A, struct csr_matrix **filter, struct csr_matrix *res, int channel_in, int filter_row, int res_row, int res_col) {
+  double sum;
   for (int i = 0; i < res_row; i++) {
     for (int j = 0; j < res_col; j++) {
-      double sum = 0;
+      sum = 0;
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
         // CSR Version Inner Loop:
@@ -36,17 +37,24 @@ void conv2d_csr_csr_csr(struct csr_matrix **A, struct csr_matrix **filter, struc
 }
 
 void conv2d_csr_csr_dense(struct csr_matrix **A, struct csr_matrix **filter, struct dense_matrix *res, int channel_in, int filter_row, int res_row, int res_col) {
+  double sum, sum2;
   for (int i = 0; i < res_row; i++) {
-    for (int j = 0; j < res_col; j++) {
-      double sum = 0;
+    for (int j = 0; j < res_col; j+=2) {
+      sum = 0;
+      sum2 = 0;
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
         // CSR Version Inner Loop:
         for (int kx = 0; kx < filter_row; kx ++) {
           for (int kx_f = filter[ci]->row_ptr[kx]; kx_f < filter[ci]->row_ptr[kx + 1]; kx_f++) {
             for (int kx_a = A[ci]->row_ptr[kx + i]; kx_a < A[ci]->row_ptr[kx + i + 1]; kx_a++)  {
+              // Unloop #1
               if (filter[ci]->col_idx[kx_f] + j == A[ci]->col_idx[kx_a]) {
                 sum += A[ci]->values[kx_a] * filter[ci]->values[kx_f];
+              }
+              // Unloop #2
+              if (filter[ci]->col_idx[kx_f] + j + 1 == A[ci]->col_idx[kx_a]) {
+                sum2 += A[ci]->values[kx_a] * filter[ci]->values[kx_f];
                 break;
               }
             }
@@ -54,23 +62,27 @@ void conv2d_csr_csr_dense(struct csr_matrix **A, struct csr_matrix **filter, str
         }
       }
       res->values[i * res_col + j] = sum;
+      res->values[i * res_col + j + 1] = sum2;
     }
   }
 }
 
 void conv2d_csr_dense_csr(struct csr_matrix **A, struct dense_matrix **filter, struct csr_matrix *res, int channel_in, int filter_row, int filter_col, int res_row, int res_col) {
+  int A_col_idx, f_idx;
+  double sum;
   for (int i = 0; i < res_row; i++) {
     for (int j = 0; j < res_col; j++) {
-      double sum = 0;
+      sum = 0;
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
         // CSR Version Inner Loop:
         for (int kx = 0; kx < filter_row; kx ++) {
           for (int kx_a = A[ci]->row_ptr[kx + i]; kx_a < A[ci]->row_ptr[kx + i + 1]; kx_a++)  {
-            int A_col_idx = A[ci]->col_idx[kx_a];
+            A_col_idx = A[ci]->col_idx[kx_a];
+            // Do MAC if A_col_idx inside the filter scope
             if (A_col_idx >= j) {
               if (A_col_idx <= filter_col + j -1){
-                int f_idx = kx * filter_col + A[ci]->col_idx[kx_a] - j;
+                f_idx = kx * filter_col + A_col_idx - j;
                 sum += A[ci]->values[kx_a] * filter[ci]->values[f_idx];
               }
             }
@@ -88,64 +100,118 @@ void conv2d_csr_dense_csr(struct csr_matrix **A, struct dense_matrix **filter, s
 }
 
 void conv2d_csr_dense_dense(struct csr_matrix **A, struct dense_matrix **filter, struct dense_matrix *res, int channel_in, int filter_row, int filter_col, int res_row, int res_col) {
+  int A_col_idx, f_idx;
+  double sum, sum2;
   for (int i = 0; i < res_row; i++) {
-    for (int j = 0; j < res_col; j++) {
-      double sum = 0;
+    for (int j = 0; j < res_col; j+=2) {
+      sum = 0;
+      sum2 = 0;
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
         // CSR Version Inner Loop:
         for (int kx = 0; kx < filter_row; kx ++) {
           for (int kx_a = A[ci]->row_ptr[kx + i]; kx_a < A[ci]->row_ptr[kx + i + 1]; kx_a++)  {
-            int A_col_idx = A[ci]->col_idx[kx_a];
+            A_col_idx = A[ci]->col_idx[kx_a];
+            f_idx = kx * filter_col + A_col_idx - j;
+            // Do MAC if A_col_idx inside the filter scope
+            // Unloop #1
             if (A_col_idx >= j) {
-              if (A_col_idx <= filter_col + j -1){
-                int f_idx = kx * filter_col + A[ci]->col_idx[kx_a] - j;
+              if (A_col_idx <= filter_col + j - 1){
                 sum += A[ci]->values[kx_a] * filter[ci]->values[f_idx];
+              }
+              // Unloop #2
+              if (A_col_idx >= j + 1) {
+                if (A_col_idx <= filter_col + j){
+                  sum2 += A[ci]->values[kx_a] * filter[ci]->values[f_idx - 1];
+                }
               }
             }
           }
         }
       }
       res->values[i * res_col + j] = sum;
+      res->values[i * res_col + j + 1] = sum2;
     }
   }
 }
 
-void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **filter, struct dense_matrix *res, int channel_in, int res_row, int res_col) {
+void conv2d_dense_csr_csr(struct dense_matrix **A, struct csr_matrix **filter, struct csr_matrix *res, int channel_in, int filter_row, int A_col, int res_row, int res_col) {
+  int A_col_idx, A_row_idx;
+  double sum;
   for (int i = 0; i < res_row; i++) {
     for (int j = 0; j < res_col; j++) {
-      double sum = 0;
-      // "Channel IN" Loop
-      for (int ci=0; ci < channel_in; ci++){
-        int A_col = A[ci]->cols;
-        int filter_col = filter[ci]->cols;
-        for (int kx = 0; kx < filter[ci]->rows; kx ++) {
-          for (int ky = 0; ky < filter_col; ky ++) {
-            sum += A[ci]->values[i * A_col + j + kx * A_col + ky] * filter[ci]->values[kx * filter_col + ky];
-          }
-        }
-      }
-      res->values[i * res_col + j] = sum;
-    }
-  }
-}
-
-void conv2d_dense_csr_dense(struct dense_matrix **A, struct csr_matrix **filter, struct dense_matrix *res, int channel_in, int filter_row, int A_col, int res_row, int res_col) {
-  for (int i = 0; i < res_row; i++) {
-    for (int j = 0; j < res_col; j++) {
-      double sum = 0;
+      sum = 0;
       // "Channel IN" Loop
       for (int ci=0; ci < channel_in; ci++){
         // CSR Version Inner Loop:
         for (int kx = 0; kx < filter_row; kx ++) {
           for (int kx_f = filter[ci]->row_ptr[kx]; kx_f < filter[ci]->row_ptr[kx + 1]; kx_f++)  {
-            int A_col_idx = filter[ci]->col_idx[kx_f] + j;
-            int A_row_idx = kx + i;
+            A_col_idx = filter[ci]->col_idx[kx_f] + j;
+            A_row_idx = kx + i;
             sum += A[ci]->values[A_row_idx * A_col + A_col_idx] * filter[ci]->values[kx_f];
           }
         }
       } 
+      if (sum != 0.0) {
+        res->values[res->nnz] = sum;
+        res->col_idx[res->nnz] = j;
+        res->nnz++;
+      }
+    }
+    res->row_ptr[i + 1] = res->nnz;
+  }
+}
+
+void conv2d_dense_csr_dense(struct dense_matrix **A, struct csr_matrix **filter, struct dense_matrix *res, int channel_in, int filter_row, int A_col, int res_row, int res_col) {
+  int A_col_idx, A_row_idx;
+  double sum, sum2;
+  for (int i = 0; i < res_row; i++) {
+    for (int j = 0; j < res_col; j+=2) {
+      sum = 0;
+      sum2 =0;
+      // "Channel IN" Loop
+      for (int ci=0; ci < channel_in; ci++){
+        // CSR Version Inner Loop:
+        for (int kx = 0; kx < filter_row; kx ++) {
+          for (int kx_f = filter[ci]->row_ptr[kx]; kx_f < filter[ci]->row_ptr[kx + 1]; kx_f++)  {
+            A_col_idx = filter[ci]->col_idx[kx_f] + j;
+            A_row_idx = kx + i;
+            sum += A[ci]->values[A_row_idx * A_col + A_col_idx] * filter[ci]->values[kx_f];
+            sum2 += A[ci]->values[A_row_idx * A_col + A_col_idx + 1] * filter[ci]->values[kx_f];
+          }
+        }
+      } 
       res->values[i * res_col + j] = sum;
+      res->values[i * res_col + j + 1] = sum2;
+    }
+  }
+}
+
+void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **filter, struct dense_matrix *res, int channel_in, int A_col, int filter_col, int filter_row, int res_row, int res_col) {
+  int A_idx, f_idx;
+  double sum, sum2;
+  for (int i = 0; i < res_row; i++) {
+    for (int j = 0; j < res_col; j+=2) {
+      sum = 0;
+      sum2 = 0;
+      // "Channel IN" Loop
+      for (int ci=0; ci < channel_in; ci++){
+        for (int kx = 0; kx < filter_row; kx ++) {
+          for (int ky = 0; ky < filter_col; ky +=3) {
+            A_idx = (i + kx) * A_col + j + ky;
+            f_idx = kx * filter_col + ky;
+            sum += A[ci]->values[A_idx] * filter[ci]->values[f_idx];
+            sum += A[ci]->values[A_idx + 1] * filter[ci]->values[f_idx + 1];
+            sum += A[ci]->values[A_idx + 2] * filter[ci]->values[f_idx + 2];
+            sum2 += A[ci]->values[A_idx + 1] * filter[ci]->values[f_idx];
+            sum2 += A[ci]->values[A_idx + 2] * filter[ci]->values[f_idx + 1];
+            sum2 += A[ci]->values[A_idx + 3] * filter[ci]->values[f_idx + 2];
+          }
+        }
+      }
+      res->values[i * res_col + j] = sum;
+      res->values[i * res_col + j + 1] = sum2;
+
     }
   }
 }
