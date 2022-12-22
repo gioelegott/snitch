@@ -76,6 +76,7 @@ int main() {
 
   // Wait for all cores to finish
   snrt_cluster_hw_barrier();
+  benchmark_get_cycle();
 
   // Check the result
   int errors = 0;
