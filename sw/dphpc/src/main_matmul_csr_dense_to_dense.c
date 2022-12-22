@@ -64,6 +64,7 @@ int main() {
 
   if (snrt_cluster_compute_core_idx() >= NUM_COMP_CORES || snrt_is_dm_core()) {
     snrt_cluster_hw_barrier();
+    snrt_cluster_hw_barrier();
     return 0;
   }
 
@@ -90,6 +91,12 @@ int main() {
 
   // Wait for all cores to finish
   snrt_cluster_hw_barrier();
+  benchmark_get_cycle();
+  if (compute_id == 0) {
+    dense_to_csr(matrix_res_dense, matrix_res);
+  }
+  snrt_cluster_hw_barrier();
+  benchmark_get_cycle();
 
   // Check the result
   int errors = 0;
