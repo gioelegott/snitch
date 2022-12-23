@@ -211,23 +211,26 @@ def main():
 
     test_cfg = []
     size = [4, 8]
-    # -1 first axis 1 second axis
+    # Small size for fast results
     test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_csrr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
 
     size = [16]
-    # -1 first axis 1 second axis
+    # Midium size will take one hour for each set
     test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_csrr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
     
     size = [32]
-    # -1 first axis 1 second axis
+    # Large size will take 4 hours for each set
     test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'conv2d_dense_csrr_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [8, 1], 'size': size, 'num_runs': args.num_tests})
 

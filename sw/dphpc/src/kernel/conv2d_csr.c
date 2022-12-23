@@ -187,6 +187,35 @@ void conv2d_dense_csr_dense(struct dense_matrix **A, struct csr_matrix **filter,
   }
 }
 
+void conv2d_dense_csrr_dense(struct dense_matrix **A, struct csrr_matrix **filter, struct dense_matrix *res, int channel_in, int A_col, int res_row, int res_col) {
+  int A_col_idx, A_row_idx;
+  double sum, sum2;
+  for (int i = 0; i < res_row; i++) {
+    for (int j = 0; j < res_col; j+=2) {
+      sum = 0;
+      sum2 =0;
+      // "Channel IN" Loop
+      for (int ci=0; ci < channel_in; ci++){
+        //int nnz_total = filter[ci]->nnz + filter[ci+1]->nnz + filter[ci+2]->nnz + filter[ci+3]->nnz;
+        //double f_collect[35] = {*filter[ci]->values, *filter[ci+1]->values, *filter[ci+2]->values, *filter[ci+3]->values};
+        //int f_col_idx_collect[35] = {*filter[ci]->col_idx, *filter[ci+1]->col_idx, *filter[ci+2]->col_idx, *filter[ci+3]->col_idx};
+        //int f_row_idx_collect[35] = {*filter[ci]->col_idx, *filter[ci+1]->col_idx, *filter[ci+2]->col_idx, *filter[ci+3]->col_idx};
+
+        for (int k=0; k < filter[ci]->nnz; k++) {
+          A_col_idx = filter[ci]->col_idx[k] + j;
+          A_row_idx = filter[ci]->row_idx[k] + i;
+          sum += A[ci]->values[A_row_idx * A_col + A_col_idx] * filter[ci]->values[k];
+          sum2 += A[ci]->values[A_row_idx * A_col + A_col_idx + 1] * filter[ci]->values[k];
+        }
+      } 
+      if (sum != 0.0) {
+        res->values[i * res_col + j] = sum;
+        res->values[i * res_col + j + 1] = sum2;
+      }
+    }
+  }
+}
+
 void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **filter, struct dense_matrix *res, int channel_in, int A_col, int filter_col, int filter_row, int res_row, int res_col) {
   int A_idx, f_idx;
   double sum, sum2;
@@ -200,12 +229,20 @@ void conv2d_dense_dense_dense(struct dense_matrix **A, struct dense_matrix **fil
           for (int ky = 0; ky < filter_col; ky +=3) {
             A_idx = (i + kx) * A_col + j + ky;
             f_idx = kx * filter_col + ky;
-            sum += A[ci]->values[A_idx] * filter[ci]->values[f_idx];
-            sum += A[ci]->values[A_idx + 1] * filter[ci]->values[f_idx + 1];
-            sum += A[ci]->values[A_idx + 2] * filter[ci]->values[f_idx + 2];
-            sum2 += A[ci]->values[A_idx + 1] * filter[ci]->values[f_idx];
-            sum2 += A[ci]->values[A_idx + 2] * filter[ci]->values[f_idx + 1];
-            sum2 += A[ci]->values[A_idx + 3] * filter[ci]->values[f_idx + 2];
+
+            double A0= A[ci]->values[A_idx];
+            double F0= filter[ci]->values[f_idx];
+            sum  += A0 * F0;
+            double A1= A[ci]->values[A_idx + 1];
+            double F1= filter[ci]->values[f_idx + 1];
+            sum2 += A1 * F0;
+            sum  += A1 * F1;
+            double A2= A[ci]->values[A_idx + 2];
+            double F2= filter[ci]->values[f_idx + 2];
+            sum2 += A2 * F1;
+            double A3= A[ci]->values[A_idx + 3];
+            sum  += A2 * F2;
+            sum2 += A3 * F2;
           }
         }
       }

@@ -138,6 +138,19 @@ mc_dcd_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy'
 mc_dcd_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
 mc_dcd_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
 
+# DCD_CSRR CONV2D - SINGLE
+config = {'binary': 'conv2d_dense_csrr_dense', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10}
+sc_dcrd_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+sc_dcrd_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+sc_dcrd_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+
+# DCD CONV2D - PARALLEL
+config = {'binary': 'conv2d_dense_csrr_dense', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10}
+mc_dcrd_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
+mc_dcrd_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
+mc_dcrd_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
+mc_dcrd_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
+
 #############################################################################
 # PLOT FEATURES
 
@@ -181,32 +194,37 @@ cmap = mcp.gen_color(cmap="Spectral_r",n=6)
 #l3, = ax0.plot(dims, m, marker="x", linewidth=2.0, color=cmap[2])
 #plt.fill_between(dims, m - h, m + h, color='k', alpha=0.2)
 #BARS
-width = 0.8
+width = 0.66
 m, se, h = mean_confidence_interval(sc_ddd_cycles, 0.95)
-l1 = ax0.bar(dims_normalized-3*width/2, m, width, color=cmap[0], edgecolor='k')
+l1 = ax0.bar(dims_normalized-4*width/2, m, width, color=cmap[0], edgecolor='k')
 
 m, se, h = mean_confidence_interval(sc_ccd_cycles, 0.95)
-l2 = ax0.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
-ax0.errorbar(dims_normalized-width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l2 = ax0.bar(dims_normalized-2*width/2, m, width, color=cmap[1], edgecolor='k')
+ax0.errorbar(dims_normalized-2*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
 m, se, h = mean_confidence_interval(sc_cdd_cycles, 0.95)
-l3 = ax0.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
-ax0.errorbar(dims_normalized+width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l3 = ax0.bar(dims_normalized, m, width, color=cmap[2], edgecolor='k')
+ax0.errorbar(dims_normalized, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
 m, se, h = mean_confidence_interval(sc_dcd_cycles, 0.95)
-l4 = ax0.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
-ax0.errorbar(dims_normalized+3*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l4 = ax0.bar(dims_normalized+2*width/2, m, width, color=cmap[3], edgecolor='k')
+ax0.errorbar(dims_normalized+2*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
-ax0.legend([l1, l2, l3, l4], ['Dense-Dense-Dense', 'CSR-CSR-DENSE', 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE'], loc='upper left', facecolor='white', framealpha=1, fontsize=SMALL_SIZE)
+m, se, h = mean_confidence_interval(sc_dcrd_cycles, 0.95)
+l5 = ax0.bar(dims_normalized+4*width/2, m, width, color=cmap[4], edgecolor='k')
+ax0.errorbar(dims_normalized+4*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+ax0.legend([l1, l2, l3, l4, l5], ['Dense-Dense-Dense', 'CSR-CSR-DENSE', 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE', 'DENSE-CSRv2-DENSE'], loc='upper left', facecolor='white', framealpha=1, fontsize=SMALL_SIZE)
 ax0.set_xticks(dims_normalized, dims_label)
 ax0.set_xlabel('Input dimension')
 ax0.set_ylabel('Cycles')
 ax0.set_title('CONV2D Single-core')
-ax0.set(ylim=(10**4, 1.5*10**6), yticks=np.arange(10**4, 1.5*10**6, 5*10**4), yscale="log")
+ax0.set(ylim=(6*10**3, 2*10**6), yticks=np.arange(6*10**3, 2*10**6, 10**4), yscale="log")
 #ax0.ticklabel_format(axis="y", style="sci", scilimits=(0,0), useMathText=True)
 
 ax0.grid(True)
 plt.tight_layout()
+
 
 ##LINES
 #m, se, h = mean_confidence_interval(mc_dense_cycles, 0.95)
@@ -220,26 +238,30 @@ plt.tight_layout()
 #BARS
 
 m, se, h = mean_confidence_interval(mc_ddd_cycles, 0.95)
-l1 = ax1.bar(dims_normalized-3*width/2, m, width, color=cmap[0], edgecolor='k')
+l1 = ax1.bar(dims_normalized-4*width/2, m, width, color=cmap[0], edgecolor='k')
 
 m, se, h = mean_confidence_interval(mc_ccd_cycles, 0.95)
-l2 = ax1.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
-ax1.errorbar(dims_normalized-width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l2 = ax1.bar(dims_normalized-2*width/2, m, width, color=cmap[1], edgecolor='k')
+ax1.errorbar(dims_normalized-2*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
 m, se, h = mean_confidence_interval(mc_cdd_cycles, 0.95)
-l3 = ax1.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
-ax1.errorbar(dims_normalized+width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l3 = ax1.bar(dims_normalized, m, width, color=cmap[2], edgecolor='k')
+ax1.errorbar(dims_normalized, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
 m, se, h = mean_confidence_interval(mc_dcd_cycles, 0.95)
-l4 = ax1.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
-ax1.errorbar(dims_normalized+3*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l4 = ax1.bar(dims_normalized+2*width/2, m, width, color=cmap[3], edgecolor='k')
+ax1.errorbar(dims_normalized+2*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
-ax1.legend([l1, l2, l3, l4], ['Dense-Dense-Dense', 'CSR-CSR-DENSE', 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE'], loc='upper left', facecolor='white', framealpha=1, fontsize=SMALL_SIZE)
+m, se, h = mean_confidence_interval(mc_dcrd_cycles, 0.95)
+l5 = ax1.bar(dims_normalized+4*width/2, m, width, color=cmap[4], edgecolor='k')
+ax1.errorbar(dims_normalized+4*width/2, m, 4*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+ax1.legend([l1, l2, l3, l4, l5], ['Dense-Dense-Dense', 'CSR-CSR-DENSE', 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE', 'DENSE-CSRv2-DENSE'], loc='upper left', facecolor='white', framealpha=1, fontsize=SMALL_SIZE)
 ax1.set_xticks(dims_normalized, dims_label)
 ax1.set_xlabel('Input dimension')
 ax1.set_ylabel('Cycles')
 ax1.set_title('CONV2D 8-cores')
-ax1.set(ylim=(10**3, 2*10**5), yticks=np.arange(10**3, 2*10**5, 10**3), yscale="log")
+ax1.set(ylim=(8*10**2, 3*10**5), yticks=np.arange(8*10**2, 3*10**5, 10**3), yscale="log")
 #ax1.ticklabel_format(axis="y", style="sci", scilimits=(0,0), useMathText=True)
 ax1.grid(True)
 plt.tight_layout()
@@ -256,30 +278,35 @@ plt.tight_layout()
 #plt.fill_between(dims_normalized, np.array(m) - np.array(h), np.array(m) + np.array(h), color='k', alpha=0.2)
 #BARS
 m, se, h = mean_confidence_interval_ratio(sc_ddd_cycles, mc_ddd_cycles, 0.95)
-l1 = ax2.bar(dims_normalized-3*width/2, m, width, color=cmap[0], edgecolor='k')
+l1 = ax2.bar(dims_normalized-4*width/2, m, width, color=cmap[0], edgecolor='k')
 
 m, se, h = mean_confidence_interval_ratio(sc_ccd_cycles, mc_ccd_cycles, 0.95)
-l2 = ax2.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
-ax2.errorbar(dims_normalized-width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l2 = ax2.bar(dims_normalized-2*width/2, m, width, color=cmap[1], edgecolor='k')
+ax2.errorbar(dims_normalized-2*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
 m, se, h = mean_confidence_interval_ratio(sc_cdd_cycles, mc_cdd_cycles, 0.95)
-l3 = ax2.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
-ax2.errorbar(dims_normalized+width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l3 = ax2.bar(dims_normalized, m, width, color=cmap[2], edgecolor='k')
+ax2.errorbar(dims_normalized, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
 m, se, h = mean_confidence_interval_ratio(sc_dcd_cycles, mc_dcd_cycles, 0.95)
-l4 = ax2.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
-ax2.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+l4 = ax2.bar(dims_normalized+2*width/2, m, width, color=cmap[3], edgecolor='k')
+ax2.errorbar(dims_normalized+2*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
-ax2.legend([l1, l2, l3, l4], ['Dense-Dense-Dense', 'CSR-CSR-DENSE', 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE'], loc='upper right', facecolor='white', framealpha=1, fontsize=SMALL_SIZE)
+m, se, h = mean_confidence_interval_ratio(sc_dcrd_cycles, mc_dcrd_cycles, 0.95)
+l5 = ax2.bar(dims_normalized+4*width/2, m, width, color=cmap[4], edgecolor='k')
+ax2.errorbar(dims_normalized+4*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+
+ax2.legend([l1, l2, l3, l4, l5], ['Dense-Dense-Dense', 'CSR-CSR-DENSE', 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE', 'DENSE-CSRv2-DENSE'], loc='upper right', facecolor='white', framealpha=1, fontsize=SMALL_SIZE)
 ax2.set_xticks(dims_normalized, dims)
 ax2.set_xlabel('Input dimension')
 ax2.set_ylabel('Speed-up')
 ax2.set_title('CONV2D Speed-UP')
-ax2.set(ylim=(0,10), yticks=np.arange(0, 10, 1))
+ax2.set(ylim=(0,10.8), yticks=np.arange(0, 10.8, 1))
 ax2.text(6.7, 8.2, 'IDEAL Speed-UP', color='r', fontsize=MEDIUM_SIZE)
 ax2.axhline(y = 8, color = 'r', linestyle = '--')
 ax2.grid(True)
 plt.tight_layout()
+
 
 #############################################################################
 # IPC PLOT
@@ -289,42 +316,50 @@ ax0= plt.subplot2grid((2, 2), (0, 0), colspan=2)
 ax1= plt.subplot2grid((2, 2), (1, 0), colspan=2)
 cmap = mcp.gen_color(cmap="RdBu",n=6)
 cmap=cmap[2:4]
-patterns = [ "", "/" , "o", "x" ]
+patterns = [ "", "/" , "o", "x", "." ]
 
-ax0.bar(dims_normalized-3*width/2, sc_ddd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-4*width/2, sc_ddd_coreipc.apply(np.mean, axis=0), width,
         color=cmap[0], hatch=patterns[0], edgecolor='k')
-ax0.bar(dims_normalized-3*width/2, sc_ddd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-4*width/2, sc_ddd_fpssipc.apply(np.mean, axis=0), width,
         bottom=sc_ddd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[0], edgecolor='k')
 
-ax0.bar(dims_normalized-width/2, sc_ccd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-2*width/2, sc_ccd_coreipc.apply(np.mean, axis=0), width,
         yerr=3*sc_ccd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims_normalized-width/2, sc_ccd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-2*width/2, sc_ccd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_ccd_fpssipc.apply(np.std, axis=0), bottom=sc_ccd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
-ax0.bar(dims_normalized+width/2, sc_cdd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized, sc_cdd_coreipc.apply(np.mean, axis=0), width,
         yerr=3*sc_cdd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims_normalized+width/2, sc_cdd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized, sc_cdd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_cdd_fpssipc.apply(np.std, axis=0), bottom=sc_cdd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
-ax0.bar(dims_normalized+3*width/2, sc_dcd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized+2*width/2, sc_dcd_coreipc.apply(np.mean, axis=0), width,
         yerr=3*sc_dcd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims_normalized+3*width/2, sc_dcd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized+2*width/2, sc_dcd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_dcd_fpssipc.apply(np.std, axis=0), bottom=sc_dcd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+ax0.bar(dims_normalized+4*width/2, sc_dcrd_coreipc.apply(np.mean, axis=0), width,
+        yerr=3*sc_dcrd_coreipc.apply(np.std, axis=0),
+        color=cmap[0], hatch=patterns[4], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax0.bar(dims_normalized+4*width/2, sc_dcrd_fpssipc.apply(np.mean, axis=0), width,
+        yerr=sc_dcrd_fpssipc.apply(np.std, axis=0), bottom=sc_dcrd_coreipc.apply(np.mean, axis=0),
+        color=cmap[1], hatch=patterns[4], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
 ax0.legend( [plt.bar([0], [0], color=cmap[0], edgecolor='k'),
              plt.bar([0], [0], color=cmap[1], edgecolor='k'),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[0]),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[1]),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[2]),
-             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[3])],
-            ["INT-core IPC", "FP-SS IPC", "DENSE-DENSE-DENSE", "CSR-CSR-DENSE", 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE'],
+             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[3]),
+             plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[4])],
+            ["INT-core IPC", "FP-SS IPC", "DENSE-DENSE-DENSE", "CSR-CSR-DENSE", 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE', 'DENSE-CSRv2-DENSE'],
             loc='upper right', bbox_to_anchor=(1.25, 1.05), facecolor='white', framealpha=1, fontsize=MEDIUM_SIZE)
 ax0.set_xticks(dims_normalized, dims_label)
 ax0.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
@@ -339,38 +374,48 @@ plt.tight_layout()
 s1 = mc_ddd_coreipc.apply(np.mean, axis=0)
 s2 = mc_ddd_fpssipc.apply(np.mean, axis=0)
 s3 = mc_ddd_synchov.apply(np.mean, axis=0)
-ax1.bar(dims_normalized-3*width/2, s1, width, color=cmap[0], hatch=patterns[0], edgecolor='k')
-ax1.bar(dims_normalized-3*width/2, s2, width, bottom=s1, color=cmap[1], hatch=patterns[0], edgecolor='k')
-ax1.bar(dims_normalized-3*width/2, s3, width, bottom=s1+s2, color='lightgray', edgecolor='k')
+ax1.bar(dims_normalized-4*width/2, s1, width, color=cmap[0], hatch=patterns[0], edgecolor='k')
+ax1.bar(dims_normalized-4*width/2, s2, width, bottom=s1, color=cmap[1], hatch=patterns[0], edgecolor='k')
+ax1.bar(dims_normalized-4*width/2, s3, width, bottom=s1+s2, color='lightgray', edgecolor='k')
 
 s1 = mc_ccd_coreipc.apply(np.mean, axis=0)
 s2 = mc_ccd_fpssipc.apply(np.mean, axis=0)
 s3 = mc_ccd_synchov.apply(np.mean, axis=0)
-ax1.bar(dims_normalized-width/2, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
+ax1.bar(dims_normalized-2*width/2, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims_normalized-width/2, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
+ax1.bar(dims_normalized-2*width/2, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
         color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims_normalized-width/2, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
+ax1.bar(dims_normalized-2*width/2, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
         color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
 s1 = mc_cdd_coreipc.apply(np.mean, axis=0)
 s2 = mc_cdd_fpssipc.apply(np.mean, axis=0)
 s3 = mc_cdd_synchov.apply(np.mean, axis=0)
-ax1.bar(dims_normalized+width/2, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
+ax1.bar(dims_normalized, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims_normalized+width/2, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
+ax1.bar(dims_normalized, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
         color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims_normalized+width/2, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
+ax1.bar(dims_normalized, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
         color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
 s1 = mc_dcd_coreipc.apply(np.mean, axis=0)
 s2 = mc_dcd_fpssipc.apply(np.mean, axis=0)
 s3 = mc_dcd_synchov.apply(np.mean, axis=0)
-ax1.bar(dims_normalized+3*width/2, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
+ax1.bar(dims_normalized+2*width/2, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims_normalized+3*width/2, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
+ax1.bar(dims_normalized+2*width/2, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
         color=cmap[1], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax1.bar(dims_normalized+3*width/2, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
+ax1.bar(dims_normalized+2*width/2, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
+        color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+s1 = mc_dcrd_coreipc.apply(np.mean, axis=0)
+s2 = mc_dcrd_fpssipc.apply(np.mean, axis=0)
+s3 = mc_dcrd_synchov.apply(np.mean, axis=0)
+ax1.bar(dims_normalized+4*width/2, s1, width, yerr=mc_ccd_coreipc.apply(np.std, axis=0),
+        color=cmap[0], hatch=patterns[4], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized+4*width/2, s2, width, yerr=mc_ccd_fpssipc.apply(np.std, axis=0), bottom=s1,
+        color=cmap[1], hatch=patterns[4], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+ax1.bar(dims_normalized+4*width/2, s3, width, yerr=mc_ccd_synchov.apply(np.std, axis=0), bottom=s1+s2,
         color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
 ax1.legend( [plt.bar([3], [0], color=cmap[0], edgecolor='k'),
@@ -379,8 +424,9 @@ ax1.legend( [plt.bar([3], [0], color=cmap[0], edgecolor='k'),
              plt.bar([3], [0], color='w', edgecolor='k'),
              plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[1]),
              plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[2]),
-             plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[3])],
-            ["INT-core IPC", "FP-SS IPC", "Synch.", "DENSE-DENSE-DENSE", "CSR-CSR-DENSE", 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE'],
+             plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[3]),
+             plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[4])],
+            ["INT-core IPC", "FP-SS IPC", "Synch.", "DENSE-DENSE-DENSE", "CSR-CSR-DENSE", 'CSR-DENSE-DENSE', 'DENSE-CSR-DENSE', 'DENSE-CSRv2-DENSE'],
             loc='upper right', bbox_to_anchor=(1.25, 1.05), facecolor='white', framealpha=1, fontsize=MEDIUM_SIZE)
 ax1.set_xticks(dims_normalized, dims)
 ax1.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
@@ -394,7 +440,3 @@ ax1.grid(True)
 plt.tight_layout()
 
 plt.show()
-
-
-
-
