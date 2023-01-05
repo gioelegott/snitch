@@ -200,27 +200,28 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     ax1.grid(True)
     plt.tight_layout()
 
-    m, se, h = mean_confidence_interval(norm_dense_cycles, 0.95)
-    l1 = ax2.bar(dims_normalized-width, m, width, color=cmap[0], edgecolor='k')
-    ax2.errorbar(dims_normalized-width, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    m, se, h = mean_confidence_interval(norm_csr_cycles, 0.95)
-    l2 = ax2.bar(dims_normalized, m, width, color=cmap[1], edgecolor='k')
-    ax2.errorbar(dims_normalized, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    m, se, h = mean_confidence_interval(norm_csr_csr_cycles, 0.95)
-    l3 = ax2.bar(dims_normalized+width, m, width, color=cmap[2], edgecolor='k')
-    ax2.errorbar(dims_normalized+width, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    ax2.legend([l1, l2, l3], ['dense', 'CSR-dense', 'CSR-CSR'], loc='upper left', facecolor='white', framealpha=1)
+    # m, se, h = mean_confidence_interval(norm_dense_cycles, 0.95)
+    # l1 = ax2.bar(dims_normalized-width, m, width, color=cmap[0], edgecolor='k')
+    # ax2.errorbar(dims_normalized-width, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    m, se, h = mean_confidence_interval(norm_parallel_dense_cycles, 0.95)
+    l2 = ax2.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
+    ax2.errorbar(dims_normalized-width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    m, se, h = mean_confidence_interval(norm_parallel_dense_cycles, 0.95)
+    l3 = ax2.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
+    ax2.errorbar(dims_normalized+width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    ax2.legend([l2, l3], ['dense', 'CSR-dense'], loc='upper left', facecolor='white', framealpha=1)
     ax2.set_xticks(dims_normalized, dims)
     ax2.set_xlabel('Input dimension')
     ax2.set_ylabel('Speed-up')
     ax2.set_title('Matmul Speed-UP')
-    # ax2.set(ylim=(0, 10), yticks=np.arange(0, 10, 1))
-    # ax2.text(42, 8.2, 'IDEAL Speed-UP', color='r', fontsize=MEDIUM_SIZE)
-    # ax2.axhline(y=8, color='r', linestyle='--')
+    ax2.set(ylim=(0, 10), yticks=np.arange(0, 10, 1))
+    ax2.text(42, 8.2, 'IDEAL Speed-UP', color='r', fontsize=MEDIUM_SIZE)
+    ax2.axhline(y=8, color='r', linestyle='--')
     ax2.grid(True)
     plt.tight_layout()
 
-    plt.savefig(outdir / 'gemm_kernel_comparison.png')
+    plt.savefig(outdir / 'gemm_cycles.png')
+    plt.savefig(outdir / 'gemm_cycles.eps', format='eps')
 
     """
     IPC Plots
@@ -321,6 +322,7 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     plt.tight_layout()
 
     plt.savefig(outdir / 'gemm_ipc.png')
+    plt.savefig(outdir / 'gemm_ipc.eps', format='eps')
 
 
 def main():
