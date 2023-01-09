@@ -23,18 +23,27 @@ macro(add_snitch_dphpc_executable name)
     add_executable(${ARGV})
     target_link_libraries(${name} ${SNITCH_RUNTIME})
     target_link_options(${name} PRIVATE "SHELL:-T ${LINKER_SCRIPT}")
-    string(REGEX MATCHALL "_[a-z]+" FORMATS ${name})
-    list(GET FORMATS 0 FORMAT_A)
-    list(GET FORMATS 1 FORMAT_B)
-    string(REGEX MATCH "[a-z]+" FORMAT_A_STRIPPED ${FORMAT_A})
-    string(REGEX MATCH "[a-z]+" FORMAT_B_STRIPPED ${FORMAT_B})
-    string(REGEX MATCH "^[^_]+" NAME_STRIPPED ${name})
-    add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${NAME_STRIPPED}.h
-        COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data.h.tpl
-        DEPENDS data/data_gen.py
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-    )
+    string(REGEX MATCH "^[^_]+" KERNEL ${name})
+    if (KERNEL STREQUAL "matmul")
+        string(REGEX MATCHALL "_[a-z]+" FORMATS ${name})
+        list(GET FORMATS 0 FORMAT_A)
+        list(GET FORMATS 1 FORMAT_B)
+        string(REGEX MATCH "[a-z]+" FORMAT_A_STRIPPED ${FORMAT_A})
+        string(REGEX MATCH "[a-z]+" FORMAT_B_STRIPPED ${FORMAT_B})
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${NAME_STRIPPED}.h
+            COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data_matmul.h.tpl
+            DEPENDS data/data_gen.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        )
+    elseif (KERNEL STREQUAL "softmax")
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${name}.h
+            COMMAND ./data/data_gen_${name}.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
+            DEPENDS data/data_gen_${name}.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        )
+    endif()
     add_custom_command(
         TARGET ${name}
         POST_BUILD
@@ -68,7 +77,6 @@ add_library(kernels src/kernel/matmul_csr.c src/kernel/softmax_csr.c src/kernel/
 target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 target_link_libraries(utils ${SNITCH_RUNTIME})
 
-add_snitch_dphpc_executable(matmul_csr src/main_matmul_csr.c data/data_matmul_csr.h)
 add_snitch_dphpc_executable(matmul_csr_csr src/main_matmul_csr_csr.c data/data_matmul.h)
 add_snitch_dphpc_executable(matmul_csr_csr_to_dense src/main_matmul_csr_csr_to_dense.c data/data_matmul.h)
 add_snitch_dphpc_executable(matmul_csr_dense src/main_matmul_csr_dense.c data/data_matmul.h)
