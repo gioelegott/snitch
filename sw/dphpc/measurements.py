@@ -88,6 +88,7 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
                     for j, p in enumerate(processses):
                         p.wait()
                         out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}.csv"
+                        # out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}_a{cfg['axis']}.csv"
                         cmd = f"./perf_extr.py -i build_{j}/logs -o {out_csv} -n {n}"
                         print(cmd)
                         subprocess.run(cmd, shell=True, check=True)
@@ -374,6 +375,10 @@ def main():
     # test_cfg.append({'binary': 'matmul_dense_dense', 'nproc': [8], 'size': size, 'num_runs': 1})
     # test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'matmul_csr_csr_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
+    #test_cfg.append({'binary': 'softmax_dense', 'nproc': [1, 8], 'size': size, 'num_runs': 1, 'axis': -1})
+    #test_cfg.append({'binary': 'softmax_dense', 'nproc': [1, 8], 'size': size, 'num_runs': 1, 'axis': 0})
+    #test_cfg.append({'binary': 'softmax_csr', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests, 'axis': -1})
+    test_cfg.append({'binary': 'softmax_csr', 'nproc': [1], 'size': size, 'num_runs': args.num_tests, 'axis': 0})
 
     if args.run:
         run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc)

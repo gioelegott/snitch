@@ -14,7 +14,7 @@ from mako.template import Template
 np.set_printoptions(precision=3)
 
 
-def gen_data_header_file(outdir: pathlib.Path, tpl: pathlib.Path, **kwargs):
+def gen_data_header_file(outdir: pathlib.Path.cwd(), tpl: pathlib.Path.cwd(), **kwargs):
 
     file = outdir / f"data_{kwargs['name']}.h"
 

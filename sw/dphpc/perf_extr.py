@@ -143,7 +143,6 @@ def main():
     df.iloc[-3, 0] = "min"
     df.iloc[-2, 0] = "max"
     df.iloc[-1, 0] = "total"
-
     # pretty print dataframe without index
     print(df)
 
