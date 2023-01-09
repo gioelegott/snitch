@@ -91,23 +91,19 @@ def main():
     if(ax==-1):
         #Compute result
         A_dense = A.todense()
-        print(A_dense)
         A_dense = A_dense - np.max(np.array(A_dense), axis=ax, keepdims=True)
         A_dense = tf.convert_to_tensor(A_dense)
         C_dense = tf.keras.activations.softmax(A_dense, axis=ax)
     else:
         # Columns
         A_dense = A.todense()
-        print(A_dense)
         A_dense = np.transpose(A_dense) - np.transpose(np.max(np.array(A_dense), axis=0, keepdims=True))
         A_dense = np.transpose(A_dense)
-        print(A_dense)
         A_dense = tf.convert_to_tensor(A_dense)
         C_dense = tf.keras.activations.softmax(A_dense, axis=0)
 
     #Convert result to sparse format
     C_dense = C_dense.numpy()
-    print(C_dense)
 
     kwargs = {'name'    : 'softmax_dense',
               'A'       : np.asarray(A.todense()).flatten(),
