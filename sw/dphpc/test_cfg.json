@@ -1,0 +1,13 @@
+[
+  {
+    "binary": "matmul_csr_csr_to_dense",
+    "nproc": [8],
+    "size": [8, 16, 32, 64]
+  },
+  {
+    "binary": "softmax_csr",
+    "nproc": [1],
+    "size": [8, 16, 32, 64],
+    "axis": 0
+  }
+]

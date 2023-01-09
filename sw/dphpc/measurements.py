@@ -10,6 +10,7 @@ import pathlib
 import subprocess
 import logging
 import glob
+import json
 
 import pandas as pd
 import numpy as np
@@ -40,21 +41,22 @@ def mean_confidence_interval(data, confidence):
     return m, se, h
 
 
-def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
+def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int, num_runs: int):
 
     # Create outdir
     outdir.mkdir(parents=True, exist_ok=True)
 
     for cfg in test_config:
+        kernel = cfg['binary'].split('_')[0]
         for n in cfg['nproc']:
             for s in cfg['size']:
                 results = []
-                if cfg['num_runs'] < nproc:
-                    nproc = cfg['num_runs']
-                logging.info(f"Parallelizing {cfg['num_runs']} with {nproc} processes")
-                for i in range(0, cfg['num_runs'], nproc):
+                if num_runs < nproc:
+                    nproc = num_runs
+                logging.info(f"Parallelizing {num_runs} with {nproc} processes")
+                for i in range(0, num_runs, nproc):
                     # Run measurement
-                    logging.info(f"Running measurement {i+1}-{i+nproc}/{cfg['num_runs']} of {cfg['binary']} with {n} cores and size {s}")
+                    logging.info(f"Running measurement {i+1}-{i+nproc}/{num_runs} of {cfg['binary']} with {n} cores and size {s}")
                     # Remove build folders
                     cmd = "rm -rf build*"
                     print(cmd)
@@ -65,7 +67,10 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
                         print(cmd)
                         subprocess.run(cmd, shell=True, check=True)
                         # Generate data
-                        cmd = f"./data/data_gen.py -s {s} -n {n} -m"
+                        if kernel == "matmul":
+                            cmd = f"./data/data_gen_matmul_csr.py -s {s} -n {n} -m --tpl data/data_matmul.h.tpl "
+                        elif kernel == "softmax":
+                            cmd = f"./data/data_gen_{cfg['binary']}.py -d {s} -n {n} --axis {cfg['axis']}"
                         print(cmd)
                         subprocess.run(cmd, shell=True, check=True)
                         # Build
@@ -83,7 +88,8 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
                     for j, p in enumerate(processses):
                         p.wait()
                         out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}.csv"
-                        # out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}_a{cfg['axis']}.csv"
+                        if "axis" in cfg:
+                            out_csv.replace(".csv", f"_{cfg['axis']}.csv")
                         cmd = f"./perf_extr.py -i build_{j}/logs -o {out_csv} -n {n}"
                         print(cmd)
                         subprocess.run(cmd, shell=True, check=True)
@@ -96,7 +102,7 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
                     m, se, h = mean_confidence_interval(pd.DataFrame(results), 0.95)
                     logging.info(f"Confidence interval: {m} +/- {h}")
                     # Break when confidence interval is smaller than 1% of mean
-                    if cfg['num_runs'] > 0:
+                    if num_runs > 0:
                         if (h/m < 0.01).bool():
                             break
 
@@ -104,9 +110,6 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
     cmd = "rm -rf build*"
     print(cmd)
     subprocess.run(cmd, shell=True, check=True)
-
-
-
 
 
 def main():
@@ -119,34 +122,18 @@ def main():
                         help='Path to input file')
     parser.add_argument("-o", "--outdir", type=pathlib.Path, default=script_path / "results", required=False,
                         help='Path to output directory')
-    parser.add_argument("-p", "--plot", action='store_true', help='Plot results')
-    parser.add_argument("-r", "--run", action='store_true', help='Run measurements')
+    parser.add_argument("-c", "--cfg", type=pathlib.Path, default=script_path / "test_cfg.json", required=False,
+                        help='Path to test configuration file')
     parser.add_argument("-n", "--nproc", type=int, required=False, default=8, help='Number of tests in parallel')
     parser.add_argument("-t", "--num_tests", type=int, required=False, default=50,
                         help='Number of maximum runs, it will stop when confidence interval is small enough')
 
     args = parser.parse_args()
 
-    size = [8, 16, 32, 64]
+    f = open(args.cfg)
+    test_cfg = json.load(f)
 
-    test_cfg = []
-    # test_cfg.append({'binary': 'matmul_dense_dense', 'nproc': [1, 8], 'size': size, 'num_runs': 1})
-    # test_cfg.append({'binary': 'matmul_csr_dense', 'nproc': [1], 'size': size, 'num_runs': args.num_tests})
-    # test_cfg.append({'binary': 'matmul_csr_csr', 'nproc': [1], 'size': size, 'num_runs': args.num_tests})
-    # test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
-    # test_cfg.append({'binary': 'matmul_dense_dense', 'nproc': [8], 'size': size, 'num_runs': 1})
-    # test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'matmul_csr_csr_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
-    #test_cfg.append({'binary': 'softmax_dense', 'nproc': [1, 8], 'size': size, 'num_runs': 1, 'axis': -1})
-    #test_cfg.append({'binary': 'softmax_dense', 'nproc': [1, 8], 'size': size, 'num_runs': 1, 'axis': 0})
-    #test_cfg.append({'binary': 'softmax_csr', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests, 'axis': -1})
-    test_cfg.append({'binary': 'softmax_csr', 'nproc': [1], 'size': size, 'num_runs': args.num_tests, 'axis': 0})
-
-    if args.run:
-        run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc)
-
-    if args.plot:
-        plot(indir=args.indir, outdir=args.outdir)
+    run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc, num_runs=args.num_tests)
 
 
 if __name__ == "__main__":
