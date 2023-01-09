@@ -31,9 +31,9 @@ macro(add_snitch_dphpc_executable name)
         string(REGEX MATCH "[a-z]+" FORMAT_A_STRIPPED ${FORMAT_A})
         string(REGEX MATCH "[a-z]+" FORMAT_B_STRIPPED ${FORMAT_B})
         add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${NAME_STRIPPED}.h
-            COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data_matmul.h.tpl
-            DEPENDS data/data_gen.py
+            OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${KERNEL}.h
+            COMMAND ./data/data_gen_matmul_csr.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data --tpl ${CMAKE_CURRENT_LIST_DIR}/data/data_matmul.h.tpl
+            DEPENDS data/data_gen_matmul_csr.py
             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
     elseif (KERNEL STREQUAL "softmax")
