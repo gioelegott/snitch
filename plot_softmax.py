@@ -55,7 +55,8 @@ def create_dataframe2(directory, test_config: list, stat, metric, **kwargs):
                 df = pd.read_csv(filepath)
                 distribution.extend(df.loc[df['desc'] == stat, metric].to_numpy())
                 j=j+1
-        df_out[dim] = distribution
+            df_loop=pd.DataFrame(distribution)
+        df_out = pd.concat([df_out, df_loop], axis=1, ignore_index=1)
     return df_out
 
 def mean_confidence_interval(data, confidence):
@@ -71,10 +72,11 @@ def mean_confidence_interval_ratio(data1, data2, confidence):
     h=[]
     for column in data1:
         div=[]
-        for i in range(0, len(data1[column])):
-            for j in range(0, len(data2[column])):
-                x = data1.loc[i].at[column]/data2.loc[j].at[column]
-                div.append(x)
+        for item1 in data1[column].items():
+            for item2 in data2[column].items():
+                if (pd.notna(item2[1])):
+                    x = item1[1]/item2[1]
+                    div.append(x)
         n = len(div)
         m.append(np.mean(div))
         se.append(stats.sem(div))
@@ -87,12 +89,12 @@ def mean_confidence_interval_ratio(data1, data2, confidence):
 #sc_dense_cycles = create_dataframe(directory, 'mean', 'cycles')
 #sc_dense_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
 #sc_dense_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
-## CRS SOFTMAX - SINGLE - AX0
+## CSR SOFTMAX - SINGLE - AX0
 #directory = '/scratch2/mbertuletti/snitch/results_softmax_sc_axis0'
 #sc_csr0_cycles = create_dataframe(directory, 'mean', 'cycles')
 #sc_csr0_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
 #sc_csr0_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
-## CRS SOFTMAX - SINGLE - AX1
+## CSR SOFTMAX - SINGLE - AX1
 #directory = '/scratch2/mbertuletti/snitch/results_softmax_sc_axis1'
 #sc_csr1_cycles = create_dataframe(directory, 'mean', 'cycles')
 #sc_csr1_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
@@ -102,19 +104,19 @@ def mean_confidence_interval_ratio(data1, data2, confidence):
 #mc_dense_cycles = create_dataframe(directory, 'mean', 'cycles')
 #mc_dense_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
 #mc_dense_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
-## CRS SOFTMAX -PARALLEL - AX0
+## CSR SOFTMAX -PARALLEL - AX0
 #directory = '/scratch2/mbertuletti/snitch/results_softmax_mc_axis0'
 #mc_csr0_cycles = create_dataframe(directory, 'mean', 'cycles')
 #mc_csr0_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
 #mc_csr0_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
-## CRS SOFTMAX -PARALLEL - AX1
+## CSR SOFTMAX -PARALLEL - AX1
 #directory = '/scratch2/mbertuletti/snitch/results_softmax_mc_axis1'
 #mc_csr1_cycles = create_dataframe(directory, 'mean', 'cycles')
 #mc_csr1_coreipc = create_dataframe(directory, 'mean', 'snitch_occupancy')
 #mc_csr1_fpssipc = create_dataframe(directory, 'mean', 'fpss_occupancy')
 
 
-directory = '/scratch2/mbertuletti/snitch/sw/dphpc/results2'
+directory = '/scratch2/mbertuletti/snitch/sw/dphpc/results4'
 dims = np.array([8, 16, 32, 64]);
 dims_normalized = np.log2(dims)*8
 
@@ -123,12 +125,12 @@ config = {'binary': 'softmax_dense', 'num_proc': 1, 'dimensions': dims, 'num_run
 sc_dense_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 sc_dense_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
 sc_dense_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
-# CRS SOFTMAX - SINGLE - AX0
+# CSR SOFTMAX - SINGLE - AX0
 config = {'binary': 'softmax_csr', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10, 'axis': -1}
 sc_csr0_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 sc_csr0_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
 sc_csr0_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
-# CRS SOFTMAX - SINGLE - AX1
+# CSR SOFTMAX - SINGLE - AX1
 config = {'binary': 'softmax_csr', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
 sc_csr1_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 sc_csr1_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
@@ -139,13 +141,13 @@ mc_dense_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 mc_dense_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
 mc_dense_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
 mc_dense_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
-# CRS SOFTMAX -PARALLEL - AX0
+# CSR SOFTMAX -PARALLEL - AX0
 config = {'binary': 'softmax_csr', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': -1}
 mc_csr0_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 mc_csr0_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
 mc_csr0_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
 mc_csr0_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
-# CRS SOFTMAX -PARALLEL - AX1
+# CSR SOFTMAX -PARALLEL - AX1
 config = {'binary': 'softmax_csr', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
 mc_csr1_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 mc_csr1_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
@@ -153,13 +155,13 @@ mc_csr1_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
 mc_csr1_synchov = create_dataframe2(directory, config, 'mean', 'synch_overhead')
 
 #############################################################################
-# CRS SOFTMAX - SINGLE - AX1
+# CSR SOFTMAX - SINGLE - AX1
 config = {'binary': 'softmax_csr_version2', 'num_proc': 1, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
 sc_csr12_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 sc_csr12_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
 sc_csr12_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
-# CRS SOFTMAX -PARALLEL - AX1
-config = {'binary': 'softmax_csr_version2', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
+# CSR SOFTMAX -PARALLEL - AX1
+config = {'binary': 'softmax_csr_version4', 'num_proc': 8, 'dimensions': dims, 'num_runs': 10, 'axis': 0}
 mc_csr12_cycles = create_dataframe2(directory, config, 'mean', 'cycles')
 mc_csr12_coreipc = create_dataframe2(directory, config, 'mean', 'snitch_occupancy')
 mc_csr12_fpssipc = create_dataframe2(directory, config, 'mean', 'fpss_occupancy')
@@ -224,7 +226,7 @@ m, se, h = mean_confidence_interval(sc_csr12_cycles, 0.95)
 l4 = ax0.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
 ax0.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
-ax0.legend([l1, l2, l3, l4], ['dense', 'CRS axis-0', 'CRS axis-1', 'CRS axis-1 v2'], loc='upper left', facecolor='white', framealpha=1)
+ax0.legend([l1, l2, l3, l4], ['dense', 'CSR axis-1', 'CSR axis-2 v1', 'CSR axis-2 v2'], loc='upper left', facecolor='white', framealpha=1)
 ax0.set_xticks(dims_normalized, dims)
 ax0.set_xlabel('Input dimension')
 ax0.set_ylabel('Cycles')
@@ -262,15 +264,24 @@ m, se, h = mean_confidence_interval(mc_csr12_cycles, 0.95)
 l4 = ax1.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
 ax1.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
-ax1.legend([l1, l2, l3, l4], ['dense', 'CRS axis-0', 'CRS axis-1', 'CRS axis-1 v2'], loc='upper left', facecolor='white', framealpha=1)
+ax1.legend([l1, l2, l3, l4], ['dense', 'CSR axis-1', 'CSR axis-2 v1', 'CSR axis-2 v2'], loc='upper left', facecolor='white', framealpha=1)
 ax1.set_xticks(dims_normalized, dims)
 ax1.set_xlabel('Input dimension')
 ax1.set_ylabel('Cycles')
 ax1.set_title('SOFTMAX 8-cores')
-ax1.set(ylim=(0, 2*10**5), yticks=np.arange(0, 2*10**5, 5*10**4))
+ax1.set(ylim=(0, 1.2*10**5), yticks=np.arange(0, 1.5*10**5, 5*10**4))
 ax1.ticklabel_format(axis="y", style="sci", scilimits=(0,0), useMathText=True)
 ax1.grid(True)
 plt.tight_layout()
+
+m, se, h = mean_confidence_interval_ratio(mc_dense_cycles, mc_csr0_cycles, 0.95)
+print(np.mean(m))
+m, se, h = mean_confidence_interval_ratio(mc_dense_cycles, mc_csr12_cycles, 0.95)
+print(np.mean(m))
+m, se, h = mean_confidence_interval_ratio(sc_dense_cycles, sc_csr0_cycles, 0.95)
+print(np.mean(m))
+m, se, h = mean_confidence_interval_ratio(sc_dense_cycles, sc_csr12_cycles, 0.95)
+print(np.mean(m))
 
 ##LINES
 #m, se, h = mean_confidence_interval_ratio(sc_dense_cycles, mc_dense_cycles, 0.95)
@@ -298,7 +309,7 @@ m, se, h = mean_confidence_interval_ratio(sc_csr12_cycles, mc_csr12_cycles, 0.95
 l4 = ax2.bar(dims_normalized+3*width/2, m, width, color=cmap[3], edgecolor='k')
 ax2.errorbar(dims_normalized+3*width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
-ax2.legend([l1, l2, l3, l4], ['dense', 'CRS axis-0', 'CRS axis-1', 'CRS axis-1 v2'], loc='upper left', facecolor='white', framealpha=1)
+ax2.legend([l1, l2, l3, l4], ['dense', 'CSR axis-1', 'CSR axis-2 v1', 'CSR axis-2 v2'], loc='upper left', facecolor='white', framealpha=1)
 ax2.set_xticks(dims_normalized, dims)
 ax2.set_xlabel('Input dimension')
 ax2.set_ylabel('Speed-up')
@@ -352,15 +363,15 @@ ax0.legend( [plt.bar([0], [0], color=cmap[0], edgecolor='k'),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[1]),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[2]),
              plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[3])],
-            ["INT-core IPC", "FP-SS IPC","Dense", "CRS axis-0", "CRS axis-1", "CRS axis-1 v2"],
+            ["INT-core IPC", "FP-SS IPC","Dense", "CSR axis-1", "CSR axis-2 v1", "CSR axis-2 v2"],
             loc='upper right', bbox_to_anchor=(1.3, 1.1), facecolor='white', framealpha=1)
 ax0.set_xticks(dims_normalized, dims)
 ax0.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
 ax0.text(42, 1.05, 'IDEAL IPC', color='r', fontsize=MEDIUM_SIZE)
 ax0.axhline(y = 1, color = 'r', linestyle = '--')
 ax0.set_xlabel('Input dimension')
-ax0.set_ylabel('Cycles')
-ax0.set_title('Occupation Single-core')
+ax0.set_ylabel('Occupation')
+ax0.set_title('SOFTMAX Single-core')
 ax0.grid(True)
 plt.tight_layout()
 
@@ -409,7 +420,7 @@ ax1.legend( [plt.bar([3], [0], color=cmap[0], edgecolor='k'),
              plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[1]),
              plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[2]),
              plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[3])],
-            ["INT-core IPC", "FP-SS IPC", "Synch.", "Dense", "CRS axis-0", "CRS axis-1", "CRS axis-1 v2"],
+            ["INT-core IPC", "FP-SS IPC", "Synch.", "Dense", "CSR axis-1", "CSR axis-2 v1", "CSR axis-2 v2"],
             loc='upper right', bbox_to_anchor=(1.3, 1.1), facecolor='white', framealpha=1)
 ax1.set_xticks(dims_normalized, dims)
 ax1.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
@@ -417,8 +428,8 @@ ax1.set(xlim=ax0.get_xlim())
 ax1.text(42, 1.05, 'IDEAL IPC', color='r', fontsize=MEDIUM_SIZE)
 ax1.axhline(y = 1, color = 'r', linestyle = '--')
 ax1.set_xlabel('Input dimension')
-ax1.set_ylabel('Cycles')
-ax1.set_title('Occupation 8-cores')
+ax1.set_ylabel('Occupation')
+ax1.set_title('SOFTMAX 8-cores')
 ax1.grid(True)
 plt.tight_layout()
 
