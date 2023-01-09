@@ -31,7 +31,7 @@ Further, `python3` is required with the packages specified in the `requirements.
 
 To run a binary on Banshee, please type the following commands:
 
-```
+```bash
 mkdir build && cd build
 cmake ..
 make run-banshee-<kernel>_<formats>
@@ -40,7 +40,7 @@ make run-banshee-<kernel>_<formats>
 where `<kernel>` is one of `softmax`, `matmul` or `conv` and `<formats>` are the corresponding sparse representations.
 For example:
 
-```
+```bash
 make run-banshee-matmul_csr_dense
 ```
 
@@ -53,6 +53,7 @@ mkdir build && cd build
 cmake -DSNITCH_RUNTIME snRuntime-cluster ..
 make run-rtl-<kernel>_<formats>
 ```
+
 
 where `<kernel>` and `<formats>` behave as described above.
 
