@@ -48,10 +48,32 @@ To run the kernels on cycle-accurate RTL simulations, you need to compile the si
 
 Afterwards, you can run the kernels with the following commands:
 
-```
+```bash
 mkdir build && cd build
 cmake -DSNITCH_RUNTIME snRuntime-cluster ..
 make run-rtl-<kernel>_<formats>
 ```
 
 where `<kernel>` and `<formats>` behave as described above.
+
+## Measurements
+
+To reproduce our results we wrote a script that automizes RTL measurements and spits out a CSV file with the results. The script is located in `measurements.py`. The script requires the verilator executable of a Snitch cluster, which can be compiled as described above. The script requires a test config JSON file (`test_cfg.json`) of all the kernel runs that are done. The runs can be configured the following:
+
+```json
+[
+  {
+    "binary": "matmul_csr_csr_to_dense",
+    "nproc": [8],
+    "size": [8, 16, 32, 64]
+  },
+  {
+    "binary": "softmax_csr",
+    "nproc": [1],
+    "size": [8, 16, 32, 64],
+    "axis": 0
+  }
+]
+```
+
+where `binary` is the kernel that is run, `nproc` defines on how many cores to parallelize the kernel, `size` defines the size of the input data, and `axis` defines the axis along which the softmax is applied. The script will run all combinations of the parameters and and an additional script `perf_extr.py` will output a CSV file with the results.
