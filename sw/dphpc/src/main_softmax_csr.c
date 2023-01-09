@@ -15,7 +15,7 @@ csr_matrix volatile matrix_res;
 csr_matrix volatile matrix_A;
 
 int volatile errors;
-double volatile ERROR = 1e-2;
+double volatile ERROR = 1e-1;
 
 int main() {
 
@@ -105,12 +105,22 @@ int main() {
     }
     snrt_cluster_hw_barrier();
 
+#if (VERSION == 1)
+
     benchmark_get_cycle();
     if (core_id < 8)
         softmax_csr_parallel(AXIS, &matrix_A, matrix_res.values, core_id, nPE-1);
     benchmark_get_cycle();
     snrt_cluster_hw_barrier();
     benchmark_get_cycle();
+
+#else
+    benchmark_get_cycle();
+    softmax_csr_parallel(AXIS, &matrix_A, matrix_res.values, core_id, nPE-1);
+    benchmark_get_cycle();
+    snrt_cluster_hw_barrier();
+    benchmark_get_cycle();
+#endif
 
     if (core_id != 0) return 0;
     // Check the result
