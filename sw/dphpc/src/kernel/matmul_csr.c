@@ -34,6 +34,26 @@ void matmul_csr_csr(csr_matrix *A, csr_matrix *B, csr_matrix *res) {
   }
 };
 
+void matmul_csr_csr_to_dense(csr_matrix *A, csr_matrix *B, dense_matrix *res) {
+  res->rows = A->rows;
+  res->cols = B->cols;
+
+  for (int i = 0; i < A->rows; i++) {
+    for (int j = 0; j < B->cols; j++) {
+      double sum = 0;
+      for (int k = A->row_ptr[i]; k < A->row_ptr[i + 1]; k++) {
+        for (int l = B->row_ptr[A->col_idx[k]]; l < B->row_ptr[A->col_idx[k] + 1]; l++) {
+          if (B->col_idx[l] == j) {
+            sum += A->values[k] * B->values[l];
+            break;
+          }
+        }
+      }
+      res->values[i * B->cols + j] = sum;
+    }
+  }
+}
+
 void matmul_csr_dense(csr_matrix *A, dense_matrix *B, csr_matrix *res) {
   res->rows = A->rows;
   res->cols = B->cols;
