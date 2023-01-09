@@ -143,14 +143,17 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense', nproc=1, size=dims)
     csr_csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_csr', nproc=1, size=dims)
     parallel_dense_cycles = read_run_from_csv(indir=indir, binary='matmul_dense_dense', nproc=8, size=dims)
-    parallel_csr_barrier_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='synch_overhead')
-    parallel_csr_transform_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='transform_overhead')
-    parallel_csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims)-parallel_csr_barrier_cycles-parallel_csr_transform_cycles
-    norm_csr_cycles = 1/csr_cycles.div(dense_cycles.iloc[0], axis=1)
-    norm_csr_csr_cycles = 1/csr_csr_cycles.div(dense_cycles.iloc[0], axis=1)
-    norm_dense_cycles = 1/dense_cycles.div(dense_cycles.iloc[0], axis=1)
+    parallel_csr_barrier_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='synch_cycles')
+    parallel_csr_transform_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='transform_cycles')
+    parallel_csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims)
+    parallel_csr_comp_cycles = parallel_csr_cycles-parallel_csr_barrier_cycles-parallel_csr_transform_cycles
+    parallel_csr_csr_barrier_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims, metric='synch_cycles')
+    parallel_csr_csr_transform_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims, metric='transform_cycles')
+    parallel_csr_csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims)
+    parallel_csr_csr_comp_cycles = parallel_csr_csr_cycles-parallel_csr_csr_barrier_cycles-parallel_csr_csr_transform_cycles
     norm_parallel_dense_cycles = 1/parallel_dense_cycles.div(dense_cycles.iloc[0], axis=1)
-    norm_parallel_csr_cycles = 1/parallel_csr_cycles.div(dense_cycles.iloc[0], axis=1)
+    norm_parallel_csr_cycles = 1/parallel_csr_cycles.div(csr_cycles.iloc[0], axis=1)
+    norm_parallel_csr_csr_cycles = 1/parallel_csr_csr_cycles.div(csr_csr_cycles.iloc[0], axis=1)
 
     fig0 = plt.figure(figsize=(15, 6))
     ax0 = plt.subplot2grid((2, 2), (0, 0), rowspan=1)
@@ -179,20 +182,17 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
 
     width = 1.5
     m1, se, h = mean_confidence_interval(parallel_dense_cycles, 0.95)
-    l1 = ax1.bar(dims_normalized-width/2, m1, width, color=cmap[0], edgecolor='k')
-    ax1.errorbar(dims_normalized-width/2, m1, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    l1 = ax1.bar(dims_normalized-width, m1, width, color=cmap[0], edgecolor='k')
+    ax1.errorbar(dims_normalized-width, m1, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
     m1, se, h = mean_confidence_interval(parallel_csr_cycles, 0.95)
-    l2 = ax1.bar(dims_normalized+width/2, m1, width, color=cmap[1], edgecolor='k')
-    ax1.errorbar(dims_normalized+width/2, m1, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    m2, se, h = mean_confidence_interval(parallel_csr_barrier_cycles, 0.95)
-    l1 = ax1.bar(dims_normalized+width/2, m2, width, color=cmap[0], edgecolor='k', bottom=m1)
-    ax1.errorbar(dims_normalized+width/2, m2, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    m3, se, h = mean_confidence_interval(parallel_csr_transform_cycles, 0.95)
-    l1 = ax1.bar(dims_normalized+width/2, m3, width, color=cmap[0], edgecolor='k', bottom=m1+m2)
-    ax1.errorbar(dims_normalized+width/2, m3, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    l2 = ax1.bar(dims_normalized, m1, width, color=cmap[1], edgecolor='k')
+    ax1.errorbar(dims_normalized, m1, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    m1, se, h = mean_confidence_interval(parallel_csr_csr_cycles, 0.95)
+    l3 = ax1.bar(dims_normalized+width, m1, width, color=cmap[2], edgecolor='k')
+    ax1.errorbar(dims_normalized+width, m1, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
 
     ax1.set_xticks(dims_normalized, dims)
-    ax1.legend([l1, l2], ['dense', 'CSR-dense'], loc='upper left', facecolor='white', framealpha=1)
+    ax1.legend([l1, l2, l3], ['dense', 'CSR-dense', 'CSR-CSR'], loc='upper left', facecolor='white', framealpha=1)
     ax1.set_xlabel('Input dimension')
     ax1.set_ylabel('Cycles')
     ax1.set_title('Matmul Multi-core')
@@ -204,12 +204,15 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     # l1 = ax2.bar(dims_normalized-width, m, width, color=cmap[0], edgecolor='k')
     # ax2.errorbar(dims_normalized-width, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
     m, se, h = mean_confidence_interval(norm_parallel_dense_cycles, 0.95)
-    l2 = ax2.bar(dims_normalized-width/2, m, width, color=cmap[1], edgecolor='k')
-    ax2.errorbar(dims_normalized-width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    m, se, h = mean_confidence_interval(norm_parallel_dense_cycles, 0.95)
-    l3 = ax2.bar(dims_normalized+width/2, m, width, color=cmap[2], edgecolor='k')
-    ax2.errorbar(dims_normalized+width/2, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
-    ax2.legend([l2, l3], ['dense', 'CSR-dense'], loc='upper left', facecolor='white', framealpha=1)
+    l2 = ax2.bar(dims_normalized-width, m, width, color=cmap[0], edgecolor='k')
+    ax2.errorbar(dims_normalized-width, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    m, se, h = mean_confidence_interval(norm_parallel_csr_cycles, 0.95)
+    l3 = ax2.bar(dims_normalized, m, width, color=cmap[1], edgecolor='k')
+    ax2.errorbar(dims_normalized, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    m, se, h = mean_confidence_interval(norm_parallel_csr_csr_cycles, 0.95)
+    l4 = ax2.bar(dims_normalized+width, m, width, color=cmap[2], edgecolor='k')
+    ax2.errorbar(dims_normalized+width, m, 2*np.array(h), fmt='none', ecolor='r', elinewidth=2)
+    ax2.legend([l2, l3, l4], ['dense', 'CSR-dense', 'CSR-CSR'], loc='upper left', facecolor='white', framealpha=1)
     ax2.set_xticks(dims_normalized, dims)
     ax2.set_xlabel('Input dimension')
     ax2.set_ylabel('Speed-up')
@@ -239,7 +242,11 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     parallel_csr_coreipc = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='snitch_occupancy')
     parallel_csr_fpuipc = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='fpss_occupancy')
     parallel_csr_synch = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='synch_overhead')
-    parallel_csr_transform = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='transform_overhead')
+    # parallel_csr_transform = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', nproc=8, size=dims, metric='transform_overhead')
+    parallel_csr_csr_coreipc = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims, metric='snitch_occupancy')
+    parallel_csr_csr_fpuipc = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims, metric='fpss_occupancy')
+    parallel_csr_csr_synch = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims, metric='synch_overhead')
+    # parallel_csr_csr_transform = read_run_from_csv(indir=indir, binary='matmul_csr_csr_to_dense', nproc=8, size=dims, metric='transform_overhead')
 
     fig1 = plt.figure(figsize=(11, 6))
     ax0 = plt.subplot2grid((2, 2), (0, 0), colspan=2)
@@ -271,7 +278,7 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
                plt.bar([0], [0], color='w', edgecolor='k'),
                plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[1]),
                plt.bar([0], [0], color='w', edgecolor='k', hatch=patterns[2])],
-               ["INT-core IPC", "FP-SS IPC", "Dense", "CSR-dense", "CSR-CSR"],
+               ["INT-core IPC", "FP-SS IPC", "dense", "CSR-dense", "CSR-CSR"],
                loc='upper right', bbox_to_anchor=(1.3, 1.1), facecolor='white', framealpha=1)
     ax0.set_xticks(dims_normalized, dims)
     ax0.set(ylim=(0, 1.2), yticks=np.arange(0, 1.3, 0.2))
@@ -286,29 +293,43 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     s1 = parallel_dense_coreipc.apply(np.mean, axis=0)
     s2 = parallel_dense_fpuipc.apply(np.mean, axis=0)
     s3 = parallel_dense_synch.apply(np.mean, axis=0)
-    ax1.bar(dims_normalized-width/2, s1, width, color=cmap[0], hatch=patterns[0], edgecolor='k')
-    ax1.bar(dims_normalized-width/2, s2, width, bottom=s1, color=cmap[1], hatch=patterns[0], edgecolor='k')
-    ax1.bar(dims_normalized-width/2, s3, width, bottom=s1+s2, color='lightgray', edgecolor='k')
+    ax1.bar(dims_normalized-width, s1, width, color=cmap[0], hatch=patterns[0], edgecolor='k')
+    ax1.bar(dims_normalized-width, s2, width, bottom=s1, color=cmap[1], hatch=patterns[0], edgecolor='k')
+    ax1.bar(dims_normalized-width, s3, width, bottom=s1+s2, color='lightgray', edgecolor='k')
 
     s1 = parallel_csr_coreipc.apply(np.mean, axis=0)
     s2 = parallel_csr_fpuipc.apply(np.mean, axis=0)
     s3 = parallel_csr_synch.apply(np.mean, axis=0)
-    s4 = parallel_csr_transform.apply(np.max, axis=0)
-    ax1.bar(dims_normalized+width/2, s1, width, yerr=parallel_csr_coreipc.apply(np.std, axis=0),
+    # s4 = parallel_csr_transform.apply(np.max, axis=0)
+    ax1.bar(dims_normalized, s1, width, yerr=parallel_csr_coreipc.apply(np.std, axis=0),
             color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-    ax1.bar(dims_normalized+width/2, s2, width, yerr=parallel_csr_fpuipc.apply(np.std, axis=0), bottom=s1,
+    ax1.bar(dims_normalized, s2, width, yerr=parallel_csr_fpuipc.apply(np.std, axis=0), bottom=s1,
             color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-    ax1.bar(dims_normalized+width/2, s3, width, yerr=parallel_csr_synch.apply(np.std, axis=0), bottom=s1+s2,
+    ax1.bar(dims_normalized, s3, width, yerr=parallel_csr_synch.apply(np.std, axis=0), bottom=s1+s2,
             color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-    ax1.bar(dims_normalized+width/2, s4, width, yerr=parallel_csr_synch.apply(np.std, axis=0), bottom=s1+s2+s3,
-            color='darkgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+    # ax1.bar(dims_normalized, s4, width, yerr=parallel_csr_synch.apply(np.std, axis=0), bottom=s1+s2+s3,
+    #         color='darkgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+
+    s1 = parallel_csr_csr_coreipc.apply(np.mean, axis=0)
+    s2 = parallel_csr_csr_fpuipc.apply(np.mean, axis=0)
+    s3 = parallel_csr_csr_synch.apply(np.mean, axis=0)
+    # s4 = parallel_csr_csr_transform.apply(np.max, axis=0)
+    ax1.bar(dims_normalized+width, s1, width, yerr=parallel_csr_csr_coreipc.apply(np.std, axis=0),
+            color=cmap[0], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+    ax1.bar(dims_normalized+width, s2, width, yerr=parallel_csr_csr_fpuipc.apply(np.std, axis=0), bottom=s1,
+            color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+    ax1.bar(dims_normalized+width, s3, width, yerr=parallel_csr_csr_synch.apply(np.std, axis=0), bottom=s1+s2,
+            color='lightgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
+    # ax1.bar(dims_normalized+width, s4, width, yerr=parallel_csr_csr_synch.apply(np.std, axis=0), bottom=s1+s2+s3,
+    #         color='darkgray', edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
     ax1.legend([plt.bar([3], [0], color=cmap[0], edgecolor='k'),
                 plt.bar([3], [0], color=cmap[1], edgecolor='k'),
                 plt.bar([3], [0], color='lightgray', edgecolor='k'),
                 plt.bar([3], [0], color='w', edgecolor='k'),
-                plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[1])],
-               ["INT-core IPC", "FP-SS IPC", "Synch.", "Dense", "CRS"],
+                plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[1]),
+                plt.bar([3], [0], color='w', edgecolor='k', hatch=patterns[2])],
+               ["INT-core IPC", "FP-SS IPC", "Synch.", "dense", "CSR-dense", "CSR-CSR"],
                loc='upper right', bbox_to_anchor=(1.3, 1.1), facecolor='white', framealpha=1)
     ax1.set_xticks(dims_normalized, dims)
     ax1.set(ylim=(0, 1.2), yticks=np.arange(0, 1.3, 0.2))
@@ -351,7 +372,8 @@ def main():
     # test_cfg.append({'binary': 'matmul_csr_csr', 'nproc': [1], 'size': size, 'num_runs': args.num_tests})
     # test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [1, 8], 'size': size, 'num_runs': args.num_tests})
     # test_cfg.append({'binary': 'matmul_dense_dense', 'nproc': [8], 'size': size, 'num_runs': 1})
-    test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
+    # test_cfg.append({'binary': 'matmul_csr_dense_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
+    test_cfg.append({'binary': 'matmul_csr_csr_to_dense', 'nproc': [8], 'size': size, 'num_runs': args.num_tests})
 
     if args.run:
         run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc)
