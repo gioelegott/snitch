@@ -112,8 +112,10 @@ void omp_init(void) {
 #endif
     }
 
+#ifndef OMPSTATIC_NUMTHREADS
     OMP_PRINTF(10, "omp_init numThreads=%d maxThreads=%d\r\n", omp_p->numThreads,
                omp_p->maxThreads);
+#endif
 }
 
 /**
@@ -155,8 +157,10 @@ void partialParallelRegion(int32_t argc, void *data,
     omp_p->plainTeam.nbThreads = num_threads;
 #endif
 
+#ifndef OMPSTATIC_NUMTHREADS
     OMP_PRINTF(10, "num_threads=%d nbThreads=%d omp_p->numThreads=%d\r\n",
                num_threads, omp_p->plainTeam.nbThreads, omp_p->numThreads);
+#endif
     parallelRegionExec(argc, data, fn, num_threads);
 }
 

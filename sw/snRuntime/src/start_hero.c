@@ -280,8 +280,10 @@ static int gomp_offload_manager() {
         mhCoreMask |= (1 << pid);
       }
     }
+#ifndef OMPSTATIC_NUMTHREADS
     omp_getData()->maxThreads = active_pe - nbOffloadRabMissHandlers;
     omp_getData()->numThreads = active_pe - nbOffloadRabMissHandlers;
+#endif
     // eu_dispatch_team_config(mhCoreMask);
     // eu_dispatch_push((unsigned int)&offload_rab_misses_handler);
     // eu_dispatch_push((unsigned int)&offload_rab_miss_sync);
