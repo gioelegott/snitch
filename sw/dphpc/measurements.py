@@ -90,7 +90,7 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int, num_ru
                         # Extract results
                         for j, p in enumerate(processses):
                             p.wait()
-                            out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}.csv"
+                            out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_d{d}_r{i+j}.csv"
                             if "axis" in cfg:
                                 out_csv.replace(".csv", f"_{cfg['axis']}.csv")
                             cmd = f"./perf_extr.py -i build_{j}/logs -o {out_csv} -n {n}"
