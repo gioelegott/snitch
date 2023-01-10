@@ -69,7 +69,7 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int, num_ru
                             subprocess.run(cmd, shell=True, check=True)
                             # Generate data
                             if kernel == "matmul":
-                                cmd = f"./data/data_gen_matmul_csr.py -s {s} -n {n} -m --tpl data/data_matmul.h.tpl "
+                                cmd = f"./data/data_gen_matmul_csr.py -s {s} -n {n} -d {d} -m --tpl data/data_matmul.h.tpl "
                             elif kernel == "softmax":
                                 cmd = f"./data/data_gen_{cfg['binary']}.py -d {s} -n {n} --axis {cfg['axis']}"
                             elif kernel == "conv2d":
