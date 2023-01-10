@@ -13,6 +13,16 @@ typedef struct csr_matrix {
   int cols;
 } csr_matrix;
 
+typedef struct csrr_matrix {
+  double *values;
+  int *col_idx;
+  int *row_idx;
+  int *row_ptr;
+  int nnz;
+  int rows;
+  int cols;
+} csrr_matrix;
+
 typedef struct dense_matrix {
   double *values;
   int rows;

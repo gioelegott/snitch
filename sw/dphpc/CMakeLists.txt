@@ -43,6 +43,13 @@ macro(add_snitch_dphpc_executable name)
             DEPENDS data/data_gen_${name}.py
             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         )
+    elseif (KERNEL STREQUAL "conv2d")
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${name}.h
+            COMMAND ./data/data_gen_conv2d.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
+            DEPENDS data/data_gen_conv2d.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        )
     endif()
     add_custom_command(
         TARGET ${name}
@@ -72,7 +79,7 @@ include_directories(include data src/utils src/kernels)
 include_directories(${SNRUNTIME_INCLUDE_DIRS})
 
 add_library(utils src/utils/utils.c)
-add_library(kernels src/kernel/matmul_csr.c src/kernel/softmax_csr.c src/kernel/softmax_dense.c)
+add_library(kernels src/kernel/matmul_csr.c src/kernel/softmax_csr.c src/kernel/softmax_dense.c src/kernel/conv2d_csr.c)
 
 target_link_libraries(kernels ${SNITCH_RUNTIME} utils)
 target_link_libraries(utils ${SNITCH_RUNTIME})
@@ -84,5 +91,12 @@ add_snitch_dphpc_executable(matmul_csr_dense_to_dense src/main_matmul_csr_dense_
 add_snitch_dphpc_executable(matmul_dense_dense src/main_matmul_dense_dense.c data/data_matmul.h)
 add_snitch_dphpc_executable(softmax_csr src/main_softmax_csr.c data/data_softmax_csr.h)
 add_snitch_dphpc_executable(softmax_dense src/main_softmax_dense.c data/data_softmax_dense.h)
+add_snitch_dphpc_executable(conv2d_csr_csr_csr       src/main_conv2d_csr_csr_csr.c       data/data_conv2d_csr_csr_csr.h      )
+add_snitch_dphpc_executable(conv2d_csr_csr_dense     src/main_conv2d_csr_csr_dense.c     data/data_conv2d_csr_csr_dense.h    )
+add_snitch_dphpc_executable(conv2d_csr_dense_csr     src/main_conv2d_csr_dense_csr.c     data/data_conv2d_csr_dense_csr.h    )
+add_snitch_dphpc_executable(conv2d_csr_dense_dense   src/main_conv2d_csr_dense_dense.c   data/data_conv2d_csr_dense_dense.h  )
+add_snitch_dphpc_executable(conv2d_dense_dense_dense src/main_conv2d_dense_dense_dense.c data/data_conv2d_dense_dense_dense.h)
+add_snitch_dphpc_executable(conv2d_dense_csr_dense src/main_conv2d_dense_csr_dense.c data/data_conv2d_dense_csr_dense.h)
+add_snitch_dphpc_executable(conv2d_dense_csrr_dense src/main_conv2d_dense_csrr_dense.c data/data_conv2d_dense_csrr_dense.h)
 
 set(SNITCH_TEST_PREFIX snDPHPC-)
