@@ -25,8 +25,8 @@ macro(add_snitch_dphpc_executable name)
     target_link_options(${name} PRIVATE "SHELL:-T ${LINKER_SCRIPT}")
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_LIST_DIR}/data/data_${name}.h
-        COMMAND ./data/data_gen.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
-        DEPENDS data/data_gen.py
+        COMMAND ./data/data_gen_conv2d.py --outdir ${CMAKE_CURRENT_LIST_DIR}/data
+        DEPENDS data/data_gen_conv2d.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     )
     add_custom_command(

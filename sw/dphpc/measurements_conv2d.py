@@ -21,7 +21,7 @@ from matplotlib.ticker import FormatStrFormatter
 
 
 # Log to measurements.log
-logging.basicConfig(filename='measurements.log', filemode='w', level=logging.INFO, format='%(asctime)s - %(message)s')
+logging.basicConfig(filename='measurements_conv2d.log', filemode='w', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 
 def read_value_from_csv(indir: pathlib.Path, binary: str, nproc: int, size: int, metric: str, stat: str = 'mean'):
@@ -65,7 +65,7 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int):
                             print(cmd)
                             subprocess.run(cmd, shell=True, check=True)
                             # Generate data
-                            cmd = f"./data/data_gen.py -m {s} -n {n} -d {d}"
+                            cmd = f"./data/data_gen_conv2d.py -m {s} -n {n} -d {d}"
                             print(cmd)
                             subprocess.run(cmd, shell=True, check=True)
                             # Build
@@ -122,8 +122,8 @@ def main():
     args = parser.parse_args()
 
     test_cfg = []
-    density = [0.1]
-    size = [4, 8, 16]
+    density = [0.4]
+    size = [4]
     # Small size for fast results
     test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [1, 8], 'size': size, 'density': density, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [1, 8], 'size': size, 'density': density, 'num_runs': args.num_tests})
@@ -131,13 +131,13 @@ def main():
     test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [1, 8], 'size': size, 'density': density, 'num_runs': args.num_tests})
     test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [1, 8], 'size': size, 'density': density, 'num_runs': args.num_tests})
     
-    size = [32]
+    #size = [32]
     # Large size will take 4 hours for each set
-    test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'conv2d_dense_csrr_dense', 'nproc': [1, 8], 'size': size, 'density': density, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
-    test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
+    #test_cfg.append({'binary': 'conv2d_csr_csr_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
+    #test_cfg.append({'binary': 'conv2d_dense_csr_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
+    #test_cfg.append({'binary': 'conv2d_dense_csrr_dense', 'nproc': [1, 8], 'size': size, 'density': density, 'num_runs': args.num_tests})
+    #test_cfg.append({'binary': 'conv2d_csr_dense_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
+    #test_cfg.append({'binary': 'conv2d_dense_dense_dense', 'nproc': [8, 1], 'size': size, 'density': density, 'num_runs': args.num_tests})
 
     if args.run:
         run_measurements(outdir=args.outdir, test_config=test_cfg, nproc=args.nproc)
