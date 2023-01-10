@@ -98,7 +98,7 @@ def main():
         "--tpl_ccc",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_ccc.h.tpl",
+        default=script_path / "data_conv2d_ccc.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -106,7 +106,7 @@ def main():
         "--tpl_ccd",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_ccd.h.tpl",
+        default=script_path / "data_conv2d_ccd.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -114,7 +114,7 @@ def main():
         "--tpl_ddd",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_ddd.h.tpl",
+        default=script_path / "data_conv2d_ddd.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -122,7 +122,7 @@ def main():
         "--tpl_cdc",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_cdc.h.tpl",
+        default=script_path / "data_conv2d_cdc.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -130,7 +130,7 @@ def main():
         "--tpl_cdd",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_cdd.h.tpl",
+        default=script_path / "data_conv2d_cdd.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -138,7 +138,7 @@ def main():
         "--tpl_dcd",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_dcd.h.tpl",
+        default=script_path / "data_conv2d_dcd.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
@@ -146,7 +146,7 @@ def main():
         "--tpl_dcdcsrr",
         type=pathlib.Path,
         required=False,
-        default=script_path / "data_dcd_csrr.h.tpl",
+        default=script_path / "data_conv2d_dcd_csrr.h.tpl",
         help='Path to mako template'
     )
     parser.add_argument(
