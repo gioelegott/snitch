@@ -310,7 +310,7 @@ plt.tight_layout()
 
 #############################################################################
 # IPC PLOT
-
+width = 0.73
 fig1 = plt.figure(figsize=(11, 6))
 ax0= plt.subplot2grid((2, 2), (0, 0), colspan=2)
 ax1= plt.subplot2grid((2, 2), (1, 0), colspan=2)
@@ -318,16 +318,16 @@ cmap = mcp.gen_color(cmap="RdBu",n=6)
 cmap=cmap[2:4]
 patterns = [ "", "/" , "o", "x", "." ]
 
-ax0.bar(dims_normalized-4*width/2, sc_ddd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-6*width/3, sc_ddd_coreipc.apply(np.mean, axis=0), width,
         color=cmap[0], hatch=patterns[0], edgecolor='k')
-ax0.bar(dims_normalized-4*width/2, sc_ddd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-6*width/3, sc_ddd_fpssipc.apply(np.mean, axis=0), width,
         bottom=sc_ddd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[0], edgecolor='k')
 
-ax0.bar(dims_normalized-2*width/2, sc_ccd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-3*width/3, sc_ccd_coreipc.apply(np.mean, axis=0), width,
         yerr=3*sc_ccd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims_normalized-2*width/2, sc_ccd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized-3*width/3, sc_ccd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_ccd_fpssipc.apply(np.std, axis=0), bottom=sc_ccd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[1], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
@@ -338,17 +338,17 @@ ax0.bar(dims_normalized, sc_cdd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_cdd_fpssipc.apply(np.std, axis=0), bottom=sc_cdd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[2], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
-ax0.bar(dims_normalized+2*width/2, sc_dcd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized+3*width/3, sc_dcd_coreipc.apply(np.mean, axis=0), width,
         yerr=3*sc_dcd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims_normalized+2*width/2, sc_dcd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized+3*width/3, sc_dcd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_dcd_fpssipc.apply(np.std, axis=0), bottom=sc_dcd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[3], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
-ax0.bar(dims_normalized+4*width/2, sc_dcrd_coreipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized+6*width/3, sc_dcrd_coreipc.apply(np.mean, axis=0), width,
         yerr=3*sc_dcrd_coreipc.apply(np.std, axis=0),
         color=cmap[0], hatch=patterns[4], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
-ax0.bar(dims_normalized+4*width/2, sc_dcrd_fpssipc.apply(np.mean, axis=0), width,
+ax0.bar(dims_normalized+6*width/3, sc_dcrd_fpssipc.apply(np.mean, axis=0), width,
         yerr=sc_dcrd_fpssipc.apply(np.std, axis=0), bottom=sc_dcrd_coreipc.apply(np.mean, axis=0),
         color=cmap[1], hatch=patterns[4], edgecolor='k', error_kw=dict(ecolor='r', lw=2, capsize=0, capthick=0))
 
@@ -366,7 +366,7 @@ ax0.set(ylim=(0,1.2), yticks=np.arange(0, 1.3, 0.2))
 ax0.text(6.7, 0.85, 'IDEAL IPC', color='r', fontsize=MEDIUM_SIZE)
 ax0.axhline(y = 1, color = 'r', linestyle = '--')
 ax0.set_xlabel('Input dimension')
-ax0.set_ylabel('Cycles')
+ax0.set_ylabel('Occupation')
 ax0.set_title('Occupation Single-core')
 ax0.grid(True)
 plt.tight_layout()
@@ -434,7 +434,7 @@ ax1.set(xlim=ax0.get_xlim())
 ax1.text(6.7, 0.85, 'IDEAL IPC', color='r', fontsize=MEDIUM_SIZE)
 ax1.axhline(y = 1, color = 'r', linestyle = '--')
 ax1.set_xlabel('Input dimension')
-ax1.set_ylabel('Cycles')
+ax1.set_ylabel('Occupation')
 ax1.set_title('Occupation 8-cores')
 ax1.grid(True)
 plt.tight_layout()
