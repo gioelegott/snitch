@@ -48,63 +48,66 @@ def run_measurements(outdir: pathlib.Path, test_config: list, nproc: int, num_ru
 
     for cfg in test_config:
         kernel = cfg['binary'].split('_')[0]
-        for n in cfg['nproc']:
-            for s in cfg['size']:
-                results = []
-                if num_runs < nproc:
-                    nproc = num_runs
-                logging.info(f"Parallelizing {num_runs} with {nproc} processes")
-                for i in range(0, num_runs, nproc):
-                    # Run measurement
-                    logging.info(f"Running measurement {i+1}-{i+nproc}/{num_runs} of {cfg['binary']} with {n} cores and size {s}")
-                    # Remove build folders
-                    cmd = "rm -rf build*"
-                    print(cmd)
-                    subprocess.run(cmd, shell=True, check=True)
-                    for p in range(nproc):
-                        # Create build folder for each core
-                        cmd = f"mkdir -p build_{p}"
+        for d in cfg['density']:
+            for n in cfg['nproc']:
+                for s in cfg['size']:
+                    results = []
+                    if num_runs < nproc:
+                        nproc = num_runs
+                    logging.info(f"Parallelizing {num_runs} with {nproc} processes")
+                    for i in range(0, num_runs, nproc):
+                        # Run measurement
+                        logging.info(f"Running measurement {i+1}-{i+nproc}/{num_runs} of {cfg['binary']} with {n} cores and size {s}")
+                        # Remove build folders
+                        cmd = "rm -rf build*"
                         print(cmd)
                         subprocess.run(cmd, shell=True, check=True)
-                        # Generate data
-                        if kernel == "matmul":
-                            cmd = f"./data/data_gen_matmul_csr.py -s {s} -n {n} -m --tpl data/data_matmul.h.tpl "
-                        elif kernel == "softmax":
-                            cmd = f"./data/data_gen_{cfg['binary']}.py -d {s} -n {n} --axis {cfg['axis']}"
-                        print(cmd)
-                        subprocess.run(cmd, shell=True, check=True)
-                        # Build
-                        cmd = f"cd build_{p} && cmake -DSNITCH_RUNTIME=snRuntime-cluster .. && make -j"
-                        print(cmd)
-                        subprocess.run(cmd, shell=True, check=True)
-                    # Run in parallel
-                    processses = []
-                    for j in range(nproc):
-                        # Make sure to run it in fast mode to prevent recompilation/linking of data
-                        cmd = f"cd build_{j} && make run-rtl-{cfg['binary']}/fast"
-                        print(cmd)
-                        processses.append(subprocess.Popen(cmd, shell=True))
-                    # Extract results
-                    for j, p in enumerate(processses):
-                        p.wait()
-                        out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}.csv"
-                        if "axis" in cfg:
-                            out_csv.replace(".csv", f"_{cfg['axis']}.csv")
-                        cmd = f"./perf_extr.py -i build_{j}/logs -o {out_csv} -n {n}"
-                        print(cmd)
-                        subprocess.run(cmd, shell=True, check=True)
-                        # Read in results to compute confidence interval
-                        df = pd.read_csv(out_csv, index_col=0)
-                        cycles = df.loc['mean', 'cycles']
-                        logging.info(f"Results of run {i+j}: Cycles: {cycles}")
-                        results.append(cycles)
-                    # Compute confidence interval
-                    m, se, h = mean_confidence_interval(pd.DataFrame(results), 0.95)
-                    logging.info(f"Confidence interval: {m} +/- {h}")
-                    # Break when confidence interval is smaller than 1% of mean
-                    if num_runs > 0:
-                        if (h/m < 0.01).bool():
-                            break
+                        for p in range(nproc):
+                            # Create build folder for each core
+                            cmd = f"mkdir -p build_{p}"
+                            print(cmd)
+                            subprocess.run(cmd, shell=True, check=True)
+                            # Generate data
+                            if kernel == "matmul":
+                                cmd = f"./data/data_gen_matmul_csr.py -s {s} -n {n} -m --tpl data/data_matmul.h.tpl "
+                            elif kernel == "softmax":
+                                cmd = f"./data/data_gen_{cfg['binary']}.py -d {s} -n {n} --axis {cfg['axis']}"
+                            elif kernel == "conv2d":
+                                cmd = f"./data/data_gen_conv2d.py -m {s} -n {n} -d {d}"
+                            print(cmd)
+                            subprocess.run(cmd, shell=True, check=True)
+                            # Build
+                            cmd = f"cd build_{p} && cmake -DSNITCH_RUNTIME=snRuntime-cluster .. && make -j"
+                            print(cmd)
+                            subprocess.run(cmd, shell=True, check=True)
+                        # Run in parallel
+                        processses = []
+                        for j in range(nproc):
+                            # Make sure to run it in fast mode to prevent recompilation/linking of data
+                            cmd = f"cd build_{j} && make run-rtl-{cfg['binary']}/fast"
+                            print(cmd)
+                            processses.append(subprocess.Popen(cmd, shell=True))
+                        # Extract results
+                        for j, p in enumerate(processses):
+                            p.wait()
+                            out_csv = f"{outdir}/{cfg['binary']}_n{n}_s{s}_r{i+j}.csv"
+                            if "axis" in cfg:
+                                out_csv.replace(".csv", f"_{cfg['axis']}.csv")
+                            cmd = f"./perf_extr.py -i build_{j}/logs -o {out_csv} -n {n}"
+                            print(cmd)
+                            subprocess.run(cmd, shell=True, check=True)
+                            # Read in results to compute confidence interval
+                            df = pd.read_csv(out_csv, index_col=0)
+                            cycles = df.loc['mean', 'cycles']
+                            logging.info(f"Results of run {i+j}: Cycles: {cycles}")
+                            results.append(cycles)
+                        # Compute confidence interval
+                        m, se, h = mean_confidence_interval(pd.DataFrame(results), 0.95)
+                        logging.info(f"Confidence interval: {m} +/- {h}")
+                        # Break when confidence interval is smaller than 1% of mean
+                        if num_runs > 0:
+                            if (h/m < 0.01).bool():
+                                break
 
     # Remove build folders
     cmd = "rm -rf build*"
