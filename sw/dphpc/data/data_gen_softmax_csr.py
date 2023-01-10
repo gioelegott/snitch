@@ -55,12 +55,20 @@ def main():
         help='Set verbose'
     )
     parser.add_argument(
-        "-d",
-        "--dimension",
+        "-s",
+        "--size",
         type=int,
         required=False,
         default=5,
-        help='Matrix dimension'
+        help='Matrix size'
+    )
+    parser.add_argument(
+        "-d",
+        "--density",
+        type=int,
+        required=False,
+        default=0.1,
+        help='Matrix density'
     )
     parser.add_argument(
         "-n",
@@ -68,7 +76,7 @@ def main():
         type=int,
         required=False,
         default=1,
-        help='Matrix dimension'
+        help='Number of processors for parallel execution'
     )
     parser.add_argument(
         "-ax",
@@ -76,16 +84,16 @@ def main():
         type=int,
         required=False,
         default=0,
-        help='Matrix dimension'
+        help='Axis along which softmax is applied'
     )
 
     args = parser.parse_args()
 
     # Create sparse matrix
-    n = args.dimension
-    m = args.dimension
+    n = args.size
+    m = args.size
     ax = args.axis
-    density = 0.1
+    density = args.density
     A = sp.random(m, n, density, format='csr')
 
     if(ax==-1):
