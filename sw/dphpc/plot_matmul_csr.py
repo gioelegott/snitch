@@ -93,8 +93,8 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
             ax.text(j, i, f"{density_speedup.iloc[i, j]:.1f}",
                     ha="center", va="center", color="w")
 
-    ax.set_xlabel('Input dimension')
-    ax.set_ylabel('Density')
+    ax.set_xlabel('Density')
+    ax.set_ylabel('Input dimension')
     ax.set_title('Density Speedup')
     plt.savefig(outdir / 'gemm_density.png')
 
