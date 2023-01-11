@@ -20,11 +20,14 @@ from mycolorpy import colorlist as mcp
 from matplotlib import font_manager
 
 
-def read_run_from_csv(indir: pathlib.Path, binary: str, nproc: int, size: int, metric: str = 'cycles', stat: str = 'mean'):
+def read_run_from_csv(indir: pathlib.Path, binary: str, nproc: int, size: int, metric: str = 'cycles', density = None, stat: str = 'mean'):
     data = pd.DataFrame()
     # Read in csv_files
     for s in size:
-        glob_str = f"{indir}/{binary}_n{nproc}_s{s}_r*.csv"
+        if density is not None:
+            glob_str = f"{indir}/{binary}_n{nproc}_s{s}_d{density}_r*.csv"
+        else:
+            glob_str = f"{indir}/{binary}_n{nproc}_s{s}_r*.csv"
         files = glob.glob(glob_str)
         values = []
         for f in files:
@@ -64,12 +67,41 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     cmap = mcp.gen_color(cmap="Spectral_r",n=6)
 
     dims = np.array([8, 16, 32, 64])
+    densities = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     dims_normalized = np.log2(dims)*8
+
+    """
+    Density Plots
+    """
+
+    dense_cycles = read_run_from_csv(indir=indir, binary='matmul_dense_dense', nproc=8, size=dims)
+    density_speedup = pd.DataFrame()
+    for d in densities:
+        csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', density=d, nproc=8, size=dims)
+        density_speedup[d] = dense_cycles.mean(axis=0)/csr_cycles.mean(axis=0)
+
+    fig4 = plt.figure(figsize=(6, 6))
+    ax = plt.subplot()
+    im = ax.imshow(density_speedup, cmap="PuOr")
+    ax.set_xticks(np.arange(len(densities)))
+    ax.set_yticks(np.arange(len(dims)))
+    ax.set_xticklabels(densities)
+    ax.set_yticklabels(dims)
+
+    for i in range(len(dims)):
+        for j in range(len(densities)):
+            ax.text(j, i, f"{density_speedup.iloc[i, j]:.1f}",
+                    ha="center", va="center", color="w")
+
+    ax.set_xlabel('Input dimension')
+    ax.set_ylabel('Density')
+    ax.set_title('Density Speedup')
+    plt.savefig(outdir / 'gemm_density.png')
+
 
     """
     Cycles Plots
     """
-
     dense_cycles = read_run_from_csv(indir=indir, binary='matmul_dense_dense', nproc=1, size=dims)
     csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense', nproc=1, size=dims)
     csr_csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_csr', nproc=1, size=dims)
