@@ -67,37 +67,61 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     cmap = mcp.gen_color(cmap="Spectral_r",n=6)
 
     dims = np.array([8, 16, 32, 64])
-    densities = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
+    densities = np.array([0.1, 0.2, 0.3, 0.4])
     dims_normalized = np.log2(dims)*8
 
     """
     Density Plots
     """
 
-    dense_cycles = read_run_from_csv(indir=indir, binary='matmul_dense_dense', nproc=8, size=dims)
+    dense_cycles = read_run_from_csv(indir=indir, binary='matmul_dense_dense', nproc=1, size=dims[::-1])
+    parallel_dense_cycles = read_run_from_csv(indir=indir, binary='matmul_dense_dense', nproc=8, size=dims[::-1])
     density_speedup = pd.DataFrame()
+    parallel_density_speedup = pd.DataFrame()
     for d in densities:
-        csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', density=d, nproc=8, size=dims)
+        csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense', density=d, nproc=1, size=dims[::-1])
+        parallel_csr_cycles = read_run_from_csv(indir=indir, binary='matmul_csr_dense_to_dense', density=d, nproc=8, size=dims[::-1])
         density_speedup[d] = dense_cycles.mean(axis=0)/csr_cycles.mean(axis=0)
+        parallel_density_speedup[d] = parallel_dense_cycles.mean(axis=0)/parallel_csr_cycles.mean(axis=0)
 
-    fig4 = plt.figure(figsize=(6, 6))
-    ax = plt.subplot()
-    im = ax.imshow(density_speedup, cmap="PuOr")
-    ax.set_xticks(np.arange(len(densities)))
-    ax.set_yticks(np.arange(len(dims)))
-    ax.set_xticklabels(densities)
-    ax.set_yticklabels(dims)
+    fig4 = plt.figure(figsize=(6, 12))
+    ax0 = plt.subplot2grid((2, 1), (0, 0))
+    ax1 = plt.subplot2grid((2, 1), (1, 0))
+    im = ax0.imshow(density_speedup, cmap="YlGn_r", vmin=0.5, vmax=2.5)
+    ax0.set_xticks(np.arange(len(densities)))
+    ax0.set_yticks(np.arange(len(dims[::-1])))
+    ax0.set_xticklabels(densities)
+    ax0.set_yticklabels(dims[::-1])
 
-    for i in range(len(dims)):
+    for i in range(len(dims[::-1])):
         for j in range(len(densities)):
-            ax.text(j, i, f"{density_speedup.iloc[i, j]:.1f}",
-                    ha="center", va="center", color="w")
+            color = "black" if density_speedup.iloc[i, j] > 2 else "white"
+            ax0.text(j, i, f"{density_speedup.iloc[i, j]:.2f}",
+                     ha="center", va="center", color=color, fontsize=20)
 
-    ax.set_xlabel('Density')
-    ax.set_ylabel('Input dimension')
-    ax.set_title('Density Speedup')
+    ax0.set_xlabel('Density')
+    ax0.set_ylabel('Input dimension')
+    ax0.set_title('Single-Core Density Speedup')
+    plt.tight_layout()
+
+    im = ax1.imshow(parallel_density_speedup, cmap="YlGn_r", vmin=0.5, vmax=2.5)
+    ax1.set_xticks(np.arange(len(densities)))
+    ax1.set_yticks(np.arange(len(dims[::-1])))
+    ax1.set_xticklabels(densities)
+    ax1.set_yticklabels(dims[::-1])
+
+    for i in range(len(dims[::-1])):
+        for j in range(len(densities)):
+            ax1.text(j, i, f"{parallel_density_speedup.iloc[i, j]:.2f}",
+                     ha="center", va="center", color="w", fontsize=20)
+
+    ax1.set_xlabel('Density')
+    ax1.set_ylabel('Input dimension')
+    ax1.set_title('8-Core Density Speedup')
+    plt.tight_layout()
+
     plt.savefig(outdir / 'gemm_density.png')
-
+    plt.savefig(outdir / 'gemm_density.eps', format='eps')
 
     """
     Cycles Plots
@@ -308,14 +332,15 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     plt.savefig(outdir / 'gemm_ipc.png')
     plt.savefig(outdir / 'gemm_ipc.eps', format='eps')
 
+
 def main():
 
-  script_path = Path(__file__).parent.absolute()
+    script_path = Path(__file__).parent.absolute()
 
-  indir = script_path / 'results'
-  outdir = script_path / 'results'
+    indir = script_path / 'results'
+    outdir = script_path / 'results'
 
-  plot(indir, outdir)
+    plot(indir, outdir)
 
 
 if __name__ == "__main__":
