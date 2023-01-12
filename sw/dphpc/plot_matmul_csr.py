@@ -84,10 +84,10 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
         density_speedup[d] = dense_cycles.mean(axis=0)/csr_cycles.mean(axis=0)
         parallel_density_speedup[d] = parallel_dense_cycles.mean(axis=0)/parallel_csr_cycles.mean(axis=0)
 
-    fig4 = plt.figure(figsize=(6, 12))
+    fig4 = plt.figure(figsize=(4, 8))
     ax0 = plt.subplot2grid((2, 1), (0, 0))
     ax1 = plt.subplot2grid((2, 1), (1, 0))
-    im = ax0.imshow(density_speedup, cmap="YlGn_r", vmin=0.5, vmax=2.5)
+    im = ax0.imshow(density_speedup, cmap="YlGn_r", vmin=0.8, vmax=2.5)
     ax0.set_xticks(np.arange(len(densities)))
     ax0.set_yticks(np.arange(len(dims[::-1])))
     ax0.set_xticklabels(densities)
@@ -97,14 +97,14 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
         for j in range(len(densities)):
             color = "black" if density_speedup.iloc[i, j] > 2 else "white"
             ax0.text(j, i, f"{density_speedup.iloc[i, j]:.2f}",
-                     ha="center", va="center", color=color, fontsize=20)
+                     ha="center", va="center", color=color, fontsize=MEDIUM_SIZE, fontweight='bold')
 
     ax0.set_xlabel('Density')
     ax0.set_ylabel('Input dimension')
     ax0.set_title('Single-Core Density Speedup')
     plt.tight_layout()
 
-    im = ax1.imshow(parallel_density_speedup, cmap="YlGn_r", vmin=0.5, vmax=2.5)
+    im = ax1.imshow(parallel_density_speedup, cmap="YlGn_r", vmin=0.8, vmax=2.5)
     ax1.set_xticks(np.arange(len(densities)))
     ax1.set_yticks(np.arange(len(dims[::-1])))
     ax1.set_xticklabels(densities)
@@ -113,7 +113,7 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
     for i in range(len(dims[::-1])):
         for j in range(len(densities)):
             ax1.text(j, i, f"{parallel_density_speedup.iloc[i, j]:.2f}",
-                     ha="center", va="center", color="w", fontsize=20)
+                     ha="center", va="center", color="w", fontsize=MEDIUM_SIZE, fontweight='bold')
 
     ax1.set_xlabel('Density')
     ax1.set_ylabel('Input dimension')
@@ -122,6 +122,7 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
 
     plt.savefig(outdir / 'gemm_density.png')
     plt.savefig(outdir / 'gemm_density.eps', format='eps')
+    plt.savefig(outdir / 'gemm_density.svg', format='svg')
 
     """
     Cycles Plots
@@ -212,6 +213,7 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
 
     plt.savefig(outdir / 'gemm_cycles.png')
     plt.savefig(outdir / 'gemm_cycles.eps', format='eps')
+    plt.savefig(outdir / 'gemm_cycles.svg', format='svg')
 
     """
     IPC Plots
@@ -331,6 +333,7 @@ def plot(indir: pathlib.Path, outdir: pathlib.Path):
 
     plt.savefig(outdir / 'gemm_ipc.png')
     plt.savefig(outdir / 'gemm_ipc.eps', format='eps')
+    plt.savefig(outdir / 'gemm_ipc.svg', format='svg')
 
 
 def main():
