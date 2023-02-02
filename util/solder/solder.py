@@ -1122,6 +1122,11 @@ class AxiLiteBus(Bus):
                           name or self.name,
                           declared=False)
 
+    # TODO: For some reason the suffix here is nonstandard, hence the override.
+    # This ought to be fixed, but for now, it is everywhere...
+    def rsp_type(self):
+        return "{}_resp_t".format(self.type_prefix)
+
     def emit_struct(self):
         return AxiLiteStruct.emit(self.aw, self.dw)
 
@@ -1621,13 +1626,13 @@ class AxiXbar(Xbar):
         code += "{}_in_req_t [{}:0] {}_in_req;\n".format(
             self.name,
             len(self.inputs) - 1, self.name)
-        code += "{}_in_resp_t [{}:0] {}_in_rsp;\n".format(
+        code += "{}_in_resp_t [{}:0] {}_in_resp;\n".format(
             self.name,
             len(self.inputs) - 1, self.name)
         code += "{}_out_req_t [{}:0] {}_out_req;\n".format(
             self.name,
             len(self.outputs) - 1, self.name)
-        code += "{}_out_resp_t [{}:0] {}_out_rsp;\n".format(
+        code += "{}_out_resp_t [{}:0] {}_out_resp;\n".format(
             self.name,
             len(self.outputs) - 1, self.name)
         code_module[self.context] += "\n" + code
@@ -1697,11 +1702,11 @@ class AxiXbar(Xbar):
         code += "  .test_i ( test_mode_i ),\n"
         code += "  .slv_ports_req_i  ( {name}_in_req  ),\n".format(
             name=self.name)
-        code += "  .slv_ports_resp_o ( {name}_in_rsp  ),\n".format(
+        code += "  .slv_ports_resp_o ( {name}_in_resp  ),\n".format(
             name=self.name)
         code += "  .mst_ports_req_o  ( {name}_out_req ),\n".format(
             name=self.name)
-        code += "  .mst_ports_resp_i ( {name}_out_rsp ),\n".format(
+        code += "  .mst_ports_resp_i ( {name}_out_resp ),\n".format(
             name=self.name)
         code += "  .addr_map_i       ( {addrmap_name} ),\n".format(
             addrmap_name=addrmap_name)
@@ -1830,12 +1835,12 @@ class AxiDemux(Xbar):
         code = ""
         code += "{}_in_req_t {}_in_req;\n".format(
             self.name, self.name)
-        code += "{}_in_resp_t {}_in_rsp;\n".format(
+        code += "{}_in_resp_t {}_in_resp;\n".format(
             self.name, self.name)
         code += "{}_out_req_t [{}:0] {}_out_req;\n".format(
             self.name,
             len(self.outputs) - 1, self.name)
-        code += "{}_out_resp_t [{}:0] {}_out_rsp;\n".format(
+        code += "{}_out_resp_t [{}:0] {}_out_resp;\n".format(
             self.name,
             len(self.outputs) - 1, self.name)
         code_module[self.context] += "\n" + code
@@ -1896,11 +1901,11 @@ class AxiDemux(Xbar):
             name=self.name)
         code += "  .slv_aw_select_i  ( {} ),\n".format(self.aw_select)
         code += "  .slv_ar_select_i  ( {} ),\n".format(self.ar_select)
-        code += "  .slv_resp_o ( {name}_in_rsp  ),\n".format(
+        code += "  .slv_resp_o ( {name}_in_resp  ),\n".format(
             name=self.name)
         code += "  .mst_reqs_o  ( {name}_out_req ),\n".format(
             name=self.name)
-        code += "  .mst_resps_i ( {name}_out_rsp )\n".format(
+        code += "  .mst_resps_i ( {name}_out_resp )\n".format(
             name=self.name)
         code += ");\n"
 
@@ -2010,12 +2015,12 @@ class AxiMux(Xbar):
         code += "{}_in_req_t [{}:0] {}_in_req;\n".format(
             self.name,
             len(self.inputs) - 1, self.name)
-        code += "{}_in_resp_t [{}:0] {}_in_rsp;\n".format(
+        code += "{}_in_resp_t [{}:0] {}_in_resp;\n".format(
             self.name,
             len(self.inputs) - 1, self.name)
         code += "{}_out_req_t {}_out_req;\n".format(
             self.name, self.name)
-        code += "{}_out_resp_t {}_out_rsp;\n".format(
+        code += "{}_out_resp_t {}_out_resp;\n".format(
             self.name, self.name)
         code_module[self.context] += "\n" + code
 
@@ -2084,11 +2089,11 @@ class AxiMux(Xbar):
         code += "  .test_i ( test_mode_i ),\n"
         code += "  .slv_reqs_i  ( {name}_in_req  ),\n".format(
             name=self.name)
-        code += "  .slv_resps_o ( {name}_in_rsp  ),\n".format(
+        code += "  .slv_resps_o ( {name}_in_resp  ),\n".format(
             name=self.name)
         code += "  .mst_req_o   ( {name}_out_req ),\n".format(
             name=self.name)
-        code += "  .mst_resp_i  ( {name}_out_rsp )\n".format(
+        code += "  .mst_resp_i  ( {name}_out_resp )\n".format(
             name=self.name)
         code += ");\n"
 

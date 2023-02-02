@@ -68,9 +68,9 @@ assign QuadrantS1CtrlSocToQuadXbarAddrmap = '{
 };
 
 quadrant_s1_ctrl_soc_to_quad_xbar_in_req_t [0:0] quadrant_s1_ctrl_soc_to_quad_xbar_in_req;
-quadrant_s1_ctrl_soc_to_quad_xbar_in_resp_t [0:0] quadrant_s1_ctrl_soc_to_quad_xbar_in_rsp;
+quadrant_s1_ctrl_soc_to_quad_xbar_in_resp_t [0:0] quadrant_s1_ctrl_soc_to_quad_xbar_in_resp;
 quadrant_s1_ctrl_soc_to_quad_xbar_out_req_t [1:0] quadrant_s1_ctrl_soc_to_quad_xbar_out_req;
-quadrant_s1_ctrl_soc_to_quad_xbar_out_resp_t [1:0] quadrant_s1_ctrl_soc_to_quad_xbar_out_rsp;
+quadrant_s1_ctrl_soc_to_quad_xbar_out_resp_t [1:0] quadrant_s1_ctrl_soc_to_quad_xbar_out_resp;
 
 axi_xbar #(
   .Cfg           ( QuadrantS1CtrlSocToQuadXbarCfg ),
@@ -95,9 +95,9 @@ axi_xbar #(
   .rst_ni ( rst_ni ),
   .test_i ( test_mode_i ),
   .slv_ports_req_i  ( quadrant_s1_ctrl_soc_to_quad_xbar_in_req  ),
-  .slv_ports_resp_o ( quadrant_s1_ctrl_soc_to_quad_xbar_in_rsp  ),
+  .slv_ports_resp_o ( quadrant_s1_ctrl_soc_to_quad_xbar_in_resp  ),
   .mst_ports_req_o  ( quadrant_s1_ctrl_soc_to_quad_xbar_out_req ),
-  .mst_ports_resp_i ( quadrant_s1_ctrl_soc_to_quad_xbar_out_rsp ),
+  .mst_ports_resp_i ( quadrant_s1_ctrl_soc_to_quad_xbar_out_resp ),
   .addr_map_i       ( QuadrantS1CtrlSocToQuadXbarAddrmap ),
   .en_default_mst_port_i ( '1 ),
   .default_mst_port_i    ( '0 )
@@ -110,9 +110,9 @@ assign QuadrantS1CtrlQuadToSocXbarAddrmap = '{
 };
 
 quadrant_s1_ctrl_quad_to_soc_xbar_in_req_t [0:0] quadrant_s1_ctrl_quad_to_soc_xbar_in_req;
-quadrant_s1_ctrl_quad_to_soc_xbar_in_resp_t [0:0] quadrant_s1_ctrl_quad_to_soc_xbar_in_rsp;
+quadrant_s1_ctrl_quad_to_soc_xbar_in_resp_t [0:0] quadrant_s1_ctrl_quad_to_soc_xbar_in_resp;
 quadrant_s1_ctrl_quad_to_soc_xbar_out_req_t [1:0] quadrant_s1_ctrl_quad_to_soc_xbar_out_req;
-quadrant_s1_ctrl_quad_to_soc_xbar_out_resp_t [1:0] quadrant_s1_ctrl_quad_to_soc_xbar_out_rsp;
+quadrant_s1_ctrl_quad_to_soc_xbar_out_resp_t [1:0] quadrant_s1_ctrl_quad_to_soc_xbar_out_resp;
 
 axi_xbar #(
   .Cfg           ( QuadrantS1CtrlQuadToSocXbarCfg ),
@@ -137,9 +137,9 @@ axi_xbar #(
   .rst_ni ( rst_ni ),
   .test_i ( test_mode_i ),
   .slv_ports_req_i  ( quadrant_s1_ctrl_quad_to_soc_xbar_in_req  ),
-  .slv_ports_resp_o ( quadrant_s1_ctrl_quad_to_soc_xbar_in_rsp  ),
+  .slv_ports_resp_o ( quadrant_s1_ctrl_quad_to_soc_xbar_in_resp  ),
   .mst_ports_req_o  ( quadrant_s1_ctrl_quad_to_soc_xbar_out_req ),
-  .mst_ports_resp_i ( quadrant_s1_ctrl_quad_to_soc_xbar_out_rsp ),
+  .mst_ports_resp_i ( quadrant_s1_ctrl_quad_to_soc_xbar_out_resp ),
   .addr_map_i       ( QuadrantS1CtrlQuadToSocXbarAddrmap ),
   .en_default_mst_port_i ( '1 ),
   .default_mst_port_i    ( '0 )
@@ -152,9 +152,9 @@ assign QuadrantS1CtrlMuxAddrmap = '{
 };
 
 axi_lite_a48_d32_req_t [1:0] quadrant_s1_ctrl_mux_in_req;
-axi_lite_a48_d32_rsp_t [1:0] quadrant_s1_ctrl_mux_in_rsp;
+axi_lite_a48_d32_resp_t [1:0] quadrant_s1_ctrl_mux_in_rsp;
 axi_lite_a48_d32_req_t [0:0] quadrant_s1_ctrl_mux_out_req;
-axi_lite_a48_d32_rsp_t [0:0] quadrant_s1_ctrl_mux_out_rsp;
+axi_lite_a48_d32_resp_t [0:0] quadrant_s1_ctrl_mux_out_rsp;
 
 // The `quadrant_s1_ctrl_mux` crossbar.
 axi_lite_xbar #(
@@ -165,7 +165,7 @@ axi_lite_xbar #(
   .ar_chan_t  ( axi_lite_a48_d32_ar_chan_t ),
   .r_chan_t   ( axi_lite_a48_d32_r_chan_t ),
   .axi_req_t  ( axi_lite_a48_d32_req_t ),
-  .axi_resp_t ( axi_lite_a48_d32_rsp_t ),
+  .axi_resp_t ( axi_lite_a48_d32_resp_t ),
   .rule_t     ( xbar_rule_48_t )
 ) i_quadrant_s1_ctrl_mux (
   .clk_i  ( clk_i ),
@@ -258,7 +258,7 @@ axi_lite_xbar #(
     .full_req_t ( axi_a48_d32_i1_u5_req_t ),
     .full_resp_t ( axi_a48_d32_i1_u5_resp_t ),
     .lite_req_t ( axi_lite_a48_d32_req_t ),
-    .lite_resp_t ( axi_lite_a48_d32_rsp_t )
+    .lite_resp_t ( axi_lite_a48_d32_resp_t )
   ) i_quad_to_soc_internal_ser_pc (
     .clk_i (clk_i),
     .rst_ni (rst_ni),
@@ -333,7 +333,7 @@ axi_lite_xbar #(
     .full_req_t ( axi_a48_d32_i1_u5_req_t ),
     .full_resp_t ( axi_a48_d32_i1_u5_resp_t ),
     .lite_req_t ( axi_lite_a48_d32_req_t ),
-    .lite_resp_t ( axi_lite_a48_d32_rsp_t )
+    .lite_resp_t ( axi_lite_a48_d32_resp_t )
   ) i_soc_internal_to_axi_lite_pc (
     .clk_i (clk_i),
     .rst_ni (rst_ni),
@@ -351,7 +351,7 @@ axi_lite_xbar #(
     .ADDR_WIDTH     ( 48 ),
     .DATA_WIDTH     ( 32 ),
     .axi_lite_req_t ( axi_lite_a48_d32_req_t ),
-    .axi_lite_rsp_t ( axi_lite_a48_d32_rsp_t ),
+    .axi_lite_rsp_t ( axi_lite_a48_d32_resp_t ),
     .reg_req_t      ( reg_a48_d32_req_t ),
     .reg_rsp_t      ( reg_a48_d32_rsp_t )
   ) i_axi_lite_to_regbus_regs_pc (

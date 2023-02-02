@@ -68,9 +68,9 @@ module occamy_quadrant_s1
 };
 
   wide_xbar_quadrant_s1_in_req_t   [4:0] wide_xbar_quadrant_s1_in_req;
-  wide_xbar_quadrant_s1_in_resp_t  [4:0] wide_xbar_quadrant_s1_in_rsp;
+  wide_xbar_quadrant_s1_in_resp_t  [4:0] wide_xbar_quadrant_s1_in_resp;
   wide_xbar_quadrant_s1_out_req_t  [4:0] wide_xbar_quadrant_s1_out_req;
-  wide_xbar_quadrant_s1_out_resp_t [4:0] wide_xbar_quadrant_s1_out_rsp;
+  wide_xbar_quadrant_s1_out_resp_t [4:0] wide_xbar_quadrant_s1_out_resp;
 
   axi_xbar #(
       .Cfg          (WideXbarQuadrantS1Cfg),
@@ -95,9 +95,9 @@ module occamy_quadrant_s1
       .rst_ni               (rst_quadrant_n),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (wide_xbar_quadrant_s1_in_req),
-      .slv_ports_resp_o     (wide_xbar_quadrant_s1_in_rsp),
+      .slv_ports_resp_o     (wide_xbar_quadrant_s1_in_resp),
       .mst_ports_req_o      (wide_xbar_quadrant_s1_out_req),
-      .mst_ports_resp_i     (wide_xbar_quadrant_s1_out_rsp),
+      .mst_ports_resp_i     (wide_xbar_quadrant_s1_out_resp),
       .addr_map_i           (WideXbarQuadrantS1Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -113,9 +113,9 @@ module occamy_quadrant_s1
 };
 
   narrow_xbar_quadrant_s1_in_req_t   [4:0] narrow_xbar_quadrant_s1_in_req;
-  narrow_xbar_quadrant_s1_in_resp_t  [4:0] narrow_xbar_quadrant_s1_in_rsp;
+  narrow_xbar_quadrant_s1_in_resp_t  [4:0] narrow_xbar_quadrant_s1_in_resp;
   narrow_xbar_quadrant_s1_out_req_t  [4:0] narrow_xbar_quadrant_s1_out_req;
-  narrow_xbar_quadrant_s1_out_resp_t [4:0] narrow_xbar_quadrant_s1_out_rsp;
+  narrow_xbar_quadrant_s1_out_resp_t [4:0] narrow_xbar_quadrant_s1_out_resp;
 
   axi_xbar #(
       .Cfg          (NarrowXbarQuadrantS1Cfg),
@@ -140,9 +140,9 @@ module occamy_quadrant_s1
       .rst_ni               (rst_quadrant_n),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (narrow_xbar_quadrant_s1_in_req),
-      .slv_ports_resp_o     (narrow_xbar_quadrant_s1_in_rsp),
+      .slv_ports_resp_o     (narrow_xbar_quadrant_s1_in_resp),
       .mst_ports_req_o      (narrow_xbar_quadrant_s1_out_req),
-      .mst_ports_resp_i     (narrow_xbar_quadrant_s1_out_rsp),
+      .mst_ports_resp_i     (narrow_xbar_quadrant_s1_out_resp),
       .addr_map_i           (NarrowXbarQuadrantS1Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)

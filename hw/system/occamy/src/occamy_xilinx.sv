@@ -574,7 +574,7 @@ module occamy_xilinx
   // regbus <-> Xilinx memory conversion and add support to solder, or replace by a different ROM
 
   axi_lite_a48_d32_req_t bootrom_axi_lite_req;
-  axi_lite_a48_d32_rsp_t bootrom_axi_lite_rsp;
+  axi_lite_a48_d32_resp_t bootrom_axi_lite_rsp;
 
   reg_a48_d32_req_t bootrom_req;
   reg_a48_d32_rsp_t bootrom_rsp;
@@ -583,7 +583,7 @@ module occamy_xilinx
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_bootrom_pc (
@@ -618,13 +618,13 @@ module occamy_xilinx
 
   /// FLLs
   axi_lite_a48_d32_req_t fll_system_axi_lite_req;
-  axi_lite_a48_d32_rsp_t fll_system_axi_lite_rsp;
+  axi_lite_a48_d32_resp_t fll_system_axi_lite_rsp;
 
   axi_lite_a48_d32_req_t fll_periph_axi_lite_req;
-  axi_lite_a48_d32_rsp_t fll_periph_axi_lite_rsp;
+  axi_lite_a48_d32_resp_t fll_periph_axi_lite_rsp;
 
   axi_lite_a48_d32_req_t fll_hbm2e_axi_lite_req;
-  axi_lite_a48_d32_rsp_t fll_hbm2e_axi_lite_rsp;
+  axi_lite_a48_d32_resp_t fll_hbm2e_axi_lite_rsp;
 
   reg_a48_d32_req_t fll_system_req;
   reg_a48_d32_rsp_t fll_system_rsp;
@@ -633,7 +633,7 @@ module occamy_xilinx
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_fll_system_pc (
@@ -653,7 +653,7 @@ module occamy_xilinx
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_fll_periph_pc (
@@ -673,7 +673,7 @@ module occamy_xilinx
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_fll_hbm2e_pc (

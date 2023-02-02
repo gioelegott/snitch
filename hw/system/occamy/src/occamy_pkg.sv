@@ -152,8 +152,8 @@ package occamy_pkg;
 
   typedef axi_lite_a48_d64_req_t soc_axi_lite_periph_xbar_in_req_t;
   typedef axi_lite_a48_d64_req_t soc_axi_lite_periph_xbar_out_req_t;
-  typedef axi_lite_a48_d64_rsp_t soc_axi_lite_periph_xbar_in_rsp_t;
-  typedef axi_lite_a48_d64_rsp_t soc_axi_lite_periph_xbar_out_rsp_t;
+  typedef axi_lite_a48_d64_resp_t soc_axi_lite_periph_xbar_in_resp_t;
+  typedef axi_lite_a48_d64_resp_t soc_axi_lite_periph_xbar_out_resp_t;
   typedef axi_lite_a48_d64_aw_chan_t soc_axi_lite_periph_xbar_in_aw_chan_t;
   typedef axi_lite_a48_d64_aw_chan_t soc_axi_lite_periph_xbar_out_aw_chan_t;
   typedef axi_lite_a48_d64_w_chan_t soc_axi_lite_periph_xbar_in_w_chan_t;
@@ -243,8 +243,8 @@ package occamy_pkg;
 
   typedef axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_in_req_t;
   typedef axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_req_t;
-  typedef axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_in_rsp_t;
-  typedef axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_rsp_t;
+  typedef axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_in_resp_t;
+  typedef axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_resp_t;
   typedef axi_lite_a48_d32_aw_chan_t soc_axi_lite_narrow_periph_xbar_in_aw_chan_t;
   typedef axi_lite_a48_d32_aw_chan_t soc_axi_lite_narrow_periph_xbar_out_aw_chan_t;
   typedef axi_lite_a48_d32_w_chan_t soc_axi_lite_narrow_periph_xbar_in_w_chan_t;
@@ -948,8 +948,8 @@ package occamy_pkg;
 
   typedef axi_lite_a48_d32_req_t quadrant_s1_ctrl_mux_in_req_t;
   typedef axi_lite_a48_d32_req_t quadrant_s1_ctrl_mux_out_req_t;
-  typedef axi_lite_a48_d32_rsp_t quadrant_s1_ctrl_mux_in_rsp_t;
-  typedef axi_lite_a48_d32_rsp_t quadrant_s1_ctrl_mux_out_rsp_t;
+  typedef axi_lite_a48_d32_resp_t quadrant_s1_ctrl_mux_in_resp_t;
+  typedef axi_lite_a48_d32_resp_t quadrant_s1_ctrl_mux_out_resp_t;
   typedef axi_lite_a48_d32_aw_chan_t quadrant_s1_ctrl_mux_in_aw_chan_t;
   typedef axi_lite_a48_d32_aw_chan_t quadrant_s1_ctrl_mux_out_aw_chan_t;
   typedef axi_lite_a48_d32_w_chan_t quadrant_s1_ctrl_mux_in_w_chan_t;

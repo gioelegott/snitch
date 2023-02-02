@@ -52,31 +52,31 @@ module occamy_top
     input        [ 3:0] spim_sd_i,
 
     /// Boot ROM
-    output axi_lite_a48_d32_req_t bootrom_req_o,
-    input  axi_lite_a48_d32_rsp_t bootrom_rsp_i,
+    output axi_lite_a48_d32_req_t  bootrom_req_o,
+    input  axi_lite_a48_d32_resp_t bootrom_rsp_i,
 
     /// FLLs
-    output axi_lite_a48_d32_req_t fll_system_req_o,
-    input  axi_lite_a48_d32_rsp_t fll_system_rsp_i,
-    output axi_lite_a48_d32_req_t fll_periph_req_o,
-    input  axi_lite_a48_d32_rsp_t fll_periph_rsp_i,
-    output axi_lite_a48_d32_req_t fll_hbm2e_req_o,
-    input  axi_lite_a48_d32_rsp_t fll_hbm2e_rsp_i,
+    output axi_lite_a48_d32_req_t  fll_system_req_o,
+    input  axi_lite_a48_d32_resp_t fll_system_rsp_i,
+    output axi_lite_a48_d32_req_t  fll_periph_req_o,
+    input  axi_lite_a48_d32_resp_t fll_periph_rsp_i,
+    output axi_lite_a48_d32_req_t  fll_hbm2e_req_o,
+    input  axi_lite_a48_d32_resp_t fll_hbm2e_rsp_i,
 
     /// HBI Config and APB Control
     output axi_lite_a48_d32_req_t hbi_wide_cfg_req_o,
-    input axi_lite_a48_d32_rsp_t hbi_wide_cfg_rsp_i,
+    input axi_lite_a48_d32_resp_t hbi_wide_cfg_rsp_i,
     output axi_lite_a48_d32_req_t hbi_narrow_cfg_req_o,
-    input axi_lite_a48_d32_rsp_t hbi_narrow_cfg_rsp_i,
+    input axi_lite_a48_d32_resp_t hbi_narrow_cfg_rsp_i,
     /// HBM Config
     output axi_lite_a48_d32_req_t hbm_cfg_req_o,
-    input axi_lite_a48_d32_rsp_t hbm_cfg_rsp_i,
+    input axi_lite_a48_d32_resp_t hbm_cfg_rsp_i,
     /// PCIe/DDR Config
     output axi_lite_a48_d32_req_t pcie_cfg_req_o,
-    input axi_lite_a48_d32_rsp_t pcie_cfg_rsp_i,
+    input axi_lite_a48_d32_resp_t pcie_cfg_rsp_i,
     /// Chip specific control registers
     output axi_lite_a48_d32_req_t chip_ctrl_req_o,
-    input axi_lite_a48_d32_rsp_t chip_ctrl_rsp_i,
+    input axi_lite_a48_d32_resp_t chip_ctrl_rsp_i,
     // "external interrupts from uncore - "programmable"
     input logic [12:0] ext_irq_i,
 
@@ -155,10 +155,10 @@ module occamy_top
   '{ idx: 1, start_addr: 48'h00000000, end_addr: 48'h00001000 }
 };
 
-  axi_lite_a48_d64_req_t [1:0] soc_axi_lite_periph_xbar_in_req;
-  axi_lite_a48_d64_rsp_t [1:0] soc_axi_lite_periph_xbar_in_rsp;
-  axi_lite_a48_d64_req_t [1:0] soc_axi_lite_periph_xbar_out_req;
-  axi_lite_a48_d64_rsp_t [1:0] soc_axi_lite_periph_xbar_out_rsp;
+  axi_lite_a48_d64_req_t  [1:0] soc_axi_lite_periph_xbar_in_req;
+  axi_lite_a48_d64_resp_t [1:0] soc_axi_lite_periph_xbar_in_rsp;
+  axi_lite_a48_d64_req_t  [1:0] soc_axi_lite_periph_xbar_out_req;
+  axi_lite_a48_d64_resp_t [1:0] soc_axi_lite_periph_xbar_out_rsp;
 
   // The `soc_axi_lite_periph_xbar` crossbar.
   axi_lite_xbar #(
@@ -169,7 +169,7 @@ module occamy_top
       .ar_chan_t (axi_lite_a48_d64_ar_chan_t),
       .r_chan_t  (axi_lite_a48_d64_r_chan_t),
       .axi_req_t (axi_lite_a48_d64_req_t),
-      .axi_resp_t(axi_lite_a48_d64_rsp_t),
+      .axi_resp_t(axi_lite_a48_d64_resp_t),
       .rule_t    (xbar_rule_48_t)
   ) i_soc_axi_lite_periph_xbar (
       .clk_i                (clk_periph_i),
@@ -207,10 +207,10 @@ module occamy_top
   '{ idx: 17, start_addr: 48'h08000000, end_addr: 48'h0a810000 }
 };
 
-  axi_lite_a48_d32_req_t [ 0:0] soc_axi_lite_narrow_periph_xbar_in_req;
-  axi_lite_a48_d32_rsp_t [ 0:0] soc_axi_lite_narrow_periph_xbar_in_rsp;
-  axi_lite_a48_d32_req_t [17:0] soc_axi_lite_narrow_periph_xbar_out_req;
-  axi_lite_a48_d32_rsp_t [17:0] soc_axi_lite_narrow_periph_xbar_out_rsp;
+  axi_lite_a48_d32_req_t  [ 0:0] soc_axi_lite_narrow_periph_xbar_in_req;
+  axi_lite_a48_d32_resp_t [ 0:0] soc_axi_lite_narrow_periph_xbar_in_rsp;
+  axi_lite_a48_d32_req_t  [17:0] soc_axi_lite_narrow_periph_xbar_out_req;
+  axi_lite_a48_d32_resp_t [17:0] soc_axi_lite_narrow_periph_xbar_out_rsp;
 
   // The `soc_axi_lite_narrow_periph_xbar` crossbar.
   axi_lite_xbar #(
@@ -221,7 +221,7 @@ module occamy_top
       .ar_chan_t (axi_lite_a48_d32_ar_chan_t),
       .r_chan_t  (axi_lite_a48_d32_r_chan_t),
       .axi_req_t (axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t),
+      .axi_resp_t(axi_lite_a48_d32_resp_t),
       .rule_t    (xbar_rule_48_t)
   ) i_soc_axi_lite_narrow_periph_xbar (
       .clk_i                (clk_periph_i),
@@ -241,8 +241,8 @@ module occamy_top
   //   HBM XBAR CFG       //
   //////////////////////////
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_hbm_xbar_cfg_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_hbm_xbar_cfg_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_hbm_xbar_cfg_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_hbm_xbar_cfg_cut_rsp;
 
   axi_multicut #(
       .NoCuts(2),
@@ -252,7 +252,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_hbm_xbar_cfg_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -268,7 +268,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_hbm_xbar_cfg_pc (
@@ -415,7 +415,7 @@ module occamy_top
       .full_req_t(axi_a48_d64_i8_u5_req_t),
       .full_resp_t(axi_a48_d64_i8_u5_resp_t),
       .lite_req_t(axi_lite_a48_d64_req_t),
-      .lite_resp_t(axi_lite_a48_d64_rsp_t)
+      .lite_resp_t(axi_lite_a48_d64_resp_t)
   ) i_axi_to_axi_lite_periph_pc (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -427,8 +427,8 @@ module occamy_top
   );
 
   // Connect AXI-lite slave
-  axi_lite_a48_d64_req_t axi_lite_to_soc_cdc_req;
-  axi_lite_a48_d64_rsp_t axi_lite_to_soc_cdc_rsp;
+  axi_lite_a48_d64_req_t  axi_lite_to_soc_cdc_req;
+  axi_lite_a48_d64_resp_t axi_lite_to_soc_cdc_rsp;
 
   axi_cdc #(
       .aw_chan_t (axi_lite_a48_d64_aw_chan_t),
@@ -437,7 +437,7 @@ module occamy_top
       .ar_chan_t (axi_lite_a48_d64_ar_chan_t),
       .r_chan_t  (axi_lite_a48_d64_r_chan_t),
       .axi_req_t (axi_lite_a48_d64_req_t),
-      .axi_resp_t(axi_lite_a48_d64_rsp_t),
+      .axi_resp_t(axi_lite_a48_d64_resp_t),
       .LogDepth  (2)
   ) i_axi_lite_to_soc_cdc (
       .src_clk_i (clk_periph_i),
@@ -453,7 +453,7 @@ module occamy_top
   axi_lite_to_axi #(
       .AxiDataWidth(64),
       .req_lite_t  (axi_lite_a48_d64_req_t),
-      .resp_lite_t (axi_lite_a48_d64_rsp_t),
+      .resp_lite_t (axi_lite_a48_d64_resp_t),
       .axi_req_t   (axi_a48_d64_i4_u5_req_t),
       .axi_resp_t  (axi_a48_d64_i4_u5_resp_t)
   ) i_axi_lite_to_axi_periph_pc (
@@ -528,7 +528,7 @@ module occamy_top
       .full_req_t(axi_a48_d32_i8_u5_req_t),
       .full_resp_t(axi_a48_d32_i8_u5_resp_t),
       .lite_req_t(axi_lite_a48_d32_req_t),
-      .lite_resp_t(axi_lite_a48_d32_rsp_t)
+      .lite_resp_t(axi_lite_a48_d32_resp_t)
   ) i_axi_to_axi_lite_regbus_periph_pc (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -546,8 +546,8 @@ module occamy_top
   /////////////////////////////
 
   // RegBus port for HBI
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -557,7 +557,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -570,8 +570,8 @@ module occamy_top
   assign hbi_wide_cfg_req_o = soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut_req;
   assign soc_axi_lite_narrow_periph_xbar_out_hbi_wide_cfg_cut_rsp = hbi_wide_cfg_rsp_i;
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_hbi_narrow_cfg_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_hbi_narrow_cfg_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_hbi_narrow_cfg_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_hbi_narrow_cfg_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -581,7 +581,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_hbi_narrow_cfg_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -595,8 +595,8 @@ module occamy_top
   assign soc_axi_lite_narrow_periph_xbar_out_hbi_narrow_cfg_cut_rsp = hbi_narrow_cfg_rsp_i;
 
   // RegBus port for PCIE
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_pcie_cfg_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_pcie_cfg_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_pcie_cfg_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_pcie_cfg_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -606,7 +606,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_pcie_cfg_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -620,8 +620,8 @@ module occamy_top
   assign soc_axi_lite_narrow_periph_xbar_out_pcie_cfg_cut_rsp = pcie_cfg_rsp_i;
 
   // APB port for HBM
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_hbm_cfg_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_hbm_cfg_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_hbm_cfg_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_hbm_cfg_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -631,7 +631,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_hbm_cfg_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -655,7 +655,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (64),
       .axi_lite_req_t(axi_lite_a48_d64_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d64_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d64_resp_t),
       .reg_req_t     (reg_a48_d64_req_t),
       .reg_rsp_t     (reg_a48_d64_rsp_t)
   ) i_axi_lite_to_reg_debug_pc (
@@ -771,7 +771,7 @@ module occamy_top
       .MaxRequests(2),
       .AxiProt('0),
       .axi_req_t(axi_lite_a48_d64_req_t),
-      .axi_rsp_t(axi_lite_a48_d64_rsp_t)
+      .axi_rsp_t(axi_lite_a48_d64_resp_t)
   ) i_mem_to_axi_lite (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -815,8 +815,8 @@ module occamy_top
   //   CLINT   //
   ///////////////
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_clint_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_clint_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_clint_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_clint_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -826,7 +826,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_clint_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -842,7 +842,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_clint_pc (
@@ -873,8 +873,8 @@ module occamy_top
   //   SOC CONTROL   //
   /////////////////////
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_soc_ctrl_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_soc_ctrl_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_soc_ctrl_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_soc_ctrl_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -884,7 +884,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_soc_ctrl_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -900,7 +900,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_soc_ctrl_pc (
@@ -935,8 +935,8 @@ module occamy_top
   //   CHIP CONTROL   //
   //////////////////////
   // Contains NDA and chip specific information.
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_chip_ctrl_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_chip_ctrl_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_chip_ctrl_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_chip_ctrl_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -946,7 +946,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_chip_ctrl_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -964,8 +964,8 @@ module occamy_top
   //   UART   //
   //////////////
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_uart_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_uart_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_uart_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_uart_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -975,7 +975,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_uart_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -991,7 +991,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_uart_pc (
@@ -1048,8 +1048,8 @@ module occamy_top
 
   // This is very system specific, so we might be better off
   // placing it outside the top-level.
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_bootrom_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_bootrom_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_bootrom_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_bootrom_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -1059,7 +1059,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_bootrom_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1076,8 +1076,8 @@ module occamy_top
   //   Clk Mgr   //
   /////////////////
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_fll_system_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_fll_system_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_fll_system_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_fll_system_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -1087,7 +1087,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_fll_system_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1097,8 +1097,8 @@ module occamy_top
       .mst_resp_i(soc_axi_lite_narrow_periph_xbar_out_fll_system_cut_rsp)
   );
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_fll_periph_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_fll_periph_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_fll_periph_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_fll_periph_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -1108,7 +1108,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_fll_periph_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1118,8 +1118,8 @@ module occamy_top
       .mst_resp_i(soc_axi_lite_narrow_periph_xbar_out_fll_periph_cut_rsp)
   );
 
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_fll_hbm2e_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_fll_hbm2e_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_fll_hbm2e_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_fll_hbm2e_cut_rsp;
 
   axi_multicut #(
       .NoCuts(3),
@@ -1129,7 +1129,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_fll_hbm2e_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1150,8 +1150,8 @@ module occamy_top
   //////////////
   //   PLIC   //
   //////////////
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_plic_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_plic_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_plic_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_plic_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -1161,7 +1161,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_plic_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1177,7 +1177,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_plic_pc (
@@ -1209,8 +1209,8 @@ module occamy_top
   //////////////////
   //   SPI Host   //
   //////////////////
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_spim_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_spim_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_spim_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_spim_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -1220,7 +1220,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_spim_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1236,7 +1236,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_spim_pc (
@@ -1274,8 +1274,8 @@ module occamy_top
   //////////////
   //   GPIO   //
   //////////////
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_gpio_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_gpio_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_gpio_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_gpio_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -1285,7 +1285,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_gpio_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1301,7 +1301,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_gpio_pc (
@@ -1331,8 +1331,8 @@ module occamy_top
   /////////////
   //   I2C   //
   /////////////
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_i2c_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_i2c_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_i2c_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_i2c_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -1342,7 +1342,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_i2c_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1358,7 +1358,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_i2c_pc (
@@ -1406,8 +1406,8 @@ module occamy_top
   /////////////
   //  Timer  //
   /////////////
-  axi_lite_a48_d32_req_t soc_axi_lite_narrow_periph_xbar_out_timer_cut_req;
-  axi_lite_a48_d32_rsp_t soc_axi_lite_narrow_periph_xbar_out_timer_cut_rsp;
+  axi_lite_a48_d32_req_t  soc_axi_lite_narrow_periph_xbar_out_timer_cut_req;
+  axi_lite_a48_d32_resp_t soc_axi_lite_narrow_periph_xbar_out_timer_cut_rsp;
 
   axi_multicut #(
       .NoCuts(1),
@@ -1417,7 +1417,7 @@ module occamy_top
       .ar_chan_t(axi_lite_a48_d32_ar_chan_t),
       .r_chan_t(axi_lite_a48_d32_r_chan_t),
       .axi_req_t(axi_lite_a48_d32_req_t),
-      .axi_resp_t(axi_lite_a48_d32_rsp_t)
+      .axi_resp_t(axi_lite_a48_d32_resp_t)
   ) i_soc_axi_lite_narrow_periph_xbar_out_timer_cut (
       .clk_i(clk_periph_i),
       .rst_ni(rst_periph_ni),
@@ -1433,7 +1433,7 @@ module occamy_top
       .ADDR_WIDTH    (48),
       .DATA_WIDTH    (32),
       .axi_lite_req_t(axi_lite_a48_d32_req_t),
-      .axi_lite_rsp_t(axi_lite_a48_d32_rsp_t),
+      .axi_lite_rsp_t(axi_lite_a48_d32_resp_t),
       .reg_req_t     (reg_a48_d32_req_t),
       .reg_rsp_t     (reg_a48_d32_rsp_t)
   ) i_axi_lite_to_reg_timer_pc (

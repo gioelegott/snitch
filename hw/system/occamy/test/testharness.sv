@@ -202,7 +202,7 @@ module testharness import occamy_pkg::*; (
     .ADDR_WIDTH     ( 48 ),
     .DATA_WIDTH     ( 32 ),
     .axi_lite_req_t ( axi_lite_a48_d32_req_t ),
-    .axi_lite_rsp_t ( axi_lite_a48_d32_rsp_t ),
+    .axi_lite_rsp_t ( axi_lite_a48_d32_resp_t ),
     .reg_req_t      ( reg_a48_d32_req_t ),
     .reg_rsp_t      ( reg_a48_d32_rsp_t )
   ) i_bootrom_regbus_pc (
@@ -222,7 +222,7 @@ module testharness import occamy_pkg::*; (
     .ADDR_WIDTH     ( 48 ),
     .DATA_WIDTH     ( 32 ),
     .axi_lite_req_t ( axi_lite_a48_d32_req_t ),
-    .axi_lite_rsp_t ( axi_lite_a48_d32_rsp_t ),
+    .axi_lite_rsp_t ( axi_lite_a48_d32_resp_t ),
     .reg_req_t      ( reg_a48_d32_req_t ),
     .reg_rsp_t      ( reg_a48_d32_rsp_t )
   ) i_fll_system_pc (
@@ -242,7 +242,7 @@ module testharness import occamy_pkg::*; (
     .ADDR_WIDTH     ( 48 ),
     .DATA_WIDTH     ( 32 ),
     .axi_lite_req_t ( axi_lite_a48_d32_req_t ),
-    .axi_lite_rsp_t ( axi_lite_a48_d32_rsp_t ),
+    .axi_lite_rsp_t ( axi_lite_a48_d32_resp_t ),
     .reg_req_t      ( reg_a48_d32_req_t ),
     .reg_rsp_t      ( reg_a48_d32_rsp_t )
   ) i_fll_periph_pc (
@@ -262,7 +262,7 @@ module testharness import occamy_pkg::*; (
     .ADDR_WIDTH     ( 48 ),
     .DATA_WIDTH     ( 32 ),
     .axi_lite_req_t ( axi_lite_a48_d32_req_t ),
-    .axi_lite_rsp_t ( axi_lite_a48_d32_rsp_t ),
+    .axi_lite_rsp_t ( axi_lite_a48_d32_resp_t ),
     .reg_req_t      ( reg_a48_d32_req_t ),
     .reg_rsp_t      ( reg_a48_d32_rsp_t )
   ) i_fll_hbm2e_pc (

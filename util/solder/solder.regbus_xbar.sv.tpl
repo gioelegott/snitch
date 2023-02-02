@@ -118,4 +118,3 @@ for name, enum in zip(xbar.outputs, output_enums):
   )
   xbar.__dict__["out_"+name] = bus
 %>
-

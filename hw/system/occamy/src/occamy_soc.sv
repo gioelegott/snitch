@@ -122,9 +122,9 @@ module occamy_soc
 };
 
   quadrant_pre_xbar_0_in_req_t   [0:0] quadrant_pre_xbar_0_in_req;
-  quadrant_pre_xbar_0_in_resp_t  [0:0] quadrant_pre_xbar_0_in_rsp;
+  quadrant_pre_xbar_0_in_resp_t  [0:0] quadrant_pre_xbar_0_in_resp;
   quadrant_pre_xbar_0_out_req_t  [1:0] quadrant_pre_xbar_0_out_req;
-  quadrant_pre_xbar_0_out_resp_t [1:0] quadrant_pre_xbar_0_out_rsp;
+  quadrant_pre_xbar_0_out_resp_t [1:0] quadrant_pre_xbar_0_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantPreXbar0Cfg),
@@ -149,9 +149,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_pre_xbar_0_in_req),
-      .slv_ports_resp_o     (quadrant_pre_xbar_0_in_rsp),
+      .slv_ports_resp_o     (quadrant_pre_xbar_0_in_resp),
       .mst_ports_req_o      (quadrant_pre_xbar_0_out_req),
-      .mst_ports_resp_i     (quadrant_pre_xbar_0_out_rsp),
+      .mst_ports_resp_i     (quadrant_pre_xbar_0_out_resp),
       .addr_map_i           (QuadrantPreXbar0Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -168,9 +168,9 @@ module occamy_soc
 };
 
   quadrant_pre_xbar_1_in_req_t   [0:0] quadrant_pre_xbar_1_in_req;
-  quadrant_pre_xbar_1_in_resp_t  [0:0] quadrant_pre_xbar_1_in_rsp;
+  quadrant_pre_xbar_1_in_resp_t  [0:0] quadrant_pre_xbar_1_in_resp;
   quadrant_pre_xbar_1_out_req_t  [1:0] quadrant_pre_xbar_1_out_req;
-  quadrant_pre_xbar_1_out_resp_t [1:0] quadrant_pre_xbar_1_out_rsp;
+  quadrant_pre_xbar_1_out_resp_t [1:0] quadrant_pre_xbar_1_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantPreXbar1Cfg),
@@ -195,9 +195,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_pre_xbar_1_in_req),
-      .slv_ports_resp_o     (quadrant_pre_xbar_1_in_rsp),
+      .slv_ports_resp_o     (quadrant_pre_xbar_1_in_resp),
       .mst_ports_req_o      (quadrant_pre_xbar_1_out_req),
-      .mst_ports_resp_i     (quadrant_pre_xbar_1_out_rsp),
+      .mst_ports_resp_i     (quadrant_pre_xbar_1_out_resp),
       .addr_map_i           (QuadrantPreXbar1Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -214,9 +214,9 @@ module occamy_soc
 };
 
   quadrant_pre_xbar_2_in_req_t   [0:0] quadrant_pre_xbar_2_in_req;
-  quadrant_pre_xbar_2_in_resp_t  [0:0] quadrant_pre_xbar_2_in_rsp;
+  quadrant_pre_xbar_2_in_resp_t  [0:0] quadrant_pre_xbar_2_in_resp;
   quadrant_pre_xbar_2_out_req_t  [1:0] quadrant_pre_xbar_2_out_req;
-  quadrant_pre_xbar_2_out_resp_t [1:0] quadrant_pre_xbar_2_out_rsp;
+  quadrant_pre_xbar_2_out_resp_t [1:0] quadrant_pre_xbar_2_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantPreXbar2Cfg),
@@ -241,9 +241,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_pre_xbar_2_in_req),
-      .slv_ports_resp_o     (quadrant_pre_xbar_2_in_rsp),
+      .slv_ports_resp_o     (quadrant_pre_xbar_2_in_resp),
       .mst_ports_req_o      (quadrant_pre_xbar_2_out_req),
-      .mst_ports_resp_i     (quadrant_pre_xbar_2_out_rsp),
+      .mst_ports_resp_i     (quadrant_pre_xbar_2_out_resp),
       .addr_map_i           (QuadrantPreXbar2Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -260,9 +260,9 @@ module occamy_soc
 };
 
   quadrant_pre_xbar_3_in_req_t   [0:0] quadrant_pre_xbar_3_in_req;
-  quadrant_pre_xbar_3_in_resp_t  [0:0] quadrant_pre_xbar_3_in_rsp;
+  quadrant_pre_xbar_3_in_resp_t  [0:0] quadrant_pre_xbar_3_in_resp;
   quadrant_pre_xbar_3_out_req_t  [1:0] quadrant_pre_xbar_3_out_req;
-  quadrant_pre_xbar_3_out_resp_t [1:0] quadrant_pre_xbar_3_out_rsp;
+  quadrant_pre_xbar_3_out_resp_t [1:0] quadrant_pre_xbar_3_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantPreXbar3Cfg),
@@ -287,9 +287,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_pre_xbar_3_in_req),
-      .slv_ports_resp_o     (quadrant_pre_xbar_3_in_rsp),
+      .slv_ports_resp_o     (quadrant_pre_xbar_3_in_resp),
       .mst_ports_req_o      (quadrant_pre_xbar_3_out_req),
-      .mst_ports_resp_i     (quadrant_pre_xbar_3_out_rsp),
+      .mst_ports_resp_i     (quadrant_pre_xbar_3_out_resp),
       .addr_map_i           (QuadrantPreXbar3Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -306,9 +306,9 @@ module occamy_soc
 };
 
   quadrant_pre_xbar_4_in_req_t   [0:0] quadrant_pre_xbar_4_in_req;
-  quadrant_pre_xbar_4_in_resp_t  [0:0] quadrant_pre_xbar_4_in_rsp;
+  quadrant_pre_xbar_4_in_resp_t  [0:0] quadrant_pre_xbar_4_in_resp;
   quadrant_pre_xbar_4_out_req_t  [1:0] quadrant_pre_xbar_4_out_req;
-  quadrant_pre_xbar_4_out_resp_t [1:0] quadrant_pre_xbar_4_out_rsp;
+  quadrant_pre_xbar_4_out_resp_t [1:0] quadrant_pre_xbar_4_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantPreXbar4Cfg),
@@ -333,9 +333,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_pre_xbar_4_in_req),
-      .slv_ports_resp_o     (quadrant_pre_xbar_4_in_rsp),
+      .slv_ports_resp_o     (quadrant_pre_xbar_4_in_resp),
       .mst_ports_req_o      (quadrant_pre_xbar_4_out_req),
-      .mst_ports_resp_i     (quadrant_pre_xbar_4_out_rsp),
+      .mst_ports_resp_i     (quadrant_pre_xbar_4_out_resp),
       .addr_map_i           (QuadrantPreXbar4Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -352,9 +352,9 @@ module occamy_soc
 };
 
   quadrant_pre_xbar_5_in_req_t   [0:0] quadrant_pre_xbar_5_in_req;
-  quadrant_pre_xbar_5_in_resp_t  [0:0] quadrant_pre_xbar_5_in_rsp;
+  quadrant_pre_xbar_5_in_resp_t  [0:0] quadrant_pre_xbar_5_in_resp;
   quadrant_pre_xbar_5_out_req_t  [1:0] quadrant_pre_xbar_5_out_req;
-  quadrant_pre_xbar_5_out_resp_t [1:0] quadrant_pre_xbar_5_out_rsp;
+  quadrant_pre_xbar_5_out_resp_t [1:0] quadrant_pre_xbar_5_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantPreXbar5Cfg),
@@ -379,9 +379,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_pre_xbar_5_in_req),
-      .slv_ports_resp_o     (quadrant_pre_xbar_5_in_rsp),
+      .slv_ports_resp_o     (quadrant_pre_xbar_5_in_resp),
       .mst_ports_req_o      (quadrant_pre_xbar_5_out_req),
-      .mst_ports_resp_i     (quadrant_pre_xbar_5_out_rsp),
+      .mst_ports_resp_i     (quadrant_pre_xbar_5_out_resp),
       .addr_map_i           (QuadrantPreXbar5Addrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -401,9 +401,9 @@ module occamy_soc
 };
 
   quadrant_inter_xbar_in_req_t   [6:0] quadrant_inter_xbar_in_req;
-  quadrant_inter_xbar_in_resp_t  [6:0] quadrant_inter_xbar_in_rsp;
+  quadrant_inter_xbar_in_resp_t  [6:0] quadrant_inter_xbar_in_resp;
   quadrant_inter_xbar_out_req_t  [6:0] quadrant_inter_xbar_out_req;
-  quadrant_inter_xbar_out_resp_t [6:0] quadrant_inter_xbar_out_rsp;
+  quadrant_inter_xbar_out_resp_t [6:0] quadrant_inter_xbar_out_resp;
 
   axi_xbar #(
       .Cfg          (QuadrantInterXbarCfg),
@@ -428,9 +428,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (quadrant_inter_xbar_in_req),
-      .slv_ports_resp_o     (quadrant_inter_xbar_in_rsp),
+      .slv_ports_resp_o     (quadrant_inter_xbar_in_resp),
       .mst_ports_req_o      (quadrant_inter_xbar_out_req),
-      .mst_ports_resp_i     (quadrant_inter_xbar_out_rsp),
+      .mst_ports_resp_i     (quadrant_inter_xbar_out_resp),
       .addr_map_i           (QuadrantInterXbarAddrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -452,9 +452,9 @@ module occamy_soc
 };
 
   hbm_xbar_in_req_t   [6:0] hbm_xbar_in_req;
-  hbm_xbar_in_resp_t  [6:0] hbm_xbar_in_rsp;
+  hbm_xbar_in_resp_t  [6:0] hbm_xbar_in_resp;
   hbm_xbar_out_req_t  [7:0] hbm_xbar_out_req;
-  hbm_xbar_out_resp_t [7:0] hbm_xbar_out_rsp;
+  hbm_xbar_out_resp_t [7:0] hbm_xbar_out_resp;
 
   axi_interleaved_xbar #(
       .Cfg          (HbmXbarCfg),
@@ -479,9 +479,9 @@ module occamy_soc
       .rst_ni                (rst_ni),
       .test_i                (test_mode_i),
       .slv_ports_req_i       (hbm_xbar_in_req),
-      .slv_ports_resp_o      (hbm_xbar_in_rsp),
+      .slv_ports_resp_o      (hbm_xbar_in_resp),
       .mst_ports_req_o       (hbm_xbar_out_req),
-      .mst_ports_resp_i      (hbm_xbar_out_rsp),
+      .mst_ports_resp_i      (hbm_xbar_out_resp),
       .addr_map_i            (HbmXbarAddrmap),
       .interleaved_mode_ena_i(hbm_xbar_interleaved_mode_ena),
       .en_default_mst_port_i ('1),
@@ -502,9 +502,9 @@ module occamy_soc
 };
 
   soc_wide_xbar_in_req_t   [3:0] soc_wide_xbar_in_req;
-  soc_wide_xbar_in_resp_t  [3:0] soc_wide_xbar_in_rsp;
+  soc_wide_xbar_in_resp_t  [3:0] soc_wide_xbar_in_resp;
   soc_wide_xbar_out_req_t  [5:0] soc_wide_xbar_out_req;
-  soc_wide_xbar_out_resp_t [5:0] soc_wide_xbar_out_rsp;
+  soc_wide_xbar_out_resp_t [5:0] soc_wide_xbar_out_resp;
 
   axi_xbar #(
       .Cfg          (SocWideXbarCfg),
@@ -529,9 +529,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (soc_wide_xbar_in_req),
-      .slv_ports_resp_o     (soc_wide_xbar_in_rsp),
+      .slv_ports_resp_o     (soc_wide_xbar_in_resp),
       .mst_ports_req_o      (soc_wide_xbar_out_req),
-      .mst_ports_resp_i     (soc_wide_xbar_out_rsp),
+      .mst_ports_resp_i     (soc_wide_xbar_out_resp),
       .addr_map_i           (SocWideXbarAddrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
@@ -563,9 +563,9 @@ module occamy_soc
 };
 
   soc_narrow_xbar_in_req_t   [10:0] soc_narrow_xbar_in_req;
-  soc_narrow_xbar_in_resp_t  [10:0] soc_narrow_xbar_in_rsp;
+  soc_narrow_xbar_in_resp_t  [10:0] soc_narrow_xbar_in_resp;
   soc_narrow_xbar_out_req_t  [12:0] soc_narrow_xbar_out_req;
-  soc_narrow_xbar_out_resp_t [12:0] soc_narrow_xbar_out_rsp;
+  soc_narrow_xbar_out_resp_t [12:0] soc_narrow_xbar_out_resp;
 
   axi_xbar #(
       .Cfg(SocNarrowXbarCfg),
@@ -590,9 +590,9 @@ module occamy_soc
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
       .slv_ports_req_i      (soc_narrow_xbar_in_req),
-      .slv_ports_resp_o     (soc_narrow_xbar_in_rsp),
+      .slv_ports_resp_o     (soc_narrow_xbar_in_resp),
       .mst_ports_req_o      (soc_narrow_xbar_out_req),
-      .mst_ports_resp_i     (soc_narrow_xbar_out_rsp),
+      .mst_ports_resp_i     (soc_narrow_xbar_out_resp),
       .addr_map_i           (SocNarrowXbarAddrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   ('0)
