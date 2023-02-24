@@ -30,32 +30,12 @@ before_script:
   ${VERIBLE_FMT} --version
 
 stages:
-- build1
-- build2
-- test
-- package
-- deploy
-
-# Buildroot flow for toolchain and Linux binaries
-br-hrv-vcu128:
-  stage: build1
-  needs: []
-  script:
-  - >
-    if $CI_PROJECT_DIR/.gitlab-ci.d/memora_retry.sh lookup br-hrv-vcu128; then
-      exit 0
-    fi
-  - make -C hw/system/occamy/fpga br-hrv-vcu128
-  - $CI_PROJECT_DIR/.gitlab-ci.d/memora_retry.sh insert br-hrv-vcu128
-  artifacts:
-    when: always
-    paths:
-    - hw/system/occamy/fpga/output/br-hrv-vcu128/images/
+- build_occamy_ip
 
 # Packages and elaborates the vivado IPs where occamy is part of. This ensures
 # that the occamy xilinx IP can be elaborated
 vivado_ip:
-  stage: build2
+  stage: build_occamy_ip
   needs: []
   script:
     # Make Occamy system smaller to fit on FPGA
