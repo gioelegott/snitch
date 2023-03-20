@@ -276,6 +276,6 @@ __attribute__((weak)) int main() {
         run_job();
 
         snrt_wfi();
-    }
+}
 }
 
