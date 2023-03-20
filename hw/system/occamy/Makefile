@@ -50,7 +50,7 @@ CVA6_TRACE            = trace_hart_0.log
 # (LRU) config, all targets depending on the configuration file have
 # to be rebuilt. This file is used to express this condition as a
 # prerequisite for other rules.
-CFG = cfg/lru.hjson
+CFG = cfg/single-cluster.hjson#cfg/lru.hjson
 
 #####################
 # Simulator options #
