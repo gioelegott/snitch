@@ -36,7 +36,7 @@ sources:
 - src/snitch_sequencer.sv
 - src/snitch_tcdm_interconnect.sv
 # Level 1:
-- src/snitch_barrier.sv
+- src/snitch_barrier_v2.sv
 - src/snitch_fp_ss.sv
 - src/snitch_shared_muldiv.sv
 # Level 2:

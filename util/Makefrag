@@ -182,9 +182,9 @@ traces: $(shell (ls logs/trace_hart_*.dasm 2>/dev/null | sed 's/\.dasm/\.txt/') 
 # Generate source-code interleaved traces for all harts. Reads the binary from
 # the logs/.rtlbinary file that is written at start of simulation in the vsim script
 logs/trace_hart_%.s: logs/trace_hart_%.txt ${ANNOTATE}
-	$(PYTHON) ${ANNOTATE} ${ANNOTATE_FLAGS} -o $@ $(BINARY) $<
+	$(PYTHON) ${ANNOTATE} -q -o $@ $(BINARY) $<
 logs/trace_hart_%.diff: logs/trace_hart_%.txt ${ANNOTATE}
-	$(PYTHON) ${ANNOTATE} ${ANNOTATE_FLAGS} -o $@ $(BINARY) $< -d
+	$(PYTHON) ${ANNOTATE} -q -o $@ $(BINARY) $< -d
 BINARY ?= $(shell cat logs/.rtlbinary)
 annotate: $(shell (ls logs/trace_hart_*.dasm 2>/dev/null | sed 's/\.dasm/\.s/') || echo "") \
           $(shell (ls logs/trace_hart_*.dasm 2>/dev/null | sed 's/\.dasm/\.diff/') || echo "")
