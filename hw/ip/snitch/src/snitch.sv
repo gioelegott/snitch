@@ -404,7 +404,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
     | (~{(PPNSize){trans_active}} & {{{AddrWidth-32}{1'b0}}, pc_q[31:PAGE_SHIFT]});
   assign inst_addr_o[PAGE_SHIFT-1:0] = pc_q[PAGE_SHIFT-1:0];
   assign inst_cacheable_o = snitch_pma_pkg::is_inside_cacheable_regions(SnitchPMACfg, inst_addr_o);
-  assign inst_valid_o = ~wfi_q;
+  assign inst_valid_o = ~wfi_q && ~csr_stall_q;
 
   // --------------------
   // Control
@@ -461,7 +461,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
     pc_d = pc_q;
     npc = pc_q; // the next PC if we wouldn't be in debug mode
     // if we got a valid instruction word increment the PC unless we are waiting for an event
-    if (!stall && !wfi_q) begin
+    if (!stall && !wfi_q && !csr_stall_q) begin
       casez (next_pc)
         Consec: npc = consec_pc;
         Alu: npc = alu_result & {{31{1'b1}}, ~zero_lsb};

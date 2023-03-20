@@ -33,7 +33,7 @@ void luMulticluster(uint32_t n, double **A)
 
 
          snrt_global_barrier();
-        
+        snrt_fpu_fence();
 
 
         for (i = kk + ((global_core_idx/4 - kk%4 +4)%4); i < n; i += 4)
@@ -42,6 +42,7 @@ void luMulticluster(uint32_t n, double **A)
 	            A[cluster_idx][i*n + j] -= A[cluster_idx][i*n + k] * A[(k/2)%2][k*n + j];
             }
           snrt_global_barrier();
+          snrt_fpu_fence();
     }
 
 
