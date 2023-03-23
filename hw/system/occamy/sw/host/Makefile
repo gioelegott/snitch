@@ -8,6 +8,7 @@
 APPS  = hello_world
 APPS += offload
 APPS += axpy
+APPS += gesummv
 
 TARGET ?= all
 
