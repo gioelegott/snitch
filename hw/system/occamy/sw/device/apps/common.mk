@@ -25,6 +25,8 @@ INCDIRS += $(SW_DIR)/shared/platform/generated
 INCDIRS += $(SW_DIR)/shared/platform
 INCDIRS += $(SW_DIR)/shared/runtime
 
+#CFLAGS += -mno-fdiv
+
 # Linking sources
 BASE_LD       = $(abspath $(SNRT_DIR)/base.ld)
 MEMORY_LD     = $(abspath $(APPSDIR)/memory.ld)

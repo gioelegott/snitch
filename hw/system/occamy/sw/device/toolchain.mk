@@ -26,7 +26,7 @@ CFLAGS += $(addprefix -I,$(INCDIRS))
 CFLAGS += -march=rv32imafd
 CFLAGS += -mabi=ilp32d
 CFLAGS += -mcmodel=medany
-CFLAGS += -mno-fdiv
+#CFLAGS += -mno-fdiv
 CFLAGS += -ffast-math
 CFLAGS += -fno-builtin-printf
 CFLAGS += -fno-common

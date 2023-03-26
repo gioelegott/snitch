@@ -1,0 +1,57 @@
+make -C sw/ all
+make[1]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw'
+make -C host TARGET=partial-build
+make[2]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host'
+make -C apps/hello_world partial-build
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/hello_world'
+make[3]: Nothing to be done for `partial-build'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/hello_world'
+make -C apps/offload partial-build
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/offload'
+make[3]: Nothing to be done for `partial-build'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/offload'
+make -C apps/axpy partial-build
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/axpy'
+make[3]: Nothing to be done for `partial-build'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/axpy'
+make -C apps/gesummv partial-build
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/gesummv'
+make[3]: Nothing to be done for `partial-build'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/gesummv'
+make -C apps/lu partial-build
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/lu'
+make[3]: Nothing to be done for `partial-build'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host/apps/lu'
+make[2]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/host'
+make -C device
+make[2]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device'
+make -C runtime all
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/runtime'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/runtime'
+make -C apps/offload all
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/offload'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/offload'
+make -C apps/axpy all
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/axpy'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/axpy'
+make -C apps/gesummv all
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/gesummv'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/gesummv'
+make -C apps/lu all
+make[3]: Entering directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu'
+riscv32-unknown-elf-gcc -Idata -I/home/sem23f13/snitch2/hw/system/occamy/sw/device/runtime/src -I/home/sem23f13/snitch2/sw/snRuntime/api -I/home/sem23f13/snitch2/sw/snRuntime/src -I/home/sem23f13/snitch2/hw/system/occamy/sw/shared/platform/generated -I/home/sem23f13/snitch2/hw/system/occamy/sw/shared/platform -I/home/sem23f13/snitch2/hw/system/occamy/sw/shared/runtime -march=rv32imafd -mabi=ilp32d -mcmodel=medany -mno-fdiv -ffast-math -fno-builtin-printf -fno-common -O3 -g -nostartfiles -lm -lgcc -L/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps -L/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu/build -T/home/sem23f13/snitch2/sw/snRuntime/base.ld -L/home/sem23f13/snitch2/hw/system/occamy/sw/device/runtime/build -lsnRuntime src/lu.c -o /home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu/build/lu.elf
+/home/colluca/workspace/riscv/bin/../lib/gcc/riscv64-unknown-elf/8.3.0/../../../../riscv64-unknown-elf/bin/ld: /tmp/ccvsSp5j.o: in function `lu':
+/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu/src/lu.c:30: undefined reference to `__divdf3'
+/home/colluca/workspace/riscv/bin/../lib/gcc/riscv64-unknown-elf/8.3.0/../../../../riscv64-unknown-elf/bin/ld: /home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu/src/lu.c:30: undefined reference to `__divdf3'
+collect2: error: ld returned 1 exit status
+make[3]: *** [/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu/build/lu.elf] Error 1
+make[3]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device/apps/lu'
+make[2]: *** [apps/lu] Error 2
+make[2]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw/device'
+make[1]: *** [all] Error 2
+make[1]: Leaving directory `/home/sem23f13/snitch2/hw/system/occamy/sw'
+make: *** [sw] Error 2
