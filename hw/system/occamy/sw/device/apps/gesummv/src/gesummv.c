@@ -54,8 +54,7 @@ void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, DATA_TYPE alpha, 
 int main() {
 
     post_wakeup_cl();
-    volatile int v [100] = {1, 2, 3};
-    v[0] = 3;
+
     if(snrt_is_compute_core()) 
     {
         uint32_t core_idx = snrt_cluster_core_idx();

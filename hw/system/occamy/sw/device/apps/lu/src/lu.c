@@ -35,26 +35,6 @@ void lu(uint32_t n, uint32_t core_idx, uint32_t core_num, DATA_TYPE A[N][N])
         }
     }
 
-    // for (i = 0; i < n-1; i++)
-    // {
-    //     for(j = i + 1 + core_idx; j < n; j += core_num)
-    //     {
-    //         float tmp;
-    //         asm("flw f1, %1;"
-    //             "flw f2, %2;"
-    //             "fdiv.d f3, f1, f2;"
-    //             "fsw f3, %0;"
-    //             : "=m" (A[j][i])
-    //             : "m" (A[j][i]), "m" (A[i][i])
-    //             : "f1", "f2", "f3");
-            
-    //         for (k = i; k < n; k++)
-    //             A[j][k] -= A[i][k] * A[j][i];
-
-    //         A[j][i] = tmp;           
-    //     }
-    // }
-
 
     snrt_fpu_fence();
 }

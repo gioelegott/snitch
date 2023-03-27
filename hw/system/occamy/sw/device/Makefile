@@ -9,6 +9,8 @@ APPS = offload
 APPS += axpy
 APPS += gesummv
 APPS += lu
+APPS += axpyTest
+APPS += offloadTest
 
 TARGET ?= all
 
