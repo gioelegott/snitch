@@ -1,7 +1,12 @@
 
 #include "snrt.h"
-#include "data.h"
 #include "axpyTest.h"
+//#include "data.h"
+//#include "heterogeneous_runtime.h"
+
+// Other variables
+__thread volatile comm_buffer_t* comm_buffer_axpy;
+
 
 // Define your kernel
 static inline void axpy(uint32_t l, double a, double* x, double* y, double* z) {
@@ -124,7 +129,7 @@ __attribute__((weak)) static inline void run_job() {
              : run_job_compute_core);
 
     // Retrieve remote job data pointer
-    job_t* job_remote = ((job_t*)comm_buffer->usr_data_ptr);
+    job_t* job_remote = ((job_t*)comm_buffer_axpy->usr_data_ptr);
 
     // Invoke job
     axpy_job_dm_core(job_remote);
@@ -159,9 +164,9 @@ run_job_end:;
 }
 
 
-int main() {
+__attribute__((weak)) int main() {
 
-    comm_buffer = (volatile comm_buffer_t*)get_communication_buffer();
+    comm_buffer_axpy = (volatile comm_buffer_t*)get_communication_buffer();
 
     // Notify CVA6 when snRuntime initialization is done
     post_wakeup_cl();

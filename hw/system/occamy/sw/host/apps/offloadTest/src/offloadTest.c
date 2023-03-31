@@ -2,18 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "offloadTest.h"
-
 #include "host.c"
-
 #include "data.h"
 
 #define N_JOBS 1
 
-typedef enum { J_AXPY = 0 } job_id_t;
-
 const axpy_args_t args = {L / 8, 2, (uint64_t)x, (uint64_t)y, (uint64_t)z};
-const job_t axpy = {J_AXPY, args};
+
+const job_t axpy = {.id = J_AXPY, .args = args};
 
 job_t jobs[N_JOBS] = {axpy};
 

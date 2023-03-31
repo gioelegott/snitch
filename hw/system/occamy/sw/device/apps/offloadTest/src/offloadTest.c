@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "offloadTest.h"
-
 #include "snrt.h"
+#include "axpyTest.h"
 
+#define N_JOBS 1
 
 // Job function type
 typedef void (*job_func_t)(job_t* job);

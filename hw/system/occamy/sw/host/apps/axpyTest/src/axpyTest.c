@@ -1,5 +1,10 @@
 
 #include "host.c"
+#include "data.h"
+
+const axpy_args_t args = {L / 8, 2, (uint64_t)x, (uint64_t)y, (uint64_t)z};
+const job_t axpy = {J_AXPY, args};
+
 
 int main() {
     // Reset and ungate quadrant 0, deisolate
@@ -20,7 +25,7 @@ int main() {
 
 
     mcycle();
-    comm_buffer.usr_data_ptr = (uint32_t)(uint64_t) & (jobs[i]);
+    comm_buffer.usr_data_ptr = (uint32_t)(uint64_t) & (axpy);
     // Start Snitches
     mcycle();
     wakeup_snitches_cl();

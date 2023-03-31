@@ -7,5 +7,6 @@
 APP  = offloadTest
 SRCS = src/offloadTest.c
 INCL_DEVICE_BINARY = true
+INCDIRS = data
 
 include ../common.mk
