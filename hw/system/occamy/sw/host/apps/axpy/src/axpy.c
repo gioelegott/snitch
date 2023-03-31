@@ -3,7 +3,7 @@
 #include "data.h"
 
 const axpy_args_t args = {L / 8, 2, (uint64_t)x, (uint64_t)y, (uint64_t)z};
-const job_t axpy = {J_AXPY, args};
+const job_t axpy = {J_AXPY, .args.axpy = args};
 
 
 int main() {
@@ -31,10 +31,8 @@ int main() {
     wakeup_snitches_cl();
     // Wait for job done
     mcycle();
-    wait_sw_interrupt();
-    // Clear interrupt
-    mcycle();
-    clear_sw_interrupt(0);
+    
+    wait_snitches_done();
     // Exit routine
     mcycle();
 }
