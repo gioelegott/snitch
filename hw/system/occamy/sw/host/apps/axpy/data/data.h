@@ -1,4 +1,4 @@
-uint32_t L = 16;
+const uint32_t L = 16;
 
 double a = 2;
 

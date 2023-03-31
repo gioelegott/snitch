@@ -6,6 +6,8 @@
 
 APP     = offload
 SRCS    = src/offload.c
+SRCS    += ../../../device/apps/axpy/src/axpy.c
 INCDIRS = ../../../host/apps/offload/src
+INCDIRS += ../../../device/apps/axpy/src
 
 include ../common.mk

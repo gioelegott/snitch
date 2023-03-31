@@ -7,5 +7,6 @@
 APP  = offload
 SRCS = src/offload.c
 INCL_DEVICE_BINARY = true
+INCDIRS = data
 
 include ../common.mk

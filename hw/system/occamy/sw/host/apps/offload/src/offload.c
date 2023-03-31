@@ -2,22 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "offload.h"
-
 #include "host.c"
+#include "data.h"
 
 #define N_JOBS 1
-#define L 24
 
-double x[L] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-               1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-double y[L] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-               3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-double z[L] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const axpy_args_t args = {L / 8, 2, (uint64_t)x, (uint64_t)y, (uint64_t)z};
-const job_t axpy = {J_AXPY, args};
+
+const job_t axpy = {.id = J_AXPY, .args = args};
+
 job_t jobs[N_JOBS] = {axpy};
+
+
 
 int main() {
     // Reset and ungate quadrant 0, deisolate

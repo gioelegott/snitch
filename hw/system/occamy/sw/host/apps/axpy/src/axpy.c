@@ -1,30 +1,10 @@
-// #include "host.c"
-// #include "data.h"
-
-// // Define your kernel
-// void axpy(uint32_t l, double a, double *x, double *y, double *z) {
-//     for (uint32_t i = 0; i < l ; i++) {
-//         z[i] = a * x[i] + y[i];
-//     }
-// }
-
-// int main() {
-//     // Wake up the Snitch cores even if we don't use them
-//     reset_and_ungate_quad(0);
-//     deisolate_quad(0, ISO_MASK_ALL);
-
-//     // Read the mcycle CSR (this is our way to mark/delimit a specific code region for benchmarking)
-//     uint64_t start_cycle = mcycle();
-    
-//     // Call your kernel
-//     axpy(L, a, x, y, z);
-    
-//     // Read the mcycle CSR
-//     uint64_t end_cycle = mcycle();
-// }
-//  
 
 #include "host.c"
+#include "data.h"
+
+const axpy_args_t args = {L / 8, 2, (uint64_t)x, (uint64_t)y, (uint64_t)z};
+const job_t axpy = {J_AXPY, args};
+
 
 int main() {
     // Reset and ungate quadrant 0, deisolate
@@ -42,4 +22,19 @@ int main() {
 
     // Wait for an interrupt from the Snitches to communicate that they are done
     wait_snitches_done();
+
+
+    mcycle();
+    comm_buffer.usr_data_ptr = (uint32_t)(uint64_t) & (axpy);
+    // Start Snitches
+    mcycle();
+    wakeup_snitches_cl();
+    // Wait for job done
+    mcycle();
+    wait_sw_interrupt();
+    // Clear interrupt
+    mcycle();
+    clear_sw_interrupt(0);
+    // Exit routine
+    mcycle();
 }

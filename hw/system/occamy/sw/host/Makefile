@@ -12,9 +12,6 @@ APPS += gesummv
 APPS += gesummvCVA6
 APPS += lu
 APPS += luCVA6
-APPS += axpyTest
-APPS += offloadTest
-
 TARGET ?= all
 
 SUBDIRS = $(addprefix apps/,$(APPS))
