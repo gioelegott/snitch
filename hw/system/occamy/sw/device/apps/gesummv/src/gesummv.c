@@ -1,4 +1,3 @@
-
 #include "snrt.h"
 #include "gesummv.h"
 
@@ -8,9 +7,7 @@
 // Other variables
 __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
-
-
-
+double* glob_ptr;
 
 static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE *x, DATA_TYPE *y)
 {
@@ -27,8 +24,8 @@ static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, DAT
     //     tmp1 = tmp2 = 0;
     //     for (j = 0; j < n; j++)
     //     {
-    //         tmp1 += alpha * A[i][j] * x[j];
-    //         tmp2 += beta * B[i][j] * x[j];
+    //         tmp1 += alpha * A[i*n + j] * x[j];
+    //         tmp2 += beta * B[i*n + j] * x[j];
     //     }
     //     y[i] = tmp1 + tmp2;
     // }
@@ -50,21 +47,13 @@ static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, DAT
         y[i] = tmp1 + tmp2;
     }
 
-
-
     snrt_fpu_fence();
-
 
 }
 
 
 
 void gesummv_job_dm_core(job_t* job) {
-
-
-
-
-
 
     // Get local job pointer as next free slot in l1 alloc
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)snrt_l1_next();
@@ -74,44 +63,52 @@ void gesummv_job_dm_core(job_t* job) {
     // Copy job info
     snrt_dma_start_1d(gesummv_job, job, sizeof(gesummv_job_t));
 
-    // Get pointer to next free slot in l1 alloc
-    double* x = (double*)((uint32_t)gesummv_job + sizeof(gesummv_local_job_t));
-
     // Wait for job info transfer to complete
     snrt_dma_wait_all();
 
     mcycle();
-
-    // Copy operand x
-    // size_t size = axpy_job->args.l * 8 * 8;
-    // snrt_dma_start_1d(x, (void*)(uint32_t)axpy_job->args.x_l3_ptr, size);
 
     // Synchronize with compute cores before updating the l1 alloc pointer
     // such that they can retrieve the local job pointer.
     // Also ensures compute cores see the transferred job information.
     snrt_cluster_hw_barrier();
 
-    // Copy operand y
-    // double* y = (double*)((uint32_t)x + size);
-    // snrt_dma_start_1d(y, (void*)(uint32_t)axpy_job->args.y_l3_ptr, size);
+    uint32_t n = gesummv_job->args.n;
+    size_t matrix_size = n * n * 8;
+    size_t vector_size = n * 8;
+
+    // Copy operand A
+    double* A = (double*)((uint32_t)gesummv_job + sizeof(gesummv_local_job_t));
+    snrt_dma_start_1d(A, (void*)(uint32_t)gesummv_job->args.A_l3_ptr, matrix_size);
+    glob_ptr = A;
+
+    // Copy operand B
+    double* B = (double*)((uint32_t)A + matrix_size);
+    snrt_dma_start_1d(B, (void*)(uint32_t)gesummv_job->args.B_l3_ptr, matrix_size);
+
+    // Copy operand x
+    double* x = (double*)((uint32_t)B + matrix_size);
+    snrt_dma_start_1d(x, (void*)(uint32_t)gesummv_job->args.x_l3_ptr, vector_size);
+
 
     // Set pointers to local job operands
-    // axpy_job->args.x = x;
-    // axpy_job->args.y = y;
-    // axpy_job->args.z = (double*)((uint32_t)y + size);
+    gesummv_job->args.A = A;
+    gesummv_job->args.B = B;
+    gesummv_job->args.x = x;
+    gesummv_job->args.y = (double*)((uint32_t)x + vector_size);
 
     // Now we can update the L1 alloc pointer
-    // void* next = (void*)((uint32_t)(axpy_job->args.z) + size);
-    // snrt_l1_update_next(next);
+    void* next = (void*)((uint32_t)(gesummv_job->args.y) + vector_size);
+    snrt_l1_update_next(next);
 
     // Wait for DMA transfers to complete
-    // snrt_dma_wait_all();
+    snrt_dma_wait_all();
 
     mcycle();
 
     // Synchronize with compute cores to make sure the data
     // is available before they can start computing on it
-    //snrt_cluster_hw_barrier();
+    snrt_cluster_hw_barrier();
 
     mcycle();
 
@@ -122,9 +119,8 @@ void gesummv_job_dm_core(job_t* job) {
     mcycle();
 
     // Transfer data out
-    // snrt_dma_start_1d((void*)(uint32_t)axpy_job->args.z_l3_ptr,
-    //                   axpy_job->args.z, size);
-    // snrt_dma_wait_all();
+    snrt_dma_start_1d((void*)(uint32_t)gesummv_job->args.y_l3_ptr, gesummv_job->args.y, vector_size);
+    snrt_dma_wait_all();
 
     mcycle();
 
@@ -136,6 +132,11 @@ void gesummv_job_dm_core(job_t* job) {
 
 
 void gesummv_job_compute_core(job_t* job) {
+
+    // Synchronize with DM core to wait for operands
+    // to be fully transferred in L1
+    snrt_cluster_hw_barrier();
+
     // Cast local job
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)job;
 
@@ -144,16 +145,12 @@ void gesummv_job_compute_core(job_t* job) {
     uint32_t n = args.n;
     double alpha = args.alpha;
     double beta = args.beta;
-    double* A = args.A_ptr;
-    double* B = args.B_ptr;
-    double* x = args.x_ptr;
-    double* y = args.y_ptr;
+    double* A = args.A;
+    double* B = args.B;
+    double* x = args.x;
+    double* y = args.y;
 
     mcycle();
-
-    // Synchronize with DM core to wait for operands
-    // to be fully transferred in L1
-    //snrt_cluster_hw_barrier();
 
     mcycle();
 

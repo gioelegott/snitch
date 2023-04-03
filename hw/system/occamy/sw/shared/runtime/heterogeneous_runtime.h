@@ -69,10 +69,10 @@ typedef struct {
     uint32_t n;
     double alpha;
     double beta;
-    uint64_t A_ptr;
-    uint64_t B_ptr;
-    uint64_t x_ptr;
-    uint64_t y_ptr;
+    uint64_t A_l3_ptr;
+    uint64_t B_l3_ptr;
+    uint64_t x_l3_ptr;
+    uint64_t y_l3_ptr;
     double* A;
     double* B;
     double* x;

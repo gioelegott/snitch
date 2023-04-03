@@ -181,6 +181,6 @@ __attribute__((weak)) int main() {
 
     // Go to sleep until next job
     mcycle();
-    snrt_wfi();
+    return_to_cva6(SYNC_ALL);
 
 }

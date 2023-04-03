@@ -38,42 +38,42 @@ with open("data/data.h", "w") as f:
     f.write("#define DATA_TYPE {}\n\n".format(DATA_TYPE_NAME))
     
     # Write the arrays
-    f.write("DATA_TYPE alpha = {};\n".format(np.array([np.random.uniform(lower, upper)], dtype=DATA_TYPE)[0]))
-    f.write("DATA_TYPE beta = {};\n\n".format(np.array([np.random.uniform(lower, upper)], dtype=DATA_TYPE)[0]))
+    f.write("const DATA_TYPE alpha = {};\n".format(np.array([np.random.uniform(lower, upper)], dtype=DATA_TYPE)[0]))
+    f.write("const DATA_TYPE beta = {};\n\n".format(np.array([np.random.uniform(lower, upper)], dtype=DATA_TYPE)[0]))
     
-    f.write("DATA_TYPE A[N][N] = {\n    {")
-    for i in range(len(arr1)-1):
-        if (i+1) % N == 0:
-            f.write("{0: >{width}.5f}".format(arr1[i], width=width))
-            f.write("},\n    {")
-        else:
-            f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
-    f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr1[-1], width=width))
-    
-    f.write("DATA_TYPE B[N][N] = {\n    {")
-    for i in range(len(arr1)-1):
-        if (i+1) % N == 0:
-            f.write("{0: >{width}.5f}".format(arr2[i], width=width))
-            f.write("},\n    {")
-        else:
-            f.write("{0: >{width}.5f}, ".format(arr2[i], width=width))
-    f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr2[-1], width=width))
-
-
-
-    # f.write("DATA_TYPE A[N*N] = {\n    ")
+    # f.write("DATA_TYPE A[N][N] = {\n    {")
     # for i in range(len(arr1)-1):
-    #     f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
     #     if (i+1) % N == 0:
-    #         f.write("\n    ")
-    # f.write("{0: >{width}.5f}}};\n\n\n".format(arr1[-1], width=width))
+    #         f.write("{0: >{width}.5f}".format(arr1[i], width=width))
+    #         f.write("},\n    {")
+    #     else:
+    #         f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
+    # f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr1[-1], width=width))
     
-    # f.write("DATA_TYPE B[N*N] = {\n    ")
+    # f.write("DATA_TYPE B[N][N] = {\n    {")
     # for i in range(len(arr1)-1):
-    #     f.write("{0: >{width}.5f}, ".format(arr2[i], width=width))
     #     if (i+1) % N == 0:
-    #         f.write("\n    ")
-    # f.write("{0: >{width}.5f}}};\n\n\n".format(arr2[-1], width=width))
+    #         f.write("{0: >{width}.5f}".format(arr2[i], width=width))
+    #         f.write("},\n    {")
+    #     else:
+    #         f.write("{0: >{width}.5f}, ".format(arr2[i], width=width))
+    # f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr2[-1], width=width))
+
+
+
+    f.write("DATA_TYPE A[N*N] = {\n    ")
+    for i in range(len(arr1)-1):
+        f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
+        if (i+1) % N == 0:
+            f.write("\n    ")
+    f.write("{0: >{width}.5f}}};\n\n\n".format(arr1[-1], width=width))
+    
+    f.write("DATA_TYPE B[N*N] = {\n    ")
+    for i in range(len(arr1)-1):
+        f.write("{0: >{width}.5f}, ".format(arr2[i], width=width))
+        if (i+1) % N == 0:
+            f.write("\n    ")
+    f.write("{0: >{width}.5f}}};\n\n\n".format(arr2[-1], width=width))
 
     
     f.write("DATA_TYPE x[N] = {")

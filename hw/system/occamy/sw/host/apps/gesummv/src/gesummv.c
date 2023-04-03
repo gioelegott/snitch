@@ -24,7 +24,6 @@ int main() {
     // Wait for an interrupt from the Snitches to communicate that they are done
     wait_snitches_done();
 
-
     mcycle();
     comm_buffer.usr_data_ptr = (uint32_t)(uint64_t) & (gesummv);
     // Start Snitches
@@ -37,4 +36,9 @@ int main() {
 
     // Exit routine
     mcycle();
+
+    clear_sw_interrupt(0);
+    
+    mcycle();
+
 }
