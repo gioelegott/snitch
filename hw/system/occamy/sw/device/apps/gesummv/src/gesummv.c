@@ -137,6 +137,8 @@ void gesummv_job_compute_core(job_t* job) {
     // to be fully transferred in L1
     snrt_cluster_hw_barrier();
 
+    mcycle();
+
     // Cast local job
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)job;
 
@@ -150,7 +152,7 @@ void gesummv_job_compute_core(job_t* job) {
     double* x = args.x;
     double* y = args.y;
 
-    mcycle();
+
 
     mcycle();
 

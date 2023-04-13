@@ -19,9 +19,9 @@ with open(filename, 'r') as file:
     for i, row in enumerate(csv_reader):
       if i == 0:
         # Print the value of the 'name' column for each row
-        print(float(row['0_tend']) - float(row['0_tstart']), end=", ")
-      elif i < 8:
-        array.append(float(row['1_tend']) - float(row['1_tstart']),)
+        print(float(row['1_tend']) - float(row['1_tstart']))
+    #   elif i < 8:
+    #     array.append(float(row['1_tend']) - float(row['1_tstart']),)
     
-    print(mean(array), end=", ")
-    print(max(array))
+    # print(mean(array), end=", ")
+    # print(max(array))
