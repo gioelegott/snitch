@@ -15,7 +15,7 @@ typedef struct {
 } comm_buffer_t;
 
 
-typedef enum { J_AXPY = 0, J_GESUMMV = 1 } job_id_t;
+typedef enum { J_AXPY = 0, J_GESUMMV = 1, J_LU = 2 } job_id_t;
 
 //////////
 // AXPY //
@@ -91,6 +91,33 @@ typedef struct {
 
 
 
+////////
+// LU //
+////////
+
+typedef struct {
+    uint32_t n;
+    uint64_t A_ptr;
+} lu_args_t;
+
+typedef struct {
+    uint32_t n;
+    uint64_t A_l3_ptr;
+    double* A;
+} lu_local_args_t;
+
+typedef struct {
+    job_id_t id;
+    lu_args_t args;
+} lu_job_t;
+
+typedef struct {
+    job_id_t id;
+    lu_local_args_t args;
+} lu_local_job_t;
+
+
+
 
 /////////////
 // Generic //
@@ -103,6 +130,8 @@ typedef struct {
 typedef union {
     axpy_args_t axpy;
     gesummv_args_t gesummv;
+    lu_args_t lu;
+    
     //add args for new kernels here
 
 

@@ -37,22 +37,22 @@ with open("data/data.h", "w") as f:
     
     # Write the arrays
     
-    f.write("DATA_TYPE A[N][N] = {\n    {")
-    for i in range(len(arr1)-1):
-        if (i+1) % N == 0:
-            f.write("{0: >{width}.5f}".format(arr1[i], width=width))
-            f.write("},\n    {")
-        else:
-            f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
-    f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr1[-1], width=width))
+    # f.write("DATA_TYPE A[N][N] = {\n    {")
+    # for i in range(len(arr1)-1):
+    #     if (i+1) % N == 0:
+    #         f.write("{0: >{width}.5f}".format(arr1[i], width=width))
+    #         f.write("},\n    {")
+    #     else:
+    #         f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
+    # f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr1[-1], width=width))
 
     
-    # f.write("DATA_TYPE A[N*N] = {\n    ")
-    # for i in range(len(arr1)-1):
-    #     f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
-    #     if (i+1) % N == 0:
-    #         f.write("\n    ")
-    # f.write("{0: >{width}.5f}}};\n\n\n".format(arr1[-1], width=width))
+    f.write("DATA_TYPE A[N*N] = {\n    ")
+    for i in range(len(arr1)-1):
+        f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
+        if (i+1) % N == 0:
+            f.write("\n    ")
+    f.write("{0: >{width}.5f}}};\n\n\n".format(arr1[-1], width=width))
 
     
         
