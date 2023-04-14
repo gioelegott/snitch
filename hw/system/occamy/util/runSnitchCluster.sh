@@ -35,7 +35,7 @@ mkdir logs/history/$1_$2_$3_$timestamp
 find ./logs -maxdepth 1 -type f | xargs cp -t ./logs/history/$1_$2_$3_$timestamp
 
 echo -n "$1_$2_$3_$timestamp " >> logs/history/history.txt
-python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/trace.csv >> logs/history/history.txt
+python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv >> logs/history/history.txt
 
 echo -n "$1_$2_$3_$timestamp " >> logs/history/historySnitchCluster.txt
-python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/trace.csv -x >> logs/history/historySnitchCluster.txt
+python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv -x >> logs/history/historySnitchCluster.txt

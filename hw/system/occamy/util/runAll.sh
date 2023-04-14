@@ -4,7 +4,7 @@ then
     exit 1
 fi
 
-for i in $(seq $2 1 $3)
+for i in $(seq $2 4 $3)
 do
-   ../../../util/run.sh $1 $i $4
+   ./util/runCVA6.sh $1 $i $4
 done

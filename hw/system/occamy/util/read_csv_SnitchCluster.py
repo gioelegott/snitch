@@ -19,18 +19,18 @@ with open(filename, 'r') as file:
     for i, row in enumerate(csv_reader):
       if i == 1:
         # Print the value of the 'name' column for each row
-        total_time = float(row[-1]) - float(row[1])
+        total_time = float(row[10]) - float(row[3])
       elif i <= 9 and i > 1:
-        compute_time_array.append(float(row[20]) - float(row[19]))
+        compute_time_array.append(float(row[12]) - float(row[11]))
       elif i > 9:
-        snitch_time = float(row[-4]) - float(row[7])
-        data_tranfer_time = float(row[14]) - float(row[11]) + float(row[-5]) - float(row[-6])
+        snitch_time = float(row[14]) - float(row[3])
+        data_tranfer_time = float(row[8]) - float(row[5]) + float(row[14]) - float(row[13])
 
 
     if len(sys.argv) > 2 and sys.argv[2] == '-x':
       print(total_time, end="       ")
-      print(snitch_time, end="        ")
-      print(max(compute_time_array), end="         ")
+      print(snitch_time, end="         ")
+      print(max(compute_time_array), end="          ")
       print(data_tranfer_time)
     else:
       print(total_time)
