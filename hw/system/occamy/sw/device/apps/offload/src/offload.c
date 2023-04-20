@@ -5,15 +5,16 @@
 #include "snrt.h"
 #include "axpy.h"
 #include "gesummv.h"
+#include "lu.h"
 
-#define N_JOBS 2
+#define N_JOBS 3
 
 // Job function type
 typedef void (*job_func_t)(job_t* job);
 
 // Job function arrays
-__thread job_func_t jobs_dm_core[N_JOBS] = {axpy_job_dm_core, gesummv_job_dm_core};
-__thread job_func_t jobs_compute_core[N_JOBS] = {axpy_job_compute_core, gesummv_job_compute_core};
+__thread job_func_t jobs_dm_core[N_JOBS] = {axpy_job_dm_core, gesummv_job_dm_core, lu_job_dm_core};
+__thread job_func_t jobs_compute_core[N_JOBS] = {axpy_job_compute_core, gesummv_job_compute_core, lu_job_compute_core};
 
 // Other variables
 __thread volatile comm_buffer_t* comm_buffer;

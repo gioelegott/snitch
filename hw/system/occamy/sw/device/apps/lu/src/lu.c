@@ -4,14 +4,14 @@
 
 #define CEIL(x, y) ((((x) - 1) / (y)) + 1)
 #define MIN(x, y) ((x) < (y)?(x):(y))
-#define DATA_TYPE double
+#define double double
 
 __thread volatile comm_buffer_t* comm_buffer_lu;
 
-void lu(uint32_t n, uint32_t core_idx, uint32_t core_num, DATA_TYPE *A)
+void lu(uint32_t n, uint32_t core_idx, uint32_t core_num, double *A)
 {
     uint32_t i, j, k;
-    DATA_TYPE tmp;
+    double tmp;
     /*gaussian reduction*/
 
     // for (i = 0; i < n-1; i++)

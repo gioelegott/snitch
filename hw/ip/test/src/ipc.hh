@@ -13,8 +13,11 @@
 #include <string.h>
 #include <time.h>
 
+#include <atomic>
 #include <algorithm>
 #include <tb_lib.hh>
+
+std::atomic<bool> ping_confirm;
 
 class IpcIface {
    private:
@@ -28,6 +31,7 @@ class IpcIface {
         Read = 0,
         Write = 1,
         Poll = 2,
+        Ping = 3,
     };
 
     // Operations are 3 doubles, followed by data streams in either direction
@@ -48,6 +52,11 @@ class IpcIface {
     pthread_t thread;
     bool active;
 
+    // Buffers that get allocated
+    char* buf_tx;
+    char* buf_rx;
+    ipc_targs_t* buf_targs;
+
     static void* ipc_thread_handle(void* in) {
         ipc_targs_t* targs = (ipc_targs_t*)in;
         // Open FIFOs
@@ -59,7 +68,15 @@ class IpcIface {
         std::fill_n(buf_strb, IPC_BUF_SIZE_STRB, 0xFF);
         // Handle commands
         ipc_op_t op;
-        while (fread(&op, sizeof(ipc_op_t), 1, tx)) {
+        uint8_t ret_value;
+        
+        while(!feof(tx)){
+            ret_value = fread(&op, sizeof(ipc_op_t), 1, tx);
+            if(ret_value!=1){ 
+                if (ferror(tx)) {
+                    continue; // jumps to while() again
+                }
+            } 
             switch (op.opcode) {
                 case Read:
                     // Read full blocks until one full block or less left
@@ -69,6 +86,8 @@ class IpcIface {
                          i -= IPC_BUF_SIZE) {
                         sim::MEM.read(op.addr, IPC_BUF_SIZE, buf_data);
                         fwrite(buf_data, IPC_BUF_SIZE, 1, rx);
+                        op.addr += IPC_BUF_SIZE;
+                        op.len -= IPC_BUF_SIZE;
                     }
                     sim::MEM.read(op.addr, op.len, buf_data);
                     fwrite(buf_data, op.len, 1, rx);
@@ -82,11 +101,14 @@ class IpcIface {
                         fread(buf_data, IPC_BUF_SIZE, 1, tx);
                         sim::MEM.write(op.addr, IPC_BUF_SIZE, buf_data,
                                        buf_strb);
+                        op.addr += IPC_BUF_SIZE;
+                        op.len -= IPC_BUF_SIZE;
                     }
                     fread(buf_data, op.len, 1, tx);
                     sim::MEM.write(op.addr, op.len, buf_data, buf_strb);
                     break;
                 case Poll:
+                    {
                     // Unpack 32b checking mask and expected value from length
                     uint32_t mask = op.len & 0xFFFFFFFF;
                     uint32_t expected = (op.len >> 32) & 0xFFFFFFFF;
@@ -103,6 +125,12 @@ class IpcIface {
                     // Send back read 32b word
                     fwrite(&read, sizeof(uint32_t), 1, rx);
                     fflush(rx);
+                    }
+                    break;
+                case Ping:
+                    // Used during communication with verification script 
+                    printf("[IPC] Ping\n");
+                    ping_confirm = true;
                     break;
             }
             printf("[IPC] ... done\n");
@@ -114,6 +142,29 @@ class IpcIface {
     }
 
    public:
+  
+    void terminate(){
+        // Open RX FIFO
+        FILE* rx = fopen(buf_targs->rx, "wb");
+        
+        // Prepare data buffer
+        uint8_t buf_data[IPC_BUF_SIZE];
+
+        // String to be transmitted
+        uint8_t tstr[] = "simulation terminated";
+        memcpy(buf_data, tstr, sizeof(tstr)-1);
+
+        // Write string to FIFO
+        fwrite(buf_data, sizeof(tstr)-1, 1, rx);
+        fflush(rx);
+        
+        // Close RX FIFO
+        fclose(rx);
+        
+        // Wait for read confirmation of verification script
+        while(!ping_confirm);
+    }
+
     // Conditionally construct IPC iff any arguments specify it
     IpcIface(int argc, char** argv) {
         static constexpr char IPC_FLAG[6] = "--ipc";
@@ -130,12 +181,20 @@ class IpcIface {
                 char* ipc_args = argv[i] + strlen(IPC_FLAG) + 1;
                 targs.tx = strtok(ipc_args, ",");
                 targs.rx = strtok(NULL, ",");
+                buf_tx = (char *) malloc(strlen(targs.tx));
+                buf_rx = (char *) malloc(strlen(targs.rx));
+                strcpy(buf_tx, targs.tx); 
+                strcpy(buf_rx, targs.rx);
+                buf_targs = (ipc_targs_t *) malloc(sizeof(ipc_targs_t));
+                buf_targs->tx = buf_tx;
+                buf_targs->rx = buf_rx;
+
                 // Initialize IO thread which will handle TX, RX pipes
                 pthread_create(&thread, NULL, *ipc_thread_handle,
-                               (void*)&targs);
+                               (void*)buf_targs);
                 printf(
                     "[IPC] Thread launched with TX FIFO `%s`, RX FIFO `%s`\n",
-                    targs.tx, targs.rx);
+                    buf_targs->tx, buf_targs->rx);
                 active = true;
             }
         }

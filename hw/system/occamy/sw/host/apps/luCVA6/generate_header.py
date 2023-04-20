@@ -18,10 +18,10 @@ except ValueError:
     print("Error: First argument must be an integer")
     sys.exit(1)
 
-DATA_TYPE_NAME = sys.argv[2]
-DATA_TYPE = np.dtype(sys.argv[2])
+double_NAME = sys.argv[2]
+double = np.dtype(sys.argv[2])
 # Generate the arrays based on the integer and string arguments
-arr1 = np.random.uniform(lower, upper, size=(N * N)).astype(DATA_TYPE)
+arr1 = np.random.uniform(lower, upper, size=(N * N)).astype(double)
 
 # Open the header file for writing
 with open("data/data.h", "w") as f:
@@ -31,13 +31,13 @@ with open("data/data.h", "w") as f:
     f.write("// Statically define the data which will be used for the computation\n")
     f.write("// (this will be loaded into DRAM together with the binary)\n\n")
     
-    # Write the N and DATA_TYPE constants
+    # Write the N and double constants
     f.write("#define N {}\n".format(N))
-    f.write("#define DATA_TYPE {}\n\n".format(DATA_TYPE_NAME))
+    f.write("#define double {}\n\n".format(double_NAME))
     
     # Write the arrays
     
-    f.write("DATA_TYPE A[N][N] = {\n    {")
+    f.write("double A[N][N] = {\n    {")
     for i in range(len(arr1)-1):
         if (i+1) % N == 0:
             f.write("{0: >{width}.5f}".format(arr1[i], width=width))
@@ -47,7 +47,7 @@ with open("data/data.h", "w") as f:
     f.write("{0: >{width}.5f}}}}};\n\n\n".format(arr1[-1], width=width))
 
     
-    # f.write("DATA_TYPE A[N*N] = {\n    ")
+    # f.write("double A[N*N] = {\n    ")
     # for i in range(len(arr1)-1):
     #     f.write("{0: >{width}.5f}, ".format(arr1[i], width=width))
     #     if (i+1) % N == 0:

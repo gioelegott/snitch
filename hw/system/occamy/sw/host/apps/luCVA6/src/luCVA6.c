@@ -7,10 +7,10 @@
 #include "data.h"
 
 
-void lu(uint32_t n, DATA_TYPE A[N][N])
+void lu(uint32_t n, double A[N][N])
 {
     uint32_t i, j, k;
-    DATA_TYPE tmp;
+    double tmp;
 
     /*standard*/
     // for (i = 0; i < n; i++) {

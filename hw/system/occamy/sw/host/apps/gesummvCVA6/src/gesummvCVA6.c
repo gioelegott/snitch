@@ -1,10 +1,10 @@
 #include "host.c"
 #include "data.h"
 
-void gesummv(uint32_t n, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE A[N][N], DATA_TYPE B[N][N], DATA_TYPE *x, DATA_TYPE *y)
+void gesummv(uint32_t n, double alpha, double beta, double A[N][N], double B[N][N], double *x, double *y)
 {
     uint32_t i, j;
-    DATA_TYPE tmp1, tmp2;
+    double tmp1, tmp2;
   
     for (i = 0; i < n; i++)
     {

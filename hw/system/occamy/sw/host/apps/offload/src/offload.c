@@ -5,15 +5,18 @@
 #include "host.c"
 #include "data.h"
 
-#define N_JOBS 2
+#define N_JOBS 3
 
 const axpy_args_t args_axpy = {L / 8, 2, (uint64_t)x_a, (uint64_t)y_a, (uint64_t)z_a};
 const job_t axpy = {.id = J_AXPY, .args.axpy = args_axpy};
 
-const gesummv_args_t args_gesummv = {N, alpha, beta, (uint64_t)A, (uint64_t)B, (uint64_t)x_g, (uint64_t)y_g};
+const gesummv_args_t args_gesummv = {N_g, alpha, beta, (uint64_t)A_g, (uint64_t)B_g, (uint64_t)x_g, (uint64_t)y_g};
 const job_t gesummv = {.id = J_GESUMMV, .args.gesummv = args_gesummv};
 
-job_t jobs[N_JOBS] = {axpy, gesummv};
+const lu_args_t args_lu = {N_l, (uint64_t)A_l};
+const job_t lu = {.id = J_LU, .args.lu = args_lu};
+
+job_t jobs[N_JOBS] = {axpy, gesummv, lu};
 
 
 

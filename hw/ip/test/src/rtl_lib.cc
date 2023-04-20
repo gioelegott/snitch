@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 
+#include "ipc.hh"
 #include "sim.hh"
 #include "tb_lib.hh"
 
@@ -57,6 +58,8 @@ void Sim::main() {
 }  // namespace sim
 
 std::unique_ptr<sim::Sim> s;
+IpcIface *ipc_iface;
+bool verification = false;
 
 int fesvr_tick() {
     // Initialize on first tick.
@@ -101,8 +104,24 @@ int fesvr_tick() {
             argv[i + 1] = (char *)htif_args[i].c_str();
         }
 
+        ipc_iface = new IpcIface(argc, (char **)argv);
         s = std::make_unique<sim::Sim>(argc, (char **)argv);
+
+        // Check for verification flag
+        static constexpr char IPC_FLAG[6] = "--ipc";
+        for (auto i = 1; i < argc; ++i) {
+            if (strncmp(argv[i], IPC_FLAG, strlen(IPC_FLAG)) == 0) {
+                verification = true;
+            }
+        }
     }
+
+    if (verification){
+        if (s->run() != 0){
+            ipc_iface->terminate(); 
+        }
+    }
+
     return s->run();
 }
 

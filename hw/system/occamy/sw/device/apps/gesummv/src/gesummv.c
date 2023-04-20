@@ -3,15 +3,15 @@
 
 #define CEIL(x, y) ((((x) - 1) / (y)) + 1)
 #define MIN(x, y) ((x) < (y)?(x):(y))
-#define DATA_TYPE double
+#define double double
 // Other variables
 __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
 
-static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE *x, DATA_TYPE *y)
+static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, double alpha, double beta, double* A, double* B, double *x, double *y)
 {
     uint32_t i, j;
-    DATA_TYPE tmp1, tmp2;
+    double tmp1, tmp2;
     uint32_t lb;
     uint32_t ub;
     uint32_t c;
