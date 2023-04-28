@@ -8,6 +8,7 @@
 APPS = offload
 APPS += axpy
 APPS += gesummv
+APPS += gesummvTiling
 APPS += lu
 
 

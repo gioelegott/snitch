@@ -15,7 +15,7 @@ typedef struct {
 } comm_buffer_t;
 
 
-typedef enum { J_AXPY = 0, J_GESUMMV = 1, J_LU = 2 } job_id_t;
+typedef enum { J_AXPY = 0, J_GESUMMV = 1, J_LU = 2, J_GESUMMV_T} job_id_t;
 
 //////////
 // AXPY //

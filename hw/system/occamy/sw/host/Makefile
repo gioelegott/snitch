@@ -9,6 +9,7 @@ APPS  = hello_world
 APPS += offload
 APPS += axpy
 APPS += gesummv
+APPS += gesummvTiling
 APPS += gesummvCVA6
 APPS += lu
 APPS += luCVA6
