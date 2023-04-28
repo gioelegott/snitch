@@ -287,6 +287,7 @@ void axpy(uint32_t l, double a, double *x, double *y, double *z) {
     for (uint32_t i = 0; i < l ; i++) {
         z[i] = a * x[i] + y[i];
     }
+    snrt_fpu_fence();
 }
 
 int main() {
