@@ -154,9 +154,9 @@ if __name__ == "__main__":
     print("VerifySim: Running Golden Model\n")
     # Get path to the kernel's ELF and header file
     kernel_path = sys.argv[2]
-    kernel_name = kernel_path[9:]
+    kernel_name = kernel_path.split(os.sep)[-3]
     kernel = getattr(golden_models, kernel_name)
-    header_path = "sw/src/"+kernel_name+"/"+kernel_name+".h"
+    header_path = "sw/host/apps/"+kernel_name+"/data/data.h"
     gm_result, variable_name = kernel(header_path)
     
     # Read out DRAM
