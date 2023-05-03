@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -ne 3 ]
+if [ $# -ne 3 ] && [ $# -ne 4 ]
 then
-    echo "Usage: $0 <benchmark_name> <dimension> <data_type>"
+    echo "Usage: $0 <benchmark_name> <dimension> <data_type> [-v]"
     exit 1
 fi
 
@@ -17,25 +17,32 @@ rm logs/*
 
 make DEBUG=ON sw
 
-bin/occamy_top.vsim sw/host/apps/$1/build/$1.elf
 
-make traces
+if echo $* | grep -e "-v" -q
+then
+    python ../../ip/test/src/verification.py bin/occamy_top.vsim sw/host/apps/$1/build/$1.elf
+else
 
-make BINARY=sw/host/apps/$1/build/$1.elf annotate -j
+    bin/occamy_top.vsim sw/host/apps/$1/build/$1.elf
 
-make logs/perf.csv
+    make traces
 
-make logs/event.csv
+    make BINARY=sw/host/apps/$1/build/$1.elf annotate -j
 
-../../../util/trace/layout_events.py logs/event.csv sw/host/layout.csv -o logs/trace.csv
-../../../util/trace/eventvis.py -o logs/trace.json logs/trace.csv
+    make logs/perf.csv
 
-mkdir logs/history/$1_$2_$3_$timestamp
+    make logs/event.csv
 
-find ./logs -maxdepth 1 -type f | xargs cp -t ./logs/history/$1_$2_$3_$timestamp
+    ../../../util/trace/layout_events.py logs/event.csv sw/host/layout128Tiling.csv -o logs/trace.csv
+    ../../../util/trace/eventvis.py -o logs/trace.json logs/trace.csv
 
-echo -n "$1_$2_$3_$timestamp " >> logs/history/history.txt
-python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv >> logs/history/history.txt
+    mkdir logs/history/$1_$2_$3_$timestamp
 
-echo -n "$1_$2_$3_$timestamp " >> logs/history/historySnitchCluster.txt
-python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv -x >> logs/history/historySnitchCluster.txt
+    find ./logs -maxdepth 1 -type f | xargs cp -t ./logs/history/$1_$2_$3_$timestamp
+
+    echo -n "$1_$2_$3_$timestamp " >> logs/history/history.txt
+    python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv >> logs/history/history.txt
+
+    echo -n "$1_$2_$3_$timestamp " >> logs/history/historySnitchCluster.txt
+    python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv -x >> logs/history/historySnitchCluster.txt
+fi

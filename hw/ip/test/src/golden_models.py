@@ -245,6 +245,9 @@ def gesummv(header_path):
 
 	return y, variable_name
 
+def gesummvTiling(header_path):
+	return gesummv(header_path)
+
 def luCVA6(header_path): 
 	variable_name = "A"
 	with open(header_path, "r") as header_file:

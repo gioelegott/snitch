@@ -76,7 +76,7 @@ with open("data/data.h", "w") as f:
     f.write("{0: >{width}.5f}}};\n\n\n".format(arr2[-1], width=width))
 
     
-    f.write("double x[N] = {")
+    f.write("double x[N] = {\n    ")
     for i in range(len(arr3)-1):
         f.write("{0: >{width}.5f}, ".format(arr3[i], width=width))
     f.write("{0: >{width}.5f}}};\n\n".format(arr3[-1], width=width))
