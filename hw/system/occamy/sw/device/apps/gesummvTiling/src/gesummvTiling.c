@@ -4,6 +4,7 @@
 #define CEIL(x, y) ((((x) - 1) / (y)) + 1)
 #define MIN(x, y) ((x) < (y)?(x):(y))
 #define double double
+#define MEM (1024 * 64) 
 // Other variables
 __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
@@ -66,16 +67,14 @@ void gesummvTiling_job_dm_core(job_t* job) {
 
 
     uint32_t tcdm_ptr = (uint32_t)gesummv_job + sizeof(gesummv_local_job_t);
-    size_t available_mem = 1024 * 64;//snrt_l1_end_addr() - tcdm_ptr;
+    size_t available_mem = MEM;//snrt_l1_end_addr() - tcdm_ptr;
 
     if (n > available_mem/4)
         return;
 
-//////////////////////////make this the same as compute core (n_rows)    
-
 
     uint32_t n_rows = ((available_mem/sizeof(double) - 2*n)/2)/n;
-    n_rows = (n_rows > n) ? n : n_rows;
+    n_rows = (n_rows > n) ? n/2 : n_rows/2;
 
     size_t mt_size = n * n_rows * sizeof(double);
     size_t vt_size = n * sizeof(double);
@@ -85,11 +84,11 @@ void gesummvTiling_job_dm_core(job_t* job) {
     snrt_dma_start_1d(A, (void*)(uint32_t)gesummv_job->args.A_l3_ptr, mt_size);
 
     // Copy operand B
-    double* B = (double*)((uint32_t)A + mt_size);
+    double* B = (double*)((uint32_t)A + mt_size*2);
     snrt_dma_start_1d(B, (void*)(uint32_t)gesummv_job->args.B_l3_ptr, mt_size);
 
     // Copy operand x
-    double* x = (double*)((uint32_t)B + mt_size);
+    double* x = (double*)((uint32_t)B + mt_size*2);
     snrt_dma_start_1d(x, (void*)(uint32_t)gesummv_job->args.x_l3_ptr, mt_size);
 
 
@@ -105,23 +104,15 @@ void gesummvTiling_job_dm_core(job_t* job) {
     mcycle(); //3|4
 
     snrt_cluster_hw_barrier();
-    mcycle(); //3|4
 
-    snrt_cluster_hw_barrier();
-
-    //1 try copying as much as possible
-    //2 try coping only half and then copy while computing
     for(int i = 1; i < n / n_rows; i++) 
     {
         mcycle(); //3|4
-        snrt_dma_start_1d(A, (void*)((uint32_t)gesummv_job->args.A_l3_ptr + i * mt_size), mt_size);
-        snrt_dma_start_1d(B, (void*)((uint32_t)gesummv_job->args.B_l3_ptr + i * mt_size), mt_size);
+        snrt_dma_start_1d(A  + n_rows * n * (i%2), (void*)((uint32_t)gesummv_job->args.A_l3_ptr + i * mt_size), mt_size);
+        snrt_dma_start_1d(B  + n_rows * n * (i%2), (void*)((uint32_t)gesummv_job->args.B_l3_ptr + i * mt_size), mt_size);
 
         snrt_dma_wait_all();
 
-        mcycle(); //3|4
-
-        snrt_cluster_hw_barrier();
         mcycle(); //3|4
 
         snrt_cluster_hw_barrier(); 
@@ -130,14 +121,11 @@ void gesummvTiling_job_dm_core(job_t* job) {
     if (n%n_rows)
     {
         mcycle(); //3|4
-        snrt_dma_start_1d(A, (void*)((uint32_t)gesummv_job->args.A_l3_ptr + n / n_rows * mt_size), (n%n_rows) * n * sizeof(double));
-        snrt_dma_start_1d(B, (void*)((uint32_t)gesummv_job->args.B_l3_ptr + n / n_rows * mt_size), (n%n_rows) * n * sizeof(double));
+        snrt_dma_start_1d(A  + n_rows * n * ((n / n_rows)%2), (void*)((uint32_t)gesummv_job->args.A_l3_ptr + n / n_rows * mt_size), (n%n_rows) * n * sizeof(double));
+        snrt_dma_start_1d(B  + n_rows * n * ((n / n_rows)%2), (void*)((uint32_t)gesummv_job->args.B_l3_ptr + n / n_rows * mt_size), (n%n_rows) * n * sizeof(double));
 
         snrt_dma_wait_all();
 
-        mcycle(); //3|4
-
-        snrt_cluster_hw_barrier();
         mcycle(); //3|4
 
         snrt_cluster_hw_barrier(); 
@@ -148,10 +136,10 @@ void gesummvTiling_job_dm_core(job_t* job) {
     void* next = (void*)((uint32_t)(gesummv_job->args.y) + vt_size);
     snrt_l1_update_next(next);
 
-    //mcycle(); //4|5
+    mcycle(); //4|5
     // Synchronize cores to make sure results are available before
     // DMA starts transfer to L3
-    //snrt_cluster_hw_barrier();
+    snrt_cluster_hw_barrier();
 
     mcycle(); //5|6
 
@@ -189,11 +177,13 @@ void gesummvTiling_job_compute_core(job_t* job) {
     // Run kernel
     uint32_t core_idx = snrt_cluster_core_idx();
     uint32_t core_num = snrt_cluster_compute_core_num();
-    size_t available_mem = 1024 * 64;//(uint32_t)snrt_l1_end_addr() - (uint32_t)x;
+    size_t available_mem = MEM;//(uint32_t)snrt_l1_end_addr() - (uint32_t)x;
 
 
     uint32_t n_rows = ((available_mem/sizeof(double) - 2*n)/2)/n;
-    n_rows = (n_rows > n) ? n : n_rows;
+    n_rows = (n_rows > n) ? n/2 : n_rows/2;
+
+
     uint32_t n_columns = n;
 
     mcycle();//4|5
@@ -202,34 +192,26 @@ void gesummvTiling_job_compute_core(job_t* job) {
     snrt_cluster_hw_barrier();
 
 
-    for(int i = 1; i < n / n_rows; i++) //WRONG RESULTS
+    for(int i = 1; i < n / n_rows; i++)
     {
-        mcycle();
-        snrt_cluster_hw_barrier();
+
         mcycle();//4|5
-        gesummvTiling(n_rows, n_columns, core_idx, core_num, alpha, beta, A, B, x, y + i* n_rows);
+        gesummvTiling(n_rows, n_columns, core_idx, core_num, alpha, beta, A + n_rows * n_columns * (i%2), B + n_rows * n_columns * (i%2), x, y + i* n_rows);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
 
 
     }
 
-    if (n%n_rows) //WRONG RESULTS
+    if (n%n_rows)
     {
-        mcycle();
-        snrt_cluster_hw_barrier();
+
         mcycle();//4|5
-        gesummvTiling(n%n_rows, n_columns, core_idx, core_num, alpha, beta, A, B, x, y + n / n_rows * n_rows);
+        gesummvTiling(n%n_rows, n_columns, core_idx, core_num, alpha, beta, A + n_rows * n_columns * ((n / n_rows)%2), B + n_rows * n_columns * ((n / n_rows)%2), x, y + n / n_rows * n_rows);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
     }
     mcycle();//4|5
-
-    // Synchronize with DM core to make sure results are available
-    // before DMA starts transfer to L3
-    //snrt_cluster_hw_barrier();
-
-    mcycle();//6|7
 
 
 }
