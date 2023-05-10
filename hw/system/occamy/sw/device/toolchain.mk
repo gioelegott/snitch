@@ -37,6 +37,7 @@ CFLAGS += -mcmodel=medany
 CFLAGS += -ffast-math
 CFLAGS += -fno-builtin-printf
 CFLAGS += -fno-common
+CFLAGS += -ftls-model=local-exec
 CFLAGS += -O3
 ifeq ($(DEBUG), ON)
 CFLAGS += -g
