@@ -8,14 +8,10 @@
 __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
 
-static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, double alpha, double beta, double* A, double* B, double *x, double *y)
+static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, double beta, double* A, double* B, double *x, double *y)
 {
-    uint32_t i, j;
+    int32_t i, j;
     double tmp1, tmp2;
-    uint32_t lb;
-    uint32_t ub;
-    uint32_t c;
-
     //STRATEGY 1
 
     // for (i = core_idx; i < n; i+=core_num)
@@ -31,19 +27,15 @@ static inline void gesummv(uint32_t n, uint32_t core_idx, uint32_t core_num, dou
 
     //STRATEGY 2
 
-    c = CEIL(n, core_num);
-    lb = c * core_idx;
-    ub = MIN((c * (core_idx + 1)), n);
-
-    for (i = lb; i < ub; i++)
+    for (i = 0; i < n_rows; i++)
     {
         tmp1 = tmp2 = 0;
-        for (j = 0; j < n; j++)
+        for (j = 0; j < n_columns; j++)
         {
-            tmp1 += alpha * A[i*n + j] * x[j];
-            tmp2 += beta * B[i*n + j] * x[j];
+            tmp1 += alpha * A[i*n_columns + j] * x[j];
+            tmp2 += beta * B[i*n_columns + j] * x[j];
         }
-        y[i] = tmp1 + tmp2;
+        y[i] = tmp1 + tmp2;//n_rows;
     }
 
     snrt_fpu_fence();
@@ -120,7 +112,7 @@ void gesummv_job_compute_core(job_t* job) {
     // Synchronize with DM core to wait for operands
     // to be fully transferred in L1
     //snrt_cluster_hw_barrier();
-
+////////////////////////////////////////////////////
     // Cast local job
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)job;
 
@@ -137,8 +129,14 @@ void gesummv_job_compute_core(job_t* job) {
     // Run kernel
     uint32_t core_idx = snrt_cluster_core_idx();
     uint32_t core_num = snrt_cluster_compute_core_num();
+
+    uint32_t c = CEIL(n, core_num);
+    int32_t lb = c * core_idx;
+    int32_t ub = MIN((c * (core_idx + 1)), n);
+///////////////////////////////////////////////////////    
+    
     mcycle();//4|5
-    gesummv(n, core_idx, core_num, alpha, beta, A, B, x, y);
+    gesummv(ub - lb, n, alpha, beta, A + lb * n, B + lb * n, x, y + lb);
     mcycle();//5|6
 
 

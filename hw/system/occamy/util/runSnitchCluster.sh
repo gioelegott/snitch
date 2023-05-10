@@ -27,13 +27,13 @@ else
 
     make traces
 
-    make BINARY=sw/host/apps/$1/build/$1.elf annotate -j
+    make BINARY=sw/device/apps/$1/build/$1.elf annotate -j
 
     make logs/perf.csv
 
     make logs/event.csv
 
-    ../../../util/trace/layout_events.py logs/event.csv sw/host/layout128TilingDB.csv -o logs/trace.csv
+    ../../../util/trace/layout_events.py logs/event.csv sw/host/layout64TilingDB.csv -o logs/trace.csv
     ../../../util/trace/eventvis.py -o logs/trace.json logs/trace.csv
 
     mkdir logs/history/$1_$2_$3_$timestamp

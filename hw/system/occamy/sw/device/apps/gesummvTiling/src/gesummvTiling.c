@@ -4,19 +4,15 @@
 #define CEIL(x, y) ((((x) - 1) / (y)) + 1)
 #define MIN(x, y) ((x) < (y)?(x):(y))
 #define double double
-#define MEM (1024 * 64) 
+#define MEM (1024 * 64 + 64*8*4) 
 // Other variables
 __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
 
-static inline void gesummvTiling(uint32_t n_rows, uint32_t n_columns, uint32_t core_idx, uint32_t core_num, double alpha, double beta, double* A, double* B, double *x, double *y)
+static inline __attribute__((always_inline)) void gesummvTiling(int32_t n_rows, int32_t n_columns, double alpha, double beta, double* A, double* B, double *x, double *y)
 {
-    uint32_t i, j;
+    int32_t i, j;
     double tmp1, tmp2;
-    uint32_t lb;
-    uint32_t ub;
-    uint32_t c;
-
     //STRATEGY 1
 
     // for (i = core_idx; i < n; i+=core_num)
@@ -32,11 +28,7 @@ static inline void gesummvTiling(uint32_t n_rows, uint32_t n_columns, uint32_t c
 
     //STRATEGY 2
 
-    c = CEIL(n_rows, core_num);
-    lb = c * core_idx;
-    ub = MIN((c * (core_idx + 1)), n_rows);
-
-    for (i = lb; i < ub; i++)
+    for (i = 0; i < n_rows; i++)
     {
         tmp1 = tmp2 = 0;
         for (j = 0; j < n_columns; j++)
@@ -45,10 +37,10 @@ static inline void gesummvTiling(uint32_t n_rows, uint32_t n_columns, uint32_t c
             tmp2 += beta * B[i*n_columns + j] * x[j];
         }
         y[i] = tmp1 + tmp2;//n_rows;
+
     }
 
     snrt_fpu_fence();
-
 }
 
 
@@ -160,7 +152,7 @@ void gesummvTiling_job_compute_core(job_t* job) {
     // Synchronize with DM core to wait for operands
     // to be fully transferred in L1
     //snrt_cluster_hw_barrier();
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Cast local job
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)job;
 
@@ -180,14 +172,17 @@ void gesummvTiling_job_compute_core(job_t* job) {
     size_t available_mem = MEM;//(uint32_t)snrt_l1_end_addr() - (uint32_t)x;
 
 
-    uint32_t n_rows = ((available_mem/sizeof(double) - 2*n)/2)/n;
+    uint32_t n_rows = (available_mem/(16*n) - 1);
     n_rows = (n_rows > n) ? n/2 : n_rows/2;
-
-
     uint32_t n_columns = n;
 
+    uint32_t c = CEIL(n_rows, core_num);
+    int32_t lb = c * core_idx;
+    int32_t ub = MIN((c * (core_idx + 1)), n_rows);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     mcycle();//4|5
-    gesummvTiling(n_rows, n_columns, core_idx, core_num, alpha, beta, A, B, x, y);
+    gesummvTiling(ub - lb, n, alpha, beta, A + lb * n, B + lb * n, x, y + lb);
     mcycle();//5|6
     snrt_cluster_hw_barrier();
 
@@ -196,7 +191,7 @@ void gesummvTiling_job_compute_core(job_t* job) {
     {
 
         mcycle();//4|5
-        gesummvTiling(n_rows, n_columns, core_idx, core_num, alpha, beta, A + n_rows * n_columns * (i%2), B + n_rows * n_columns * (i%2), x, y + i* n_rows);
+        gesummvTiling(ub - lb, n, alpha, beta, A + lb * n + n_rows * n_columns * (i%2), B + lb * n + n_rows * n_columns * (i%2), x, y + i* n_rows + lb);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
 
@@ -205,9 +200,12 @@ void gesummvTiling_job_compute_core(job_t* job) {
 
     if (n%n_rows)
     {
+        c = CEIL(n%n_rows, core_num);
+        lb = c * core_idx;
+        ub = MIN((c * (core_idx + 1)), n%n_rows);
 
         mcycle();//4|5
-        gesummvTiling(n%n_rows, n_columns, core_idx, core_num, alpha, beta, A + n_rows * n_columns * ((n / n_rows)%2), B + n_rows * n_columns * ((n / n_rows)%2), x, y + n / n_rows * n_rows);
+        gesummvTiling(ub - lb, n, alpha, beta, A + lb * n + n_rows * n_columns * ((n / n_rows)%2), B + lb * n + n_rows * n_columns * ((n / n_rows)%2), x, y + n / n_rows * n_rows + lb);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
     }

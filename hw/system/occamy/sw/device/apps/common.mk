@@ -94,7 +94,7 @@ $(BIN): $(ELF) | $(BUILDDIR)
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $< $@
 
 $(DUMP): $(ELF) | $(BUILDDIR)
-	$(OBJDUMP) -D $< > $@
+	$(OBJDUMP) -DS $< > $@
 
 $(DWARF): $(ELF) | $(BUILDDIR)
 	$(READELF) --debug-dump $< > $@

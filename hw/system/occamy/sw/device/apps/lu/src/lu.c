@@ -25,10 +25,10 @@ void lu(uint32_t n, uint32_t core_idx, uint32_t core_num, double *A)
     //         A[j][i] = tmp;
      //     }
     // }
- 
-    for (i = 0; i < n-1; i++)
+    //if(core_idx == 3)
+    for (i = core_idx-1; i < n; i += core_num)
     {
-        for(j = i + 1 + core_idx; j < n; j += core_num)
+        for(j = i + 1; j < n; j++)
         {
             tmp = A[j*n + i]/A[i*n + i];
             for (k = i; k < n; k++)
