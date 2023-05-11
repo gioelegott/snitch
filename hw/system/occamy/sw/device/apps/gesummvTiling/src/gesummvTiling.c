@@ -80,7 +80,6 @@ void gesummvTiling_job_dm_core(job_t* job) {
     snrt_cluster_hw_barrier();
 
 
-
     double* A_ptr[2] = {A, A + rows_per_batch * n};
     double* B_ptr[2] = {B, B + rows_per_batch * n};
 
@@ -260,13 +259,16 @@ __attribute__((weak)) int main() {
     snrt_wfi();
 
     // Reset state after wakeup
-    mcycle(); //0|1
-    post_wakeup_cl();
+    while(1)
+    {
+        mcycle(); //0|1
+        post_wakeup_cl();
 
-    // Execute job
-    mcycle(); //1|2
-    run_job();
+        // Execute job
+        mcycle(); //1|2
+        run_job();
 
-    return_to_cva6(SYNC_ALL);
+        snrt_wfi();
+    }
 }
 
