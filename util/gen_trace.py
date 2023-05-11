@@ -532,9 +532,14 @@ def annotate_snitch(extras: dict,
             perf_metrics[-1]['snitch_load_latency'] += cycle - start_time
         except IndexError:
             msg_type = 'WARNING' if permissive else 'FATAL'
-            sys.stderr.write(
-                '{}: In cycle {}, LSU attempts writeback to {}, but none in flight.\n'
-                .format(msg_type, cycle, REG_ABI_NAMES_F[extras['fpr_waddr']]))
+            if 'fpr_waddr' in extras:
+                sys.stderr.write(
+                    '{}: In cycle {}, LSU attempts writeback to {}, but none in flight.\n'
+                    .format(msg_type, cycle, REG_ABI_NAMES_F[extras['fpr_waddr']]))
+            else:
+                sys.stderr.write(
+                    '{}: In cycle {}, LSU attempts writeback, but none in flight.\n'
+                    .format(msg_type, cycle))
             if not permissive:
                 sys.exit(1)
         ret.append('(lsu) {:<3} <-- {}'.format(

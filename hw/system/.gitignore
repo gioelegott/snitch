@@ -14,3 +14,4 @@ vc_hdrs.h
 build/
 AN.DB/
 .rtlbinary
+**/data.h

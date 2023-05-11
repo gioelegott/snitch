@@ -6,4 +6,4 @@ novas.*
 *.fsdb*
 .vcs_checkpoint_shared_memory.*
 logs
-sw/host/apps/*/data
+**/data.h
