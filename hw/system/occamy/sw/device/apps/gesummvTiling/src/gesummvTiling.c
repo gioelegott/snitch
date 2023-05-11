@@ -4,7 +4,7 @@
 #define CEIL(x, y) ((((x) - 1) / (y)) + 1)
 #define MIN(x, y) ((x) < (y)?(x):(y))
 #define double double
-#define MEM (1024 * 64 + 64*8*4) 
+#define MEM 67584 
 // Other variables
 __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
@@ -13,20 +13,6 @@ static inline __attribute__((always_inline)) void gesummvTiling(int32_t n_rows, 
 {
     int32_t i, j;
     double tmp1, tmp2;
-    //STRATEGY 1
-
-    // for (i = core_idx; i < n; i+=core_num)
-    // {
-    //     tmp1 = tmp2 = 0;
-    //     for (j = 0; j < n; j++)
-    //     {
-    //         tmp1 += alpha * A[i*n + j] * x[j];
-    //         tmp2 += beta * B[i*n + j] * x[j];
-    //     }
-    //     y[i] = tmp1 + tmp2;
-    // }
-
-    //STRATEGY 2
 
     for (i = 0; i < n_rows; i++)
     {
@@ -59,25 +45,21 @@ void gesummvTiling_job_dm_core(job_t* job) {
 
 
     uint32_t tcdm_ptr = (uint32_t)gesummv_job + sizeof(gesummv_local_job_t);
-    size_t available_mem = MEM;//snrt_l1_end_addr() - tcdm_ptr;
 
-    if (n > available_mem/4)
-        return;
+    uint32_t rows_per_batch = (MEM/(16*n) - 1);
+    rows_per_batch = (rows_per_batch > n) ? n/2 : rows_per_batch/2;
 
+    size_t mt_size = n * rows_per_batch * 8;
 
-    uint32_t n_rows = ((available_mem/sizeof(double) - 2*n)/2)/n;
-    n_rows = (n_rows > n) ? n/2 : n_rows/2;
-
-    size_t mt_size = n * n_rows * sizeof(double);
-    size_t vt_size = n * sizeof(double);
-    size_t total = 2 * mt_size + 2 * vt_size;
-
+    uint32_t A_l3_ptr = (uint32_t)gesummv_job->args.A_l3_ptr;
     double* A = (double*)((uint32_t)gesummv_job + sizeof(gesummv_local_job_t));
-    snrt_dma_start_1d(A, (void*)(uint32_t)gesummv_job->args.A_l3_ptr, mt_size);
+    snrt_dma_start_1d(A, (void*)A_l3_ptr, mt_size);
 
-    // Copy operand B
+    uint32_t B_l3_ptr = (uint32_t)gesummv_job->args.B_l3_ptr;
     double* B = (double*)((uint32_t)A + mt_size*2);
-    snrt_dma_start_1d(B, (void*)(uint32_t)gesummv_job->args.B_l3_ptr, mt_size);
+    snrt_dma_start_1d(B, (void*)B_l3_ptr, mt_size);
+
+    size_t vt_size = n * 8;
 
     // Copy operand x
     double* x = (double*)((uint32_t)B + mt_size*2);
@@ -97,11 +79,17 @@ void gesummvTiling_job_dm_core(job_t* job) {
 
     snrt_cluster_hw_barrier();
 
-    for(int i = 1; i < n / n_rows; i++) 
+
+
+    double* A_ptr[2] = {A, A + rows_per_batch * n};
+    double* B_ptr[2] = {B, B + rows_per_batch * n};
+
+    uint32_t i;
+    for(i = 1; i < n / rows_per_batch; i++) 
     {
         mcycle(); //3|4
-        snrt_dma_start_1d(A  + n_rows * n * (i%2), (void*)((uint32_t)gesummv_job->args.A_l3_ptr + i * mt_size), mt_size);
-        snrt_dma_start_1d(B  + n_rows * n * (i%2), (void*)((uint32_t)gesummv_job->args.B_l3_ptr + i * mt_size), mt_size);
+        snrt_dma_start_1d(A_ptr[i%2], (void*)A_l3_ptr + i * mt_size, mt_size);
+        snrt_dma_start_1d(B_ptr[i%2], (void*)B_l3_ptr + i * mt_size, mt_size);
 
         snrt_dma_wait_all();
 
@@ -110,12 +98,12 @@ void gesummvTiling_job_dm_core(job_t* job) {
         snrt_cluster_hw_barrier(); 
         
     }
-    if (n%n_rows)
+    uint32_t rem = n%rows_per_batch;
+    if (rem)
     {
         mcycle(); //3|4
-        snrt_dma_start_1d(A  + n_rows * n * ((n / n_rows)%2), (void*)((uint32_t)gesummv_job->args.A_l3_ptr + n / n_rows * mt_size), (n%n_rows) * n * sizeof(double));
-        snrt_dma_start_1d(B  + n_rows * n * ((n / n_rows)%2), (void*)((uint32_t)gesummv_job->args.B_l3_ptr + n / n_rows * mt_size), (n%n_rows) * n * sizeof(double));
-
+        snrt_dma_start_1d(A_ptr[i%2], (void*)A_l3_ptr + i * mt_size, rem * n * 8);
+        snrt_dma_start_1d(B_ptr[i%2], (void*)B_l3_ptr + i * mt_size, rem * n * 8);
         snrt_dma_wait_all();
 
         mcycle(); //3|4
@@ -149,10 +137,6 @@ void gesummvTiling_job_dm_core(job_t* job) {
 
 void gesummvTiling_job_compute_core(job_t* job) {
 
-    // Synchronize with DM core to wait for operands
-    // to be fully transferred in L1
-    //snrt_cluster_hw_barrier();
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Cast local job
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)job;
 
@@ -169,43 +153,44 @@ void gesummvTiling_job_compute_core(job_t* job) {
     // Run kernel
     uint32_t core_idx = snrt_cluster_core_idx();
     uint32_t core_num = snrt_cluster_compute_core_num();
-    size_t available_mem = MEM;//(uint32_t)snrt_l1_end_addr() - (uint32_t)x;
 
+    uint32_t rows_per_batch = (MEM/(16*n) - 1);
+    rows_per_batch = (rows_per_batch > n) ? n/2 : rows_per_batch/2;
 
-    uint32_t n_rows = (available_mem/(16*n) - 1);
-    n_rows = (n_rows > n) ? n/2 : n_rows/2;
-    uint32_t n_columns = n;
-
-    uint32_t c = CEIL(n_rows, core_num);
+    uint32_t c = CEIL(rows_per_batch, core_num);
     int32_t lb = c * core_idx;
-    int32_t ub = MIN((c * (core_idx + 1)), n_rows);
+    int32_t ub = MIN((c * (core_idx + 1)), rows_per_batch);
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    double* A_ptr[2] = {A + lb * n, A + lb * n + rows_per_batch * n};
+    double* B_ptr[2] = {B + lb * n, B + lb * n + rows_per_batch * n};
+    y = y + lb;
+
+
     mcycle();//4|5
-    gesummvTiling(ub - lb, n, alpha, beta, A + lb * n, B + lb * n, x, y + lb);
+    gesummvTiling(ub - lb, n, alpha, beta, A_ptr[0], B_ptr[0], x, y);
     mcycle();//5|6
     snrt_cluster_hw_barrier();
 
 
-    for(int i = 1; i < n / n_rows; i++)
+    uint32_t i;
+    for(i = 1; i < n / rows_per_batch; i++)
     {
 
         mcycle();//4|5
-        gesummvTiling(ub - lb, n, alpha, beta, A + lb * n + n_rows * n_columns * (i%2), B + lb * n + n_rows * n_columns * (i%2), x, y + i* n_rows + lb);
+        gesummvTiling(ub - lb, n, alpha, beta, A_ptr[i%2], B_ptr[i%2], x, y + i* rows_per_batch);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
-
-
     }
-
-    if (n%n_rows)
+    
+    uint32_t rem = n%rows_per_batch;
+    if (rem)
     {
-        c = CEIL(n%n_rows, core_num);
+        c = CEIL(rem, core_num);
         lb = c * core_idx;
-        ub = MIN((c * (core_idx + 1)), n%n_rows);
+        ub = MIN((c * (core_idx + 1)), rem);
 
         mcycle();//4|5
-        gesummvTiling(ub - lb, n, alpha, beta, A + lb * n + n_rows * n_columns * ((n / n_rows)%2), B + lb * n + n_rows * n_columns * ((n / n_rows)%2), x, y + n / n_rows * n_rows + lb);
+        gesummvTiling(ub - lb, n, alpha, beta, A_ptr[i%2], B_ptr[i%2], x, y + i * rows_per_batch);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
     }
