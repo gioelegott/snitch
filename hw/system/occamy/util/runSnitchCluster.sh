@@ -33,7 +33,7 @@ else
 
     make logs/event.csv
 
-    ../../../util/trace/layout_events.py logs/event.csv sw/host/layout64TilingDB.csv -o logs/trace.csv
+    ../../../util/trace/layout_events.py logs/event.csv sw/host/layout.csv -o logs/trace.csv
     ../../../util/trace/eventvis.py -o logs/trace.json logs/trace.csv
 
     mkdir logs/history/$1_$2_$3_$timestamp
