@@ -10,36 +10,47 @@ __thread volatile comm_buffer_t* comm_buffer_gesummv;
 
 static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, double beta, double* A, double* B, double *x, double *y)
 {
-    int32_t i, j;
-    double tmp1, tmp2;
-    //STRATEGY 1
+    int32_t i;
+    double tmp;
 
-    // for (i = core_idx; i < n; i+=core_num)
-    // {
-    //     tmp1 = tmp2 = 0;
-    //     for (j = 0; j < n; j++)
-    //     {
-    //         tmp1 += alpha * A[i*n + j] * x[j];
-    //         tmp2 += beta * B[i*n + j] * x[j];
-    //     }
-    //     y[i] = tmp1 + tmp2;
-    // }
-
-    //STRATEGY 2
 
     for (i = 0; i < n_rows; i++)
     {
-        tmp1 = tmp2 = 0;
-        for (j = 0; j < n_columns; j++)
-        {
-            tmp1 += alpha * A[i*n_columns + j] * x[j];
-            tmp2 += beta * B[i*n_columns + j] * x[j];
-        }
-        y[i] = tmp1 + tmp2;//n_rows;
+        tmp = 0;
+        snrt_ssr_loop_1d(SNRT_SSR_DM_ALL, n_columns, 8);
+        snrt_ssr_read(SNRT_SSR_DM0, SNRT_SSR_1D, A + i*n_columns);
+        snrt_ssr_read(SNRT_SSR_DM1, SNRT_SSR_1D, B + i*n_columns);
+        snrt_ssr_read(SNRT_SSR_DM2, SNRT_SSR_1D, x);
+
+        snrt_ssr_enable();
+
+        asm volatile
+        ("frep.o %[n_frep], 3, 0, 0        \n"
+         "fmul.d fa1, ft0, %[alpha]        \n"
+         "fmadd.d fa1, ft1, %[beta], fa1   \n"
+         "fmadd.d %[tmp], fa1,  ft2, %[tmp]\n"
+         : [tmp] "+f"(tmp)
+         : [n_frep] "r"(n_columns-1), [alpha] "f"(alpha), [beta] "f"(beta)
+         : "ft0", "ft1", "ft2", "fa1"
+        );
+
+        snrt_fpu_fence();
+        snrt_ssr_disable();
+        y[i] = tmp; //maybe put y inside asm
     }
 
-    snrt_fpu_fence();
+    // for (i = 0; i < n_rows; i++)
+    // {
+    //     double tmp1 = 0;
+    //     double tmp2 = 0;
+    //     for (int j = 0; j < n_columns; j++)
+    //     {
+    //         tmp1 += alpha * A[i*n_columns + j] * x[j];
+    //         tmp2 += beta * B[i*n_columns + j] * x[j];
+    //     }
+    //     y[i] = tmp1 + tmp2;//n_rows;
 
+    // }
 }
 
 
@@ -150,7 +161,7 @@ void gesummv_job_compute_core(job_t* job) {
 }
 
 
-__attribute__((weak)) static inline void run_job() {
+static inline void run_job() {
     // Force compiler to assign fallthrough path of the branch to
     // the DM core. This way the cache miss latency due to the branch
     // is incurred by the compute cores, and overlaps with the data

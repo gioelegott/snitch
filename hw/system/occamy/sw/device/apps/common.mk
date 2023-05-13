@@ -38,9 +38,10 @@ SNRT_LIB      = $(realpath $(SNRT_LIB_DIR)/lib$(SNRT_LIB_NAME).a)
 LD_SRCS       = $(BASE_LD) $(MEMORY_LD) $(ORIGIN_LD) $(SNRT_LIB)
 
 # Linker flags
+LDFLAGS += -fuse-ld=/home/paulsc/dev/llvm-ssr/llvm-iis/install/bin/ld.lld
 LDFLAGS += -nostartfiles
 LDFLAGS += -lm
-LDFLAGS += -lgcc
+#LDFLAGS += -lgcc
 # Linker script
 LDFLAGS += -L$(APPSDIR)
 LDFLAGS += -L$(BUILDDIR)
@@ -74,6 +75,7 @@ ALL_OUTPUTS = $(BIN) $(DUMP) $(DWARF)
 # Rules #
 #########
 
+
 .PHONY: all
 all: $(ALL_OUTPUTS)
 
@@ -85,19 +87,19 @@ $(BUILDDIR):
 	mkdir -p $@
 
 $(DEP): $(SRCS) | $(BUILDDIR)
-	$(CC) $(CFLAGS) -MM -MT '$(ELF)' $< > $@
+	$(RV_CC) $(CFLAGS) -MM -MT '$(ELF)' $< > $@
 
 $(ELF): $(DEP) $(LD_SRCS) | $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) -o $@
+	$(RV_CC) $(CFLAGS) $(LDFLAGS) $(SRCS) -o $@
 
 $(BIN): $(ELF) | $(BUILDDIR)
-	$(OBJCOPY) $(OBJCOPY_FLAGS) $< $@
+	$(RV_OBJCOPY) $(OBJCOPY_FLAGS) $< $@
 
 $(DUMP): $(ELF) | $(BUILDDIR)
-	$(OBJDUMP) -DS $< > $@
+	$(RV_OBJDUMP) -DS $< > $@
 
 $(DWARF): $(ELF) | $(BUILDDIR)
-	$(READELF) --debug-dump $< > $@
+	$(RV_DWARFDUMP) --all $< > $@
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEP)

@@ -115,7 +115,7 @@ void axpy_job_compute_core(job_t* job) {
 }
 
 
-__attribute__((weak)) static inline void run_job() {
+static inline void run_job() {
     // Force compiler to assign fallthrough path of the branch to
     // the DM core. This way the cache miss latency due to the branch
     // is incurred by the compute cores, and overlaps with the data
