@@ -8,35 +8,76 @@
 
 __thread volatile comm_buffer_t* comm_buffer_lu;
 
-void lu(uint32_t n, uint32_t core_idx, uint32_t core_num, double *A)
+void lu(uint32_t n, double *A)
 {
     uint32_t i, j, k;
     double tmp;
-    /*gaussian reduction*/
 
-    // for (i = 0; i < n-1; i++)
+    uint32_t core_idx = snrt_cluster_core_idx();
+    uint32_t core_num = snrt_cluster_compute_core_num();
+
+    // if(core_idx == 3)
+    // for (i = 0; i < n; i += 1)
     // {
-    //     for (j = i+1; j < n; j++)
+    //     for(j = i + 1; j < n; j++)
     //     {
-    //         tmp = A[j][i]/A[i][i];
+    //         tmp = A[j*n + i]/A[i*n + i];
     //         for (k = i; k < n; k++)
-    //             A[j][k] -= A[i][k] * tmp;
-
-    //         A[j][i] = tmp;
-     //     }
+    //         {
+    //             A[j*n + k] -= A[i*n + k] * tmp;
+    //         }
+    //         A[j*n + i] = tmp;   
+    //     }
     // }
-    //if(core_idx == 3)
-    for (i = core_idx-1; i < n; i += core_num)
-    {
-        for(j = i + 1; j < n; j++)
-        {
-            tmp = A[j*n + i]/A[i*n + i];
-            for (k = i; k < n; k++)
-                A[j*n + k] -= A[i*n + k] * tmp;
 
-            A[j*n + i] = tmp;           
-        }
+    for (k = 0; k < n; k++)
+    {
+        /*
+        distribute cores as a matrix
+        
+        1   2   3   4   5   6   7   8      ->        1   2   3   4
+                                                     5   6   7   8
+        
+        
+        */
+        mcycle();
+        for (i = k + 1 + core_idx; i < n; i += core_num)
+	        A[i*n + k] = A[i*n + k] / A[k*n + k];
+
+        mcycle();
+        snrt_cluster_hw_barrier();
+        mcycle();
+
+        uint32_t kk = k+1;
+
+        for (i = kk + ((core_idx/4 - kk%2 +2)%2); i < n; i += 2)
+	        for (j = kk + ((core_idx%4 - kk%4 +4)%4); j < n; j += 4)
+	            A[i*n + j] = A[i*n + j] - A[i*n + k] * A[k*n + j];
+        mcycle();
+        snrt_cluster_hw_barrier();
+        mcycle();
+
     }
+
+
+    // for (k = 0; k < n; k++)
+    // {
+    //     mcycle();
+    //     for (i = k + 1 + core_idx; i < n; i += core_num)
+	//         A[i*n + k] = A[i*n + k] / A[k*n + k];
+
+    //     mcycle();
+    //     snrt_cluster_hw_barrier();
+    //     mcycle();
+
+    //     for (i = k + 1 + core_idx; i < n; i += core_num)
+	//         for (j = k + 1; j < n; j++)
+	//             A[i*n + j] = A[i*n + j] - A[i*n + k] * A[k*n + j];
+    //     mcycle();
+    //     snrt_cluster_hw_barrier();
+    //     mcycle();
+
+    // }
 
 
     snrt_fpu_fence();
@@ -76,6 +117,14 @@ void lu_job_dm_core(job_t* job) {
     mcycle(); //4|5
     // Synchronize cores to make sure results are available before
     // DMA starts transfer to L3
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        snrt_cluster_hw_barrier();
+        mcycle();
+        snrt_cluster_hw_barrier();
+        mcycle();
+    }
     snrt_cluster_hw_barrier();
 
     mcycle(); //5|6
@@ -107,10 +156,8 @@ void lu_job_compute_core(job_t* job) {
     double* A = args.A;
 
     // Run kernel
-    uint32_t core_idx = snrt_cluster_core_idx();
-    uint32_t core_num = snrt_cluster_compute_core_num();
     mcycle();//4|5
-    lu(n, core_idx, core_num, A);
+    lu(n, A);
     mcycle();//5|6
 
 
