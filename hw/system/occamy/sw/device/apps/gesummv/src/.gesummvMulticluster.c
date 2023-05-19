@@ -14,9 +14,34 @@ static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, doub
     double tmp;
 
 
+    for (i = 0; i < n_rows; i++)
+    {
+        tmp = 0;
+        snrt_ssr_loop_1d(SNRT_SSR_DM_ALL, n_columns, 8);
+        snrt_ssr_read(SNRT_SSR_DM0, SNRT_SSR_1D, A + i*n_columns);
+        snrt_ssr_read(SNRT_SSR_DM1, SNRT_SSR_1D, B + i*n_columns);
+        snrt_ssr_read(SNRT_SSR_DM2, SNRT_SSR_1D, x);
+
+        snrt_ssr_enable();
+
+        asm volatile
+        ("frep.o %[n_frep], 3, 0, 0        \n"
+         "fmul.d fa1, ft0, %[alpha]        \n"
+         "fmadd.d fa1, ft1, %[beta], fa1   \n"
+         "fmadd.d %[tmp], fa1,  ft2, %[tmp]\n"
+         : [tmp] "+f"(tmp)
+         : [n_frep] "r"(n_columns-1), [alpha] "f"(alpha), [beta] "f"(beta)
+         : "ft0", "ft1", "ft2", "fa1"
+        );
+
+        snrt_fpu_fence();
+        snrt_ssr_disable();
+        y[i] = tmp; //maybe put y inside asm
+    }
+    
     // for (i = 0; i < n_rows; i++)
     // {
-    //     tmp = 0;
+    //     tmp1 = tmp2 = 0;
     //     snrt_ssr_loop_1d(SNRT_SSR_DM_ALL, n_columns, 8);
     //     snrt_ssr_read(SNRT_SSR_DM0, SNRT_SSR_1D, A + i*n_columns);
     //     snrt_ssr_read(SNRT_SSR_DM1, SNRT_SSR_1D, B + i*n_columns);
@@ -25,31 +50,33 @@ static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, doub
     //     snrt_ssr_enable();
 
     //     asm volatile
-    //     ("frep.o %[n_frep], 3, 0, 0        \n"
-    //      "fmul.d fa1, ft0, %[alpha]        \n"
-    //      "fmadd.d fa1, ft1, %[beta], fa1   \n"
-    //      "fmadd.d %[tmp], fa1,  ft2, %[tmp]\n"
-    //      : [tmp] "+f"(tmp)
+    //     ("frep.o %[n_frep], 4, 0, 0          \n"
+    //      "fmul.d fa1, ft0, %[alpha]          \n"
+    //      "fmul.d fa2, ft1, %[beta]           \n"
+    //      "fmadd.d %[tmp1], ft2, fa1, %[tmp1] \n"
+    //      "fmadd.d %[tmp2], ft2, fa2, %[tmp2] \n"
+    //      : [tmp1] "+f"(tmp1), [tmp2] "+f"(tmp2)
     //      : [n_frep] "r"(n_columns-1), [alpha] "f"(alpha), [beta] "f"(beta)
     //      : "ft0", "ft1", "ft2", "fa1"
     //     );
 
     //     snrt_fpu_fence();
     //     snrt_ssr_disable();
-    //     y[i] = tmp; //maybe put y inside asm
+    //     y[i] = tmp1 + tmp2;
     // }
-    for (i = 0; i < n_rows; i++)
-    {
-        double tmp1 = 0;
-        double tmp2 = 0;
-        for (int j = 0; j < n_columns; j++)
-        {
-            tmp1 += alpha * A[i*n_columns + j] * x[j];
-            tmp2 += beta * B[i*n_columns + j] * x[j];
-        }
-        y[i] = tmp1 + tmp2;//n_rows;
 
-    }
+    // for (i = 0; i < n_rows; i++)
+    // {
+    //     double tmp1 = 0;
+    //     double tmp2 = 0;
+    //     for (int j = 0; j < n_columns; j++)
+    //     {
+    //         tmp1 += alpha * A[i*n_columns + j] * x[j];
+    //         tmp2 += beta * B[i*n_columns + j] * x[j];
+    //     }
+    //     y[i] = tmp1 + tmp2;//n_rows;
+
+    // }
 }
 
 
@@ -65,16 +92,28 @@ void gesummv_job_dm_core(job_t* job) {
     snrt_dma_start_1d(gesummv_job, job, sizeof(gesummv_job_t));
     snrt_dma_wait_all();
     uint32_t n = gesummv_job->args.n;
-    size_t mt_size = n * n * 8;
-    size_t vt_size = n * 8;
+
+
+    uint32_t cluster_idx = snrt_cluster_idx();
+    uint32_t cluster_num = snrt_cluster_num();
+
+    uint32_t c = CEIL(n, cluster_num);
+    int32_t lb = c * cluster_idx;
+    int32_t ub = MIN((c * (cluster_idx + 1)), n);
+
+    if (ub - lb <= 0)
+        return;
+    
+    size_t mt_size = (ub - lb) * n * sizeof(double);
+    size_t vt_size = n * sizeof(double);
 
     // Copy operand A
     double* A = (double*)((uint32_t)gesummv_job + sizeof(gesummv_local_job_t));
-    snrt_dma_start_1d(A, (void*)(uint32_t)gesummv_job->args.A_l3_ptr, mt_size);
+    snrt_dma_start_1d(A, (void*)(uint32_t)gesummv_job->args.A_l3_ptr + lb * n * sizeof(double), mt_size);
 
     // Copy operand B
     double* B = (double*)((uint32_t)A + mt_size);
-    snrt_dma_start_1d(B, (void*)(uint32_t)gesummv_job->args.B_l3_ptr, mt_size);
+    snrt_dma_start_1d(B, (void*)(uint32_t)gesummv_job->args.B_l3_ptr + lb * n * sizeof(double), mt_size);
 
     // Copy operand x
     double* x = (double*)((uint32_t)B + mt_size);
@@ -106,7 +145,7 @@ void gesummv_job_dm_core(job_t* job) {
     mcycle(); //5|6
 
     // Transfer data out
-    snrt_dma_start_1d((void*)(uint32_t)gesummv_job->args.y_l3_ptr, gesummv_job->args.y, vt_size);
+    snrt_dma_start_1d((void*)(uint32_t)gesummv_job->args.y_l3_ptr + lb * sizeof(double), gesummv_job->args.y, (ub - lb) * sizeof(double));
     snrt_dma_wait_all();
 
     mcycle(); //6|7
@@ -140,9 +179,9 @@ void gesummv_job_compute_core(job_t* job) {
     uint32_t core_idx = snrt_cluster_core_idx();
     uint32_t core_num = snrt_cluster_compute_core_num();
 
-    uint32_t c = CEIL(n, core_num);
-    int32_t lb = c * core_idx;
-    int32_t ub = MIN((c * (core_idx + 1)), n);
+    uint32_t c = CEIL(n, global_core_num);
+    int32_t lb = c * local_core_idx;
+    int32_t ub = MIN((c * (local_core_idx + 1)), n);
 ///////////////////////////////////////////////////////    
     
     mcycle();//4|5
@@ -210,7 +249,6 @@ run_job_end:;
 
 
 
-
 __attribute__((weak)) int main() {
 
     comm_buffer_gesummv = (volatile comm_buffer_t*)get_communication_buffer();
@@ -221,17 +259,13 @@ __attribute__((weak)) int main() {
     snrt_wfi();
 
     // Reset state after wakeup
-    while(1)
-    {
-        mcycle(); //0|1
-        post_wakeup_cl();
+    mcycle(); //0|1
+    post_wakeup_cl();
 
-        // Execute job
-        mcycle(); //1|2
-        run_job();
+    // Execute job
+    mcycle(); //1|2
+    run_job();
 
-        snrt_wfi();
-    }
+    return_to_cva6(SYNC_ALL);
 }
-
 

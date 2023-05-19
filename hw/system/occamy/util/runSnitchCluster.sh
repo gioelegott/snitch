@@ -22,8 +22,10 @@ if echo $* | grep -e "-v" -q
 then
     python ../../ip/test/src/verification.py bin/occamy_top.vsim sw/host/apps/$1/build/$1.elf
 else
-
+    
+    tstart=$(date +%s)
     bin/occamy_top.vsim sw/host/apps/$1/build/$1.elf
+    tend=$(date +%s)
 
     make traces
 
@@ -36,13 +38,20 @@ else
     ../../../util/trace/layout_events.py logs/event.csv sw/host/layoutCP.csv -o logs/trace.csv
     ../../../util/trace/eventvis.py -o logs/trace.json logs/trace.csv
 
-    mkdir logs/history/$1_$2_$3_$timestamp
+    #mkdir logs/history/$1_$2_$3_$timestamp
 
-    find ./logs -maxdepth 1 -type f | xargs cp -t ./logs/history/$1_$2_$3_$timestamp
+    #find ./logs -maxdepth 1 -type f | xargs cp -t ./logs/history/$1_$2_$3_$timestamp
+
+    # echo -n "$1_$2_$3_$timestamp " >> logs/history/history.txt
+    # python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv >> logs/history/history.txt
+
+    # echo -n "$1_$2_$3_$timestamp " >> logs/history/historySnitchCluster.txt
+    # python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv -x >> logs/history/historySnitchCluster.txt
+
 
     echo -n "$1_$2_$3_$timestamp " >> logs/history/history.txt
-    python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv >> logs/history/history.txt
+    python util/read_csv_SnitchCluster.py logs/event.csv >> logs/history/history.txt
 
     echo -n "$1_$2_$3_$timestamp " >> logs/history/historySnitchCluster.txt
-    python util/read_csv_SnitchCluster.py logs/history/$1_$2_$3_$timestamp/event.csv -x >> logs/history/historySnitchCluster.txt
+    python util/read_csv_SnitchCluster.py logs/event.csv -x >> logs/history/historySnitchCluster.txt
 fi
