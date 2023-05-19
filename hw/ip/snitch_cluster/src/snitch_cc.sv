@@ -126,10 +126,7 @@ module snitch_cc #(
   output dma_events_t                axi_dma_events_o,
   // Core event strobes
   output snitch_pkg::core_events_t   core_events_o,
-  input  addr_t                      tcdm_addr_base_i,
-  // Cluster HW barrier
-  output logic                       barrier_o,
-  input  logic                       barrier_i
+  input  addr_t                      tcdm_addr_base_i
 );
 
   // FMA architecture is "merged" -> mulexp and macexp instructions are supported
@@ -255,9 +252,7 @@ module snitch_cc #(
     .fpu_rnd_mode_o ( fpu_rnd_mode ),
     .fpu_fmt_mode_o ( fpu_fmt_mode ),
     .fpu_status_i ( fpu_status ),
-    .core_events_o ( snitch_events),
-    .barrier_o ( barrier_o ),
-    .barrier_i ( barrier_i )
+    .core_events_o ( snitch_events)
   );
 
   reqrsp_iso #(

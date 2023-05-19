@@ -78,6 +78,7 @@ void gesummvTiling_job_dm_core(job_t* job) {
     mcycle(); //3|4
 
     snrt_cluster_hw_barrier();
+    mcycle();
 
 
     double* A_ptr[2] = {A, A + rows_per_batch * n};
@@ -94,7 +95,9 @@ void gesummvTiling_job_dm_core(job_t* job) {
 
         mcycle(); //3|4
 
-        snrt_cluster_hw_barrier(); 
+        snrt_cluster_hw_barrier();
+
+        mcycle(); 
         
     }
     uint32_t rem = n%rows_per_batch;
@@ -107,7 +110,8 @@ void gesummvTiling_job_dm_core(job_t* job) {
 
         mcycle(); //3|4
 
-        snrt_cluster_hw_barrier(); 
+        snrt_cluster_hw_barrier();
+        mcycle(); 
 
     }
 
@@ -169,6 +173,7 @@ void gesummvTiling_job_compute_core(job_t* job) {
     gesummvTiling(ub - lb, n, alpha, beta, A_ptr[0], B_ptr[0], x, y);
     mcycle();//5|6
     snrt_cluster_hw_barrier();
+    mcycle();
 
 
     uint32_t i;
@@ -179,6 +184,7 @@ void gesummvTiling_job_compute_core(job_t* job) {
         gesummvTiling(ub - lb, n, alpha, beta, A_ptr[i%2], B_ptr[i%2], x, y + i* rows_per_batch);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
+        mcycle();
     }
     
     uint32_t rem = n%rows_per_batch;
@@ -192,6 +198,7 @@ void gesummvTiling_job_compute_core(job_t* job) {
         gesummvTiling(ub - lb, n, alpha, beta, A_ptr[i%2], B_ptr[i%2], x, y + i * rows_per_batch);
         mcycle();//5|6
         snrt_cluster_hw_barrier();
+        mcycle();
     }
     mcycle();//4|5
 
@@ -269,6 +276,6 @@ __attribute__((weak)) int main() {
         run_job();
 
         snrt_wfi();
-}
+    }
 }
 

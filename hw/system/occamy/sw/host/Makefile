@@ -13,6 +13,7 @@ APPS += gesummvTiling
 APPS += gesummvCVA6
 APPS += lu
 APPS += luCVA6
+#APPS += luMulticluster
 TARGET ?= all
 
 SUBDIRS = $(addprefix apps/,$(APPS))

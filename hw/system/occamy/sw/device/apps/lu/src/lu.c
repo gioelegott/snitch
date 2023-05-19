@@ -16,6 +16,20 @@ void lu(uint32_t n, double *A)
     uint32_t core_idx = snrt_cluster_core_idx();
     uint32_t core_num = snrt_cluster_compute_core_num();
 
+
+    /*gaussian reduction*/
+
+    // for (i = 0; i < n-1; i++)
+    // {
+    //     for (j = i+1; j < n; j++)
+    //     {
+    //         tmp = A[j][i]/A[i][i];
+    //         for (k = i; k < n; k++)
+    //             A[j][k] -= A[i][k] * tmp;
+
+    //         A[j][i] = tmp;
+     //     }
+    // }
     // if(core_idx == 3)
     // for (i = 0; i < n; i += 1)
     // {
@@ -44,6 +58,8 @@ void lu(uint32_t n, double *A)
         for (i = k + 1 + core_idx; i < n; i += core_num)
 	        A[i*n + k] = A[i*n + k] / A[k*n + k];
 
+
+
         mcycle();
         snrt_cluster_hw_barrier();
         mcycle();
@@ -53,6 +69,9 @@ void lu(uint32_t n, double *A)
         for (i = kk + ((core_idx/4 - kk%2 +2)%2); i < n; i += 2)
 	        for (j = kk + ((core_idx%4 - kk%4 +4)%4); j < n; j += 4)
 	            A[i*n + j] = A[i*n + j] - A[i*n + k] * A[k*n + j];
+
+
+
         mcycle();
         snrt_cluster_hw_barrier();
         mcycle();
