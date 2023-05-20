@@ -14,43 +14,43 @@ static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, doub
     double tmp;
 
 
-    for (i = 0; i < n_rows; i++)
-    {
-        tmp = 0;
-        snrt_ssr_loop_1d(SNRT_SSR_DM_ALL, n_columns, 8);
-        snrt_ssr_read(SNRT_SSR_DM0, SNRT_SSR_1D, A + i*n_columns);
-        snrt_ssr_read(SNRT_SSR_DM1, SNRT_SSR_1D, B + i*n_columns);
-        snrt_ssr_read(SNRT_SSR_DM2, SNRT_SSR_1D, x);
-
-        snrt_ssr_enable();
-
-        asm volatile
-        ("frep.o %[n_frep], 3, 0, 0        \n"
-         "fmul.d fa1, ft0, %[alpha]        \n"
-         "fmadd.d fa1, ft1, %[beta], fa1   \n"
-         "fmadd.d %[tmp], fa1,  ft2, %[tmp]\n"
-         : [tmp] "+f"(tmp)
-         : [n_frep] "r"(n_columns-1), [alpha] "f"(alpha), [beta] "f"(beta)
-         : "ft0", "ft1", "ft2", "fa1"
-        );
-
-        snrt_fpu_fence();
-        snrt_ssr_disable();
-        y[i] = tmp; //maybe put y inside asm
-    }
-
     // for (i = 0; i < n_rows; i++)
     // {
-    //     double tmp1 = 0;
-    //     double tmp2 = 0;
-    //     for (int j = 0; j < n_columns; j++)
-    //     {
-    //         tmp1 += alpha * A[i*n_columns + j] * x[j];
-    //         tmp2 += beta * B[i*n_columns + j] * x[j];
-    //     }
-    //     y[i] = tmp1 + tmp2;//n_rows;
+    //     tmp = 0;
+    //     snrt_ssr_loop_1d(SNRT_SSR_DM_ALL, n_columns, 8);
+    //     snrt_ssr_read(SNRT_SSR_DM0, SNRT_SSR_1D, A + i*n_columns);
+    //     snrt_ssr_read(SNRT_SSR_DM1, SNRT_SSR_1D, B + i*n_columns);
+    //     snrt_ssr_read(SNRT_SSR_DM2, SNRT_SSR_1D, x);
 
+    //     snrt_ssr_enable();
+
+    //     asm volatile
+    //     ("frep.o %[n_frep], 3, 0, 0        \n"
+    //      "fmul.d fa1, ft0, %[alpha]        \n"
+    //      "fmadd.d fa1, ft1, %[beta], fa1   \n"
+    //      "fmadd.d %[tmp], fa1,  ft2, %[tmp]\n"
+    //      : [tmp] "+f"(tmp)
+    //      : [n_frep] "r"(n_columns-1), [alpha] "f"(alpha), [beta] "f"(beta)
+    //      : "ft0", "ft1", "ft2", "fa1"
+    //     );
+
+    //     snrt_fpu_fence();
+    //     snrt_ssr_disable();
+    //     y[i] = tmp; //maybe put y inside asm
     // }
+
+    for (i = 0; i < n_rows; i++)
+    {
+        double tmp1 = 0;
+        double tmp2 = 0;
+        for (int j = 0; j < n_columns; j++)
+        {
+            tmp1 += alpha * A[i*n_columns + j] * x[j];
+            tmp2 += beta * B[i*n_columns + j] * x[j];
+        }
+        y[i] = tmp1 + tmp2;//n_rows;
+
+    }
 }
 
 
@@ -211,6 +211,7 @@ run_job_end:;
 
 
 
+
 __attribute__((weak)) int main() {
 
     comm_buffer_gesummv = (volatile comm_buffer_t*)get_communication_buffer();
@@ -221,13 +222,17 @@ __attribute__((weak)) int main() {
     snrt_wfi();
 
     // Reset state after wakeup
-    mcycle(); //0|1
-    post_wakeup_cl();
+    while(1)
+    {
+        mcycle(); //0|1
+        post_wakeup_cl();
 
-    // Execute job
-    mcycle(); //1|2
-    run_job();
+        // Execute job
+        mcycle(); //1|2
+        run_job();
 
-    return_to_cva6(SYNC_ALL);
+        snrt_wfi();
+    }
 }
+
 
