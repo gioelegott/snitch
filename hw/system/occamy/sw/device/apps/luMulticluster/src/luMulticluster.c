@@ -13,11 +13,8 @@ void luMulticluster(uint32_t n, double **A)
     uint32_t i, j, k;
     double tmp;
 
-    uint32_t local_core_idx = snrt_cluster_core_idx();
-    uint32_t local_core_num = snrt_cluster_compute_core_num();
-    uint32_t global_core_idx = snrt_global_core_idx();
-    uint32_t global_core_num = snrt_global_core_num();
     uint32_t cluster_idx = snrt_cluster_idx();
+    uint32_t global_core_idx = snrt_global_core_idx() - cluster_idx; //don't count DMA core !!
     uint32_t cluster_num = snrt_cluster_num();
 
 
@@ -27,49 +24,25 @@ void luMulticluster(uint32_t n, double **A)
         double akk = A[(k/2)%2][k*n + k];
         uint32_t kk = k + 1;
 
-        uint32_t c = CEIL((n/2), global_core_num);
-        int32_t lb = (c * local_core_idx * 2 + cluster_idx)*2;
-        int32_t ub = MIN((c * 2 * (local_core_idx + 1) + cluster_idx)*2, n);
 
-        for (i = lb; i < ub; i+=4)
-        {
-            A[cluster_idx][i * n + k] /= akk;
-            A[cluster_idx][(i + 1) * n + k] /= akk;
-        }
+        if (global_core_idx%4 == k%4)
+            for (i = kk + ((global_core_idx/4 - kk%4 +4)%4); i < n; i += 4)
+            {
+                A[cluster_idx][i*n + k] /= akk;
+            }
 
-        sw_barrier();
 
-        //fetching data from other clusters
+         snrt_global_barrier();
+        
 
-        sw_barrier();
 
-        //if this doesn't work we can write the updated value in both TCDMs -> directly compute the final value using frep and then copy to both locations
-        for (i = kk + ((global_core_idx/4 - kk%2 +2)%2); i < n; i += 2)
+        for (i = kk + ((global_core_idx/4 - kk%4 +4)%4); i < n; i += 4)
 	        for (j = kk + ((global_core_idx%4 - kk%4 +4)%4); j < n; j += 4)
-	            A[cluster_idx][i*n + j] = A[cluster_idx][i*n + j] - A[cluster_idx][i*n + k] * A[cluster_idx][k*n + j];
-        sw_barrier();
-
+            {
+	            A[cluster_idx][i*n + j] -= A[cluster_idx][i*n + k] * A[(k/2)%2][k*n + j];
+            }
+          snrt_global_barrier();
     }
-
-
-    // for (k = 0; k < n; k++)
-    // {
-    //     mcycle();
-    //     for (i = k + 1 + core_idx; i < n; i += core_num)
-	//         A[i*n + k] = A[i*n + k] / A[k*n + k];
-
-    //     mcycle();
-    //     snrt_cluster_hw_barrier();
-    //     mcycle();
-
-    //     for (i = k + 1 + core_idx; i < n; i += core_num)
-	//         for (j = k + 1; j < n; j++)
-	//             A[i*n + j] = A[i*n + j] - A[i*n + k] * A[k*n + j];
-    //     mcycle();
-    //     snrt_cluster_hw_barrier();
-    //     mcycle();
-
-    // }
 
 
     snrt_fpu_fence();
@@ -99,7 +72,8 @@ void luMulticluster_job_dm_core(job_t* job) {
     // Send local pointer to memory so that all cluster can access it
     ((double**)(job->args.luMulticluster.A_ptr_clusters))[cluster_idx] = A;
 
-    sw_barrier();
+    snrt_global_barrier();
+    //snrt_reset_barrier();
 
     double* A_l1_ptr[cluster_num];
     for (int i = 0; i < cluster_num; i++)
@@ -107,7 +81,7 @@ void luMulticluster_job_dm_core(job_t* job) {
         if (i == cluster_idx)
             luMulticluster_job->args.A[i] = A;
         else
-            luMulticluster_job->args.A[i] = ((double**)(job->args.luMulticluster.A_ptr_clusters))[cluster_idx];
+            luMulticluster_job->args.A[i] = ((double**)(job->args.luMulticluster.A_ptr_clusters))[i];
 
         A_l1_ptr[i] = luMulticluster_job->args.A[i];
     }
@@ -116,7 +90,8 @@ void luMulticluster_job_dm_core(job_t* job) {
 
     mcycle(); //3|4
 
-    snrt_cluster_hw_barrier();
+    //snrt_cluster_hw_barrier();
+    snrt_global_barrier();
 
     // Now we can update the L1 alloc pointer
     void* next = (void*)((uint32_t)(luMulticluster_job->args.A) + matrix_size);
@@ -128,23 +103,27 @@ void luMulticluster_job_dm_core(job_t* job) {
 
     for (uint32_t k = 0; k < n; k++)
     {
-        sw_barrier();
-        //if data is not in this TCDM retreive it from the other cluster
-        if ((k/2)%2 != cluster_idx)
-        {
-            snrt_dma_start_1d(A_l1_ptr[cluster_idx] + k * n + k, A_l1_ptr[(cluster_idx + 1)%cluster_num] + k * n + k, (n - k) * sizeof(double));
-            snrt_dma_wait_all();
-        }
+        snrt_global_barrier();
+        // //snrt_reset_barrier();
+        // //if data is not in this TCDM retreive it from the other cluster
+        // DON'T USE DMA FOR IT
+        // if ((k/2)%2 != cluster_idx)
+        // {
+        //     snrt_dma_start_1d(A_l1_ptr[cluster_idx] + k * n + k, A_l1_ptr[(cluster_idx + 1)%cluster_num] + k * n + k, (n - k) * sizeof(double));
+        //     snrt_dma_wait_all();
+        // }
 
-        sw_barrier();
-        sw_barrier();
+        //  snrt_global_barrier();
+        // //snrt_reset_barrier();
+         snrt_global_barrier();
+         //snrt_reset_barrier();
     }
 
     mcycle(); //5|6
 
     // Transfer data out 2 rows at the time
     for (int i = cluster_idx * 2; i < n; i+=4)
-        snrt_dma_start_1d((void*)(uint32_t)luMulticluster_job->args.A_l3_ptr, A_l1_ptr[cluster_idx] + i * n, n * 2 * sizeof(double));
+        snrt_dma_start_1d((void*)(uint32_t)luMulticluster_job->args.A_l3_ptr + i * n *sizeof(double), A_l1_ptr[cluster_idx] + i * n, n * 2 * sizeof(double));
     snrt_dma_wait_all();
 
     mcycle(); //6|7
@@ -177,7 +156,8 @@ void luMulticluster_job_compute_core(job_t* job) {
 
     // Synchronize with DM core to make sure results are available
     // before DMA starts transfer to L3
-    snrt_cluster_hw_barrier();
+    snrt_global_barrier();
+    //snrt_reset_barrier();
 
     mcycle();//6|7
 
@@ -222,7 +202,9 @@ run_job_compute_core:;
     // Synchronize with DM core such that it knows
     // it can update the l1 alloc pointer, and we know
     // job data is locally available
-    snrt_cluster_hw_barrier();
+    snrt_global_barrier();
+    snrt_reset_barrier();
+    
 
    mcycle();//3|4
 

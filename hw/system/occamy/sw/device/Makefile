@@ -10,7 +10,7 @@ APPS += axpy
 APPS += gesummv
 APPS += gesummvTiling
 APPS += lu
-#APPS += luMulticluster
+APPS += luMulticluster
 
 
 TARGET ?= all

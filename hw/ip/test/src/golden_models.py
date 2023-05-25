@@ -301,4 +301,5 @@ def lu(header_path):
 
 	return A, variable_name
 
-
+def luMulticluster(header_path):
+	return lu(header_path)

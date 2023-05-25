@@ -7,8 +7,8 @@
 //================================================================================
 
 extern volatile uint32_t _snrt_mutex;
-extern volatile uint32_t _snrt_barrier;
-
+// extern volatile uint32_t _snrt_barrier;
+extern volatile snrt_barrier_t _snrt_barrier;
 //================================================================================
 // Mutex functions
 //================================================================================
@@ -71,11 +71,35 @@ inline void snrt_cluster_hw_barrier() {
                  : "memory");
 }
 
-inline void snrt_reset_barrier() { _snrt_barrier = 0; }
+inline void snrt_reset_barrier() { _snrt_barrier.iteration = 0; _snrt_barrier.cnt = 0;}
 
 inline uint32_t snrt_sw_barrier_arrival() {
-    return __atomic_add_fetch(&_snrt_barrier, 1, __ATOMIC_RELAXED);
+    return __atomic_add_fetch(&(_snrt_barrier.cnt), 1, __ATOMIC_RELAXED);
 }
+
+
+inline void snrt_global_barrier() {
+    // Synchronize all DM cores in software
+    if (snrt_is_dm_core()) {
+        // Remember previous iteration
+        uint32_t prev_barrier_iteration = _snrt_barrier.iteration;
+        uint32_t cnt =
+            __atomic_add_fetch(&(_snrt_barrier.cnt), 1, __ATOMIC_RELAXED);
+
+        // Increment the barrier counter
+        if (cnt == snrt_cluster_num()) {
+            _snrt_barrier.cnt = 0;
+            __atomic_add_fetch(&(_snrt_barrier.iteration), 1, __ATOMIC_RELAXED);
+        } else {
+            while (prev_barrier_iteration == _snrt_barrier.iteration)
+                ;
+        }
+    }
+    // Synchronize cores in a cluster with the HW barrier
+    snrt_cluster_hw_barrier();
+}
+
+
 
 // TODO colluca
 // inline void snrt_sw_barrier_departure() {
