@@ -10,7 +10,7 @@ timestamp=$(date +%s)
 
 #generating data
 cd sw/host/apps/$1/
-#python generate_header.py $2 $3
+python generate_header.py $2 $3
 cd ../../../../
 
 rm logs/*

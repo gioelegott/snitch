@@ -11,7 +11,7 @@ __thread volatile comm_buffer_t* comm_buffer_gesummv;
 static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, double beta, double* A, double* B, double *x, double *y)
 {
     int32_t i;
-    double tmp;
+    double tmp, tmp1, tmp2;
 
 
     // for (i = 0; i < n_rows; i++)
@@ -38,18 +38,49 @@ static inline void gesummv(int32_t n_rows, int32_t n_columns, double alpha, doub
     //     snrt_ssr_disable();
     //     y[i] = tmp; //maybe put y inside asm
     // }
+
+
     for (i = 0; i < n_rows; i++)
     {
-        double tmp1 = 0;
-        double tmp2 = 0;
-        for (int j = 0; j < n_columns; j++)
-        {
-            tmp1 += alpha * A[i*n_columns + j] * x[j];
-            tmp2 += beta * B[i*n_columns + j] * x[j];
-        }
-        y[i] = tmp1 + tmp2;//n_rows;
+        tmp1 = tmp2 = 0;
+        snrt_ssr_loop_1d(SNRT_SSR_DM_ALL, n_columns, 8);
+        snrt_ssr_read(SNRT_SSR_DM0, SNRT_SSR_1D, A + i*n_columns);
+        snrt_ssr_read(SNRT_SSR_DM1, SNRT_SSR_1D, B + i*n_columns);
+        snrt_ssr_read(SNRT_SSR_DM2, SNRT_SSR_1D, x);
 
+        snrt_ssr_enable();
+
+        asm volatile
+        ("frep.o %[n_frep], 3, 0, 0          \n"
+         "fmv.d fa1, ft2                     \n"
+         "fmadd.d %[tmp1], ft0,  fa1, %[tmp1]\n"
+         "fmadd.d %[tmp2], ft1,  fa1, %[tmp2]\n"
+         : [tmp1] "+f"(tmp1), [tmp2] "+f"(tmp2)
+         : [n_frep] "r"(n_columns-1)
+         : "ft0", "ft1", "ft2", "fa1"
+        );
+
+        snrt_fpu_fence();
+        snrt_ssr_disable();
+        y[i] = alpha * tmp1 + beta * tmp2; //maybe put y inside asm
     }
+
+
+
+
+    // for (i = 0; i < n_rows; i++)
+    // {
+    //     double tmp1 = 0;
+    //     double tmp2 = 0;
+    //     for (int j = 0; j < n_columns; j++)
+    //     {
+    //         tmp1 += A[i*n_columns + j] * x[j];
+    //         tmp2 += B[i*n_columns + j] * x[j];
+    //     }
+    //     y[i] = alpha * tmp1+ beta* tmp2;//n_rows;
+
+    // }
+     snrt_fpu_fence();
 }
 
 
@@ -122,7 +153,7 @@ void gesummv_job_compute_core(job_t* job) {
     // Synchronize with DM core to wait for operands
     // to be fully transferred in L1
     //snrt_cluster_hw_barrier();
-////////////////////////////////////////////////////
+
     // Cast local job
     gesummv_local_job_t* gesummv_job = (gesummv_local_job_t*)job;
 
@@ -143,7 +174,7 @@ void gesummv_job_compute_core(job_t* job) {
     uint32_t c = CEIL(n, core_num);
     int32_t lb = c * core_idx;
     int32_t ub = MIN((c * (core_idx + 1)), n);
-///////////////////////////////////////////////////////    
+
     
     mcycle();//4|5
     gesummv(ub - lb, n, alpha, beta, A + lb * n, B + lb * n, x, y + lb);
